@@ -1,0 +1,893 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2870
+\cocoatextscaling1\cocoaplatform1{\fonttbl\f0\fnil\fcharset0 .SFUI-Regular;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\deftab560
+\pard\pardeftab560\slleading80\pardirnatural\partightenfactor0
+
+\f0\fs34 \AppleTypeServices\AppleTypeServicesF2293774 \cf0 <!DOCTYPE html>\
+<html lang="es">\
+<head>\
+    <meta charset="UTF-8">\
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">\
+    <title>Khaos Deportivo - Panel Admin</title>\
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">\
+    <style>\
+        :root \{\
+            --gold: #D4AF37;\
+            --gold-light: #F0D878;\
+            --dark: #0a0a0a;\
+            --dark-card: #141414;\
+            --gray: #888;\
+            --white: #ffffff;\
+            --danger: #e74c3c;\
+            --success: #27ae60;\
+        \}\
+        * \{ margin: 0; padding: 0; box-sizing: border-box; \}\
+        body \{\
+            font-family: 'Montserrat', sans-serif;\
+            background: var(--dark);\
+            color: var(--white);\
+            min-height: 100vh;\
+        \}\
+        .header \{\
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);\
+            padding: 20px;\
+            text-align: center;\
+            border-bottom: 2px solid var(--gold);\
+        \}\
+        .logo-area \{ display: flex; align-items: center; justify-content: center; gap: 12px; \}\
+        .logo-icon \{\
+            width: 42px; height: 42px;\
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));\
+            border-radius: 50%;\
+            display: flex; align-items: center; justify-content: center;\
+            font-weight: 900; font-size: 20px; color: var(--dark);\
+        \}\
+        .brand-name \{\
+            font-size: 24px; font-weight: 900;\
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));\
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;\
+            background-clip: text;\
+        \}\
+        .tagline \{ color: var(--gray); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; \}\
+        .subtitle \{ color: var(--gold); font-size: 14px; margin-top: 8px; font-weight: 600; \}\
+\
+        .container \{ max-width: 1200px; margin: 0 auto; padding: 20px; \}\
+\
+        .stats-row \{\
+            display: grid;\
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));\
+            gap: 12px;\
+            margin-bottom: 24px;\
+        \}\
+        .stat-card \{\
+            background: var(--dark-card);\
+            border: 1px solid #222;\
+            border-radius: 16px;\
+            padding: 16px;\
+            text-align: center;\
+            transition: all 0.3s;\
+        \}\
+        .stat-card:hover \{ border-color: var(--gold); transform: translateY(-4px); \}\
+        .stat-value \{ font-size: 28px; font-weight: 900; color: var(--gold); \}\
+        .stat-label \{ font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; \}\
+\
+        .actions-bar \{\
+            display: flex;\
+            justify-content: space-between;\
+            align-items: center;\
+            flex-wrap: wrap;\
+            gap: 12px;\
+            margin-bottom: 20px;\
+        \}\
+        .btn \{\
+            padding: 12px 24px;\
+            border-radius: 12px;\
+            border: none;\
+            font-family: 'Montserrat', sans-serif;\
+            font-weight: 700;\
+            font-size: 13px;\
+            cursor: pointer;\
+            transition: all 0.3s;\
+            display: inline-flex;\
+            align-items: center;\
+            gap: 8px;\
+            text-decoration: none;\
+        \}\
+        .btn-primary \{\
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));\
+            color: var(--dark);\
+        \}\
+        .btn-primary:hover \{ transform: scale(1.02); box-shadow: 0 5px 20px rgba(212,175,55,0.3); \}\
+        .btn-secondary \{\
+            background: #222;\
+            color: var(--gold);\
+            border: 1px solid var(--gold);\
+        \}\
+        .btn-secondary:hover \{ background: var(--gold); color: var(--dark); \}\
+        .btn-danger \{\
+            background: var(--danger);\
+            color: white;\
+        \}\
+        .btn-danger:hover \{ background: #c0392b; \}\
+        .btn-success \{\
+            background: var(--success);\
+            color: white;\
+        \}\
+\
+        .search-box \{\
+            background: var(--dark-card);\
+            border: 1px solid #333;\
+            border-radius: 30px;\
+            padding: 10px 20px;\
+            color: var(--white);\
+            font-family: 'Montserrat', sans-serif;\
+            font-size: 13px;\
+            outline: none;\
+            width: 280px;\
+            transition: all 0.3s;\
+        \}\
+        .search-box:focus \{ border-color: var(--gold); \}\
+        .search-box::placeholder \{ color: #555; \}\
+\
+        .products-table-wrap \{\
+            background: var(--dark-card);\
+            border: 1px solid #222;\
+            border-radius: 16px;\
+            overflow: hidden;\
+        \}\
+        .products-table \{ width: 100%; border-collapse: collapse; \}\
+        .products-table th \{\
+            background: #1a1a1a;\
+            padding: 14px 16px;\
+            text-align: left;\
+            font-size: 12px;\
+            color: var(--gold);\
+            text-transform: uppercase;\
+            letter-spacing: 1px;\
+            font-weight: 700;\
+            border-bottom: 1px solid #333;\
+        \}\
+        .products-table td \{\
+            padding: 14px 16px;\
+            border-bottom: 1px solid #222;\
+            font-size: 13px;\
+            vertical-align: middle;\
+        \}\
+        .products-table tr:hover td \{ background: rgba(212,175,55,0.03); \}\
+        .products-table tr:last-child td \{ border-bottom: none; \}\
+\
+        .product-img-small \{\
+            width: 50px; height: 50px;\
+            object-fit: cover;\
+            border-radius: 10px;\
+            background: #1a1a1a;\
+        \}\
+        .product-name-cell \{ font-weight: 700; font-size: 14px; \}\
+        .product-code-cell \{ font-size: 11px; color: var(--gray); font-family: monospace; margin-top: 2px; \}\
+        .product-category-cell \{\
+            display: inline-block;\
+            padding: 4px 12px;\
+            border-radius: 20px;\
+            font-size: 11px;\
+            font-weight: 700;\
+            text-transform: uppercase;\
+        \}\
+        .cat-nino-sintetica-corta \{ background: rgba(243,156,18,0.15); color: #f39c12; \}\
+        .cat-sintetica-corta \{ background: rgba(230,126,34,0.15); color: #e67e22; \}\
+        .cat-nino-sintetica-bota \{ background: rgba(26,188,156,0.15); color: #1abc9c; \}\
+        .cat-sintetica-bota \{ background: rgba(22,160,133,0.15); color: #16a085; \}\
+        .cat-gc-tache-aluminio \{ background: rgba(192,57,43,0.15); color: #c0392b; \}\
+        .cat-nino-guayo-corto \{ background: rgba(142,68,173,0.15); color: #8e44ad; \}\
+        .cat-guayo-corto \{ background: rgba(231,76,60,0.15); color: #e74c3c; \}\
+        .cat-gb-tache-aluminio \{ background: rgba(211,84,0,0.15); color: #d35400; \}\
+        .cat-nino-guayo-bota \{ background: rgba(39,174,96,0.15); color: #27ae60; \}\
+        .cat-guayo-bota \{ background: rgba(41,128,185,0.15); color: #2980b9; \}\
+        .cat-nino-futsal-corto \{ background: rgba(241,196,15,0.15); color: #f1c40f; \}\
+        .cat-futsal-corto \{ background: rgba(155,89,182,0.15); color: #9b59b6; \}\
+        .cat-nino-futsal-bota \{ background: rgba(52,152,219,0.15); color: #3498db; \}\
+        .cat-futsal-bota \{ background: rgba(127,140,141,0.15); color: #7f8c8d; \}\
+        .price-cell \{ color: var(--gold-light); font-weight: 900; font-size: 15px; \}\
+        .old-price-cell \{ color: var(--gray); text-decoration: line-through; font-size: 12px; \}\
+        .sizes-cell \{ display: flex; gap: 4px; flex-wrap: wrap; \}\
+        .size-pill \{\
+            background: #222;\
+            padding: 2px 8px;\
+            border-radius: 6px;\
+            font-size: 11px;\
+            color: var(--gray);\
+        \}\
+        .size-pill.out \{ opacity: 0.4; text-decoration: line-through; \}\
+        .badge-cell \{ font-size: 11px; \}\
+        .badge-tag \{\
+            display: inline-block;\
+            padding: 3px 10px;\
+            border-radius: 12px;\
+            font-weight: 700;\
+            font-size: 10px;\
+        \}\
+        .badge-best \{ background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; \}\
+        .badge-new \{ background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; \}\
+\
+        .action-btns \{ display: flex; gap: 6px; \}\
+        .action-btn \{\
+            width: 34px; height: 34px;\
+            border-radius: 8px;\
+            border: none;\
+            cursor: pointer;\
+            font-size: 16px;\
+            display: flex;\
+            align-items: center;\
+            justify-content: center;\
+            transition: all 0.2s;\
+        \}\
+        .action-btn.edit \{ background: rgba(212,175,55,0.15); color: var(--gold); \}\
+        .action-btn.edit:hover \{ background: var(--gold); color: var(--dark); \}\
+        .action-btn.delete \{ background: rgba(231,76,60,0.15); color: var(--danger); \}\
+        .action-btn.delete:hover \{ background: var(--danger); color: white; \}\
+\
+        .modal-overlay \{\
+            display: none;\
+            position: fixed; top: 0; left: 0;\
+            width: 100%; height: 100%;\
+            background: rgba(0,0,0,0.85);\
+            z-index: 200;\
+            align-items: center; justify-content: center;\
+            padding: 20px;\
+        \}\
+        .modal-overlay.active \{ display: flex; \}\
+        .modal \{\
+            background: var(--dark-card);\
+            border-radius: 20px;\
+            max-width: 600px; width: 100%;\
+            max-height: 90vh;\
+            overflow-y: auto;\
+            border: 1px solid #333;\
+            animation: modalIn 0.3s ease;\
+        \}\
+        @keyframes modalIn \{ from \{ opacity: 0; transform: scale(0.9); \} to \{ opacity: 1; transform: scale(1); \} \}\
+        .modal-header \{\
+            padding: 24px 24px 0;\
+            display: flex;\
+            justify-content: space-between;\
+            align-items: center;\
+        \}\
+        .modal-header h2 \{ font-size: 20px; color: var(--gold); \}\
+        .modal-close \{\
+            background: none; border: none; color: var(--gray);\
+            font-size: 28px; cursor: pointer; width: 40px; height: 40px;\
+            border-radius: 50%; transition: all 0.2s;\
+        \}\
+        .modal-close:hover \{ color: var(--white); background: #222; \}\
+        .modal-body \{ padding: 20px 24px 24px; \}\
+        .form-group \{ margin-bottom: 16px; \}\
+        .form-group label \{\
+            display: block;\
+            font-size: 12px;\
+            color: var(--gold);\
+            text-transform: uppercase;\
+            letter-spacing: 1px;\
+            font-weight: 700;\
+            margin-bottom: 6px;\
+        \}\
+        .form-group input, .form-group select, .form-group textarea \{\
+            width: 100%;\
+            padding: 12px 16px;\
+            border-radius: 10px;\
+            border: 1px solid #333;\
+            background: #1a1a1a;\
+            color: var(--white);\
+            font-family: 'Montserrat', sans-serif;\
+            font-size: 14px;\
+            outline: none;\
+            transition: all 0.3s;\
+        \}\
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus \{\
+            border-color: var(--gold);\
+            box-shadow: 0 0 12px rgba(212,175,55,0.1);\
+        \}\
+        .form-group textarea \{ min-height: 80px; resize: vertical; \}\
+        .form-row \{ display: grid; grid-template-columns: 1fr 1fr; gap: 16px; \}\
+        .sizes-editor \{ display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; \}\
+        .size-toggle \{\
+            background: #222;\
+            border: 2px solid #333;\
+            color: var(--gray);\
+            padding: 8px 14px;\
+            border-radius: 8px;\
+            cursor: pointer;\
+            font-weight: 600;\
+            font-size: 13px;\
+            transition: all 0.2s;\
+            user-select: none;\
+        \}\
+        .size-toggle:hover \{ border-color: var(--gold); color: var(--gold); \}\
+        .size-toggle.active \{ background: var(--gold); color: var(--dark); border-color: var(--gold); \}\
+        .size-toggle.out \{ opacity: 0.3; border-color: #444; color: #555; \}\
+        .size-toggle.out:hover \{ border-color: #444; color: #555; \}\
+        .modal-footer \{\
+            padding: 0 24px 24px;\
+            display: flex;\
+            gap: 10px;\
+            justify-content: flex-end;\
+        \}\
+\
+        .toast \{\
+            position: fixed;\
+            bottom: 30px;\
+            left: 50%;\
+            transform: translateX(-50%) translateY(100px);\
+            background: var(--dark-card);\
+            color: var(--white);\
+            padding: 14px 28px;\
+            border-radius: 12px;\
+            border: 1px solid var(--gold);\
+            font-weight: 600;\
+            font-size: 14px;\
+            z-index: 300;\
+            opacity: 0;\
+            transition: all 0.4s ease;\
+            display: flex;\
+            align-items: center;\
+            gap: 10px;\
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);\
+        \}\
+        .toast.show \{ opacity: 1; transform: translateX(-50%) translateY(0); \}\
+\
+        .empty-state \{\
+            text-align: center;\
+            padding: 60px 20px;\
+            color: var(--gray);\
+        \}\
+        .empty-state-icon \{ font-size: 60px; margin-bottom: 16px; opacity: 0.3; \}\
+\
+        .export-area \{\
+            margin-top: 20px;\
+            background: var(--dark-card);\
+            border: 1px solid #222;\
+            border-radius: 16px;\
+            padding: 20px;\
+        \}\
+        .export-area h3 \{ color: var(--gold); font-size: 14px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; \}\
+        .export-text \{\
+            width: 100%;\
+            min-height: 200px;\
+            background: #1a1a1a;\
+            border: 1px solid #333;\
+            border-radius: 10px;\
+            padding: 12px;\
+            color: var(--gray);\
+            font-family: monospace;\
+            font-size: 12px;\
+            resize: vertical;\
+            outline: none;\
+        \}\
+        .export-text:focus \{ border-color: var(--gold); \}\
+        .export-hint \{ color: var(--gray); font-size: 11px; margin-top: 8px; \}\
+\
+        .catalog-link \{\
+            text-align: center;\
+            margin-top: 20px;\
+        \}\
+        .catalog-link a \{\
+            color: var(--gold);\
+            text-decoration: none;\
+            font-size: 13px;\
+            font-weight: 600;\
+            opacity: 0.7;\
+            transition: opacity 0.3s;\
+        \}\
+        .catalog-link a:hover \{ opacity: 1; \}\
+\
+        @media (max-width: 768px) \{\
+            .form-row \{ grid-template-columns: 1fr; \}\
+            .actions-bar \{ flex-direction: column; align-items: stretch; \}\
+            .search-box \{ width: 100%; \}\
+            .products-table th, .products-table td \{ padding: 10px 8px; font-size: 12px; \}\
+            .product-img-small \{ width: 40px; height: 40px; \}\
+            .stats-row \{ grid-template-columns: repeat(3, 1fr); \}\
+        \}\
+        @media (max-width: 600px) \{\
+            .products-table thead \{ display: none; \}\
+            .products-table, .products-table tbody, .products-table tr, .products-table td \{ display: block; width: 100%; \}\
+            .products-table tr \{ margin-bottom: 12px; border: 1px solid #222; border-radius: 12px; padding: 12px; \}\
+            .products-table td \{ border: none; padding: 6px 0; display: flex; justify-content: space-between; align-items: center; \}\
+            .products-table td::before \{ content: attr(data-label); color: var(--gold); font-weight: 700; font-size: 11px; text-transform: uppercase; \}\
+            .stats-row \{ grid-template-columns: repeat(2, 1fr); \}\
+        \}\
+    </style>\
+</head>\
+<body>\
+    <header class="header">\
+        <div class="logo-area">\
+            <div class="logo-icon">K</div>\
+            <div class="brand-name">KHAOS DEPORTIVO</div>\
+        </div>\
+        <div class="tagline">Panel de Administracion</div>\
+        <div class="subtitle">Gestiona tu catalogo de productos</div>\
+    </header>\
+\
+    <div class="container">\
+        <div class="stats-row">\
+            <div class="stat-card">\
+                <div class="stat-value" id="statTotal">0</div>\
+                <div class="stat-label">Productos</div>\
+            </div>\
+            <div class="stat-card">\
+                <div class="stat-value" id="statNinoSinteticaCorta">0</div>\
+                <div class="stat-label">Nino Sint. Corta</div>\
+            </div>\
+            <div class="stat-card">\
+                <div class="stat-value" id="statSinteticaCorta">0</div>\
+                <div class="stat-label">Sintetica Corta</div>\
+            </div>\
+            <div class="stat-card">\
+                <div class="stat-value" id="statNinoSinteticaBota">0</div>\
+                <div class="stat-label">Nino Sint. Bota</div>\
+            </div>\
+            <div class="stat-card">\
+                <div class="stat-value" id="statSinteticaBota">0</div>\
+                <div class="stat-label">Sintetica Bota</div>\
+            </div>\
+            <div class="stat-card">\
+                <div class="stat-value" id="statGCTache">0</div>\
+                <div class="stat-label">GC Tache Alum.</div>\
+            </div>\
+            <div class="stat-card">\
+                <div class="stat-value" id="statNinoGuayoCorto">0</div>\
+                <div class="stat-label">Nino Guayo Corto</div>\
+            </div>\
+            <div class="stat-card">\
+                <div class="stat-value" id="statGuayoCorto">0</div>\
+                <div class="stat-label">Guayo Corto</div>\
+            </div>\
+            <div class="stat-card">\
+                <div class="stat-value" id="statGBTache">0</div>\
+                <div class="stat-label">GB Tache Alum.</div>\
+            </div>\
+            <div class="stat-card">\
+                <div class="stat-value" id="statNinoGuayoBota">0</div>\
+                <div class="stat-label">Nino Guayo Bota</div>\
+            </div>\
+            <div class="stat-card">\
+                <div class="stat-value" id="statGuayoBota">0</div>\
+                <div class="stat-label">Guayo Bota</div>\
+            </div>\
+            <div class="stat-card">\
+                <div class="stat-value" id="statNinoFutsalCorto">0</div>\
+                <div class="stat-label">Nino Futsal Corto</div>\
+            </div>\
+            <div class="stat-card">\
+                <div class="stat-value" id="statFutsalCorto">0</div>\
+                <div class="stat-label">Futsal Corto</div>\
+            </div>\
+            <div class="stat-card">\
+                <div class="stat-value" id="statNinoFutsalBota">0</div>\
+                <div class="stat-label">Nino Futsal Bota</div>\
+            </div>\
+            <div class="stat-card">\
+                <div class="stat-value" id="statFutsalBota">0</div>\
+                <div class="stat-label">Futsal Bota</div>\
+            </div>\
+        </div>\
+\
+        <div class="actions-bar">\
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">\
+                <button class="btn btn-primary" onclick="openModal()">&#10133; Nuevo Producto</button>\
+                <button class="btn btn-secondary" onclick="exportData()">&#128203; Exportar Datos</button>\
+                <button class="btn btn-secondary" onclick="importData()">&#128229; Importar Datos</button>\
+                <button class="btn btn-danger" onclick="resetToDefault()">&#128260; Restaurar Default</button>\
+            </div>\
+            <input type="text" class="search-box" id="searchBox" placeholder="Buscar producto..." oninput="renderTable()">\
+        </div>\
+\
+        <div class="products-table-wrap">\
+            <table class="products-table">\
+                <thead>\
+                    <tr>\
+                        <th>Imagen</th>\
+                        <th>Producto</th>\
+                        <th>Categoria</th>\
+                        <th>Precio</th>\
+                        <th>Tallas</th>\
+                        <th>Estado</th>\
+                        <th>Acciones</th>\
+                    </tr>\
+                </thead>\
+                <tbody id="productsTableBody"></tbody>\
+            </table>\
+        </div>\
+\
+        <div class="export-area" id="exportArea" style="display:none">\
+            <h3>&#128203; Datos Exportados (copia y guarda este texto)</h3>\
+            <textarea class="export-text" id="exportText" readonly></textarea>\
+            <p class="export-hint">Copia este texto y guardalo en un archivo de texto. Para importar, pega el texto en el campo de importacion.</p>\
+            <div style="margin-top:12px;display:flex;gap:10px;">\
+                <button class="btn btn-primary" onclick="copyExport()">&#128203; Copiar al portapapeles</button>\
+                <button class="btn btn-secondary" onclick="document.getElementById('exportArea').style.display='none'">Cerrar</button>\
+            </div>\
+        </div>\
+\
+        <div class="catalog-link">\
+            <a href="index.html">&#128279; Ver catalogo publico</a>\
+        </div>\
+    </div>\
+\
+    <div class="modal-overlay" id="modalOverlay">\
+        <div class="modal">\
+            <div class="modal-header">\
+                <h2 id="modalTitle">Nuevo Producto</h2>\
+                <button class="modal-close" onclick="closeModal()">&times;</button>\
+            </div>\
+            <div class="modal-body">\
+                <input type="hidden" id="editId">\
+                <div class="form-row">\
+                    <div class="form-group">\
+                        <label>Nombre del producto *</label>\
+                        <input type="text" id="prodName" placeholder="Ej: Nike Mercurial Vapor 15">\
+                    </div>\
+                    <div class="form-group">\
+                        <label>Codigo de referencia *</label>\
+                        <input type="text" id="prodCode" placeholder="Ej: NK-MV15-001">\
+                    </div>\
+                </div>\
+                <div class="form-row">\
+                    <div class="form-group">\
+                        <label>Categoria *</label>\
+                        <select id="prodCategory">\
+                            <option value="nino-sintetica-corta">Nino Sintetica Corta</option>\
+                            <option value="sintetica-corta">Sintetica Corta</option>\
+                            <option value="nino-sintetica-bota">Nino Sintetica Bota</option>\
+                            <option value="sintetica-bota">Sintetica Bota</option>\
+                            <option value="gc-tache-aluminio">GC Tache Aluminio</option>\
+                            <option value="nino-guayo-corto">Nino Guayo Corto</option>\
+                            <option value="guayo-corto">Guayo Corto</option>\
+                            <option value="gb-tache-aluminio">GB Tache Aluminio</option>\
+                            <option value="nino-guayo-bota">Nino Guayo Bota</option>\
+                            <option value="guayo-bota">Guayo Bota</option>\
+                            <option value="nino-futsal-corto">Nino Futsal Corto</option>\
+                            <option value="futsal-corto">Futsal Corto</option>\
+                            <option value="nino-futsal-bota">Nino Futsal Bota</option>\
+                            <option value="futsal-bota">Futsal Bota</option>\
+                        </select>\
+                    </div>\
+                    <div class="form-group">\
+                        <label>Badge especial</label>\
+                        <select id="prodBadge">\
+                            <option value="">Ninguno</option>\
+                            <option value="bestseller">&#128293; Mas vendido</option>\
+                            <option value="new">&#10024; Nuevo</option>\
+                        </select>\
+                    </div>\
+                </div>\
+                <div class="form-row">\
+                    <div class="form-group">\
+                        <label>Precio actual *</label>\
+                        <input type="number" id="prodPrice" placeholder="149000">\
+                    </div>\
+                    <div class="form-group">\
+                        <label>Precio anterior (tachado)</label>\
+                        <input type="number" id="prodOldPrice" placeholder="220000">\
+                    </div>\
+                </div>\
+                <div class="form-group">\
+                    <label>URL de la imagen</label>\
+                    <input type="text" id="prodImage" placeholder="https://...">\
+                </div>\
+                <div class="form-group">\
+                    <label>Descripcion</label>\
+                    <textarea id="prodDesc" placeholder="Describe el producto..."></textarea>\
+                </div>\
+                <div class="form-group">\
+                    <label>Tallas disponibles (clic para activar/desactivar)</label>\
+                    <div class="sizes-editor" id="sizesEditor"></div>\
+                    <p style="color:#555;font-size:11px;margin-top:6px;">&#128994; Verde = disponible | &#128308; Rojo = agotado | &#9898; Gris = no ofrecida</p>\
+                </div>\
+            </div>\
+            <div class="modal-footer">\
+                <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>\
+                <button class="btn btn-primary" onclick="saveProduct()">&#128190; Guardar Producto</button>\
+            </div>\
+        </div>\
+    </div>\
+\
+    <div class="modal-overlay" id="importOverlay">\
+        <div class="modal">\
+            <div class="modal-header">\
+                <h2>&#128229; Importar Datos</h2>\
+                <button class="modal-close" onclick="closeImportModal()">&times;</button>\
+            </div>\
+            <div class="modal-body">\
+                <div class="form-group">\
+                    <label>Pega aqui los datos exportados previamente</label>\
+                    <textarea class="export-text" id="importText" placeholder="Pega aqui el texto con los datos de tus productos..."></textarea>\
+                </div>\
+            </div>\
+            <div class="modal-footer">\
+                <button class="btn btn-secondary" onclick="closeImportModal()">Cancelar</button>\
+                <button class="btn btn-primary" onclick="doImport()">&#128229; Importar</button>\
+            </div>\
+        </div>\
+    </div>\
+\
+    <div class="toast" id="toast"><span id="toastIcon">&#9989;</span><span id="toastMsg">Mensaje</span></div>\
+\
+    <script>\
+        const categoryNames = \{\
+            "nino-sintetica-corta": "Nino Sintetica Corta",\
+            "sintetica-corta": "Sintetica Corta",\
+            "nino-sintetica-bota": "Nino Sintetica Bota",\
+            "sintetica-bota": "Sintetica Bota",\
+            "gc-tache-aluminio": "GC Tache Aluminio",\
+            "nino-guayo-corto": "Nino Guayo Corto",\
+            "guayo-corto": "Guayo Corto",\
+            "gb-tache-aluminio": "GB Tache Aluminio",\
+            "nino-guayo-bota": "Nino Guayo Bota",\
+            "guayo-bota": "Guayo Bota",\
+            "nino-futsal-corto": "Nino Futsal Corto",\
+            "futsal-corto": "Futsal Corto",\
+            "nino-futsal-bota": "Nino Futsal Bota",\
+            "futsal-bota": "Futsal Bota"\
+        \};\
+\
+        const defaultProducts = [\
+            \{ id: 1, name: "Nike Mercurial Vapor 15 Elite", code: "NK-MV15-001", category: "guayo-corto", price: 149000, oldPrice: 220000, image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop", sizes: ["38","39","40","41","42","43","44"], outOfStock: ["38","44"], desc: "Guayo corto de alta gama. Material sintetico premium con acabado texturizado para mejor control del balon. Suela con tacos conicos para traccion explosiva en cesped natural.", badge: "bestseller" \},\
+            \{ id: 2, name: "Adidas Predator Accuracy.1", code: "AD-PA1-002", category: "guayo-corto", price: 159000, oldPrice: 240000, image: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400&h=300&fit=crop", sizes: ["39","40","41","42","43","44","45"], outOfStock: ["45"], desc: "Diseno iconico con zonas de grip estrategicas. Perfecto para jugadores que buscan precision en pases y tiros. Confort superior para 90 minutos de juego intenso.", badge: null \},\
+            \{ id: 3, name: "Nike Phantom GX Elite DF", code: "NK-PGX-003", category: "guayo-bota", price: 169000, oldPrice: 260000, image: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=400&h=300&fit=crop", sizes: ["38","39","40","41","42","43"], outOfStock: [], desc: "Bota con cana alta y collarin elastico. Tecnologia Gripknit para control total del balon en cualquier condicion climatica. Ideal para mediocampistas creativos.", badge: "new" \},\
+            \{ id: 4, name: "Adidas Copa Pure.1 FG", code: "AD-CP1-004", category: "guayo-bota", price: 155000, oldPrice: 230000, image: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400&h=300&fit=crop", sizes: ["39","40","41","42","43","44","45"], outOfStock: ["39"], desc: "Cuero sintetico de primera calidad con acabado clasico. Bota tradicional que combina elegancia y rendimiento. Suela FG para cesped natural.", badge: null \},\
+            \{ id: 5, name: "Puma Future Ultimate", code: "PM-FU-005", category: "nino-futsal-corto", price: 139000, oldPrice: 200000, image: "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400&h=300&fit=crop", sizes: ["38","39","40","41","42","43","44"], outOfStock: [], desc: "Suela plana especial para futsal y canchas sinteticas. Upper adaptable con tecnologia FUZIONFIT+ para ajuste personalizado. Excelente grip en superficies indoor.", badge: null \},\
+            \{ id: 6, name: "Nike Zoom Mercurial Vapor 15", code: "NK-ZMV-006", category: "nino-futsal-corto", price: 145000, oldPrice: 210000, image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=300&fit=crop", sizes: ["39","40","41","42","43"], outOfStock: ["43"], desc: "Version futsal del Mercurial con unidad Zoom Air en el talon. Ligereza extrema con amortiguacion reactiva. Suela de goma no marcante para canchas indoor.", badge: "bestseller" \},\
+            \{ id: 7, name: "Adidas X Speedportal.1 TF", code: "AD-XS1-007", category: "sintetica-corta", price: 149000, oldPrice: 220000, image: "https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=400&h=300&fit=crop", sizes: ["38","39","40","41","42","43","44","45"], outOfStock: ["38","45"], desc: "Disenado para velocidad en canchas sinteticas. Suela TF (Turf) con multiples tacos pequenos para traccion optima en gramilla artificial.", badge: null \},\
+            \{ id: 8, name: "Nike Tiempo Legend 10 Pro TF", code: "NK-TL10-008", category: "sintetica-corta", price: 135000, oldPrice: 195000, image: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400&h=300&fit=crop", sizes: ["39","40","41","42","43","44"], outOfStock: [], desc: "Clasico reinventado para sintetica. Cuero sintetico ultra suave que se adapta al pie. Suela TF duradera con patron de tacos optimizado.", badge: "new" \}\
+        ];\
+\
+        let products = [];\
+        let nextId = 9;\
+        const allSizes = ["30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45"];\
+        let currentSizes = \{\};\
+\
+        function loadProducts() \{\
+            try \{\
+                const saved = localStorage.getItem('khaos_admin_products');\
+                if (saved) \{ \
+                    products = JSON.parse(saved); \
+                    nextId = Math.max(...products.map(p => p.id), 0) + 1; \
+                \}\
+                else \{ \
+                    products = JSON.parse(JSON.stringify(defaultProducts)); \
+                    saveProducts(); \
+                \}\
+            \} catch(e) \{ \
+                products = JSON.parse(JSON.stringify(defaultProducts)); \
+            \}\
+            updateStats(); \
+            renderTable();\
+        \}\
+\
+        function saveProducts() \{\
+            try \{ \
+                localStorage.setItem('khaos_admin_products', JSON.stringify(products)); \
+            \} catch(e) \{\}\
+            updateStats(); \
+            renderTable();\
+        \}\
+\
+        function updateStats() \{\
+            document.getElementById('statTotal').textContent = products.length;\
+            document.getElementById('statNinoSinteticaCorta').textContent = products.filter(p => p.category === 'nino-sintetica-corta').length;\
+            document.getElementById('statSinteticaCorta').textContent = products.filter(p => p.category === 'sintetica-corta').length;\
+            document.getElementById('statNinoSinteticaBota').textContent = products.filter(p => p.category === 'nino-sintetica-bota').length;\
+            document.getElementById('statSinteticaBota').textContent = products.filter(p => p.category === 'sintetica-bota').length;\
+            document.getElementById('statGCTache').textContent = products.filter(p => p.category === 'gc-tache-aluminio').length;\
+            document.getElementById('statNinoGuayoCorto').textContent = products.filter(p => p.category === 'nino-guayo-corto').length;\
+            document.getElementById('statGuayoCorto').textContent = products.filter(p => p.category === 'guayo-corto').length;\
+            document.getElementById('statGBTache').textContent = products.filter(p => p.category === 'gb-tache-aluminio').length;\
+            document.getElementById('statNinoGuayoBota').textContent = products.filter(p => p.category === 'nino-guayo-bota').length;\
+            document.getElementById('statGuayoBota').textContent = products.filter(p => p.category === 'guayo-bota').length;\
+            document.getElementById('statNinoFutsalCorto').textContent = products.filter(p => p.category === 'nino-futsal-corto').length;\
+            document.getElementById('statFutsalCorto').textContent = products.filter(p => p.category === 'futsal-corto').length;\
+            document.getElementById('statNinoFutsalBota').textContent = products.filter(p => p.category === 'nino-futsal-bota').length;\
+            document.getElementById('statFutsalBota').textContent = products.filter(p => p.category === 'futsal-bota').length;\
+        \}\
+\
+        function getCategoryClass(cat) \{ return 'cat-' + cat; \}\
+        function getCategoryName(cat) \{ return categoryNames[cat] || cat; \}\
+        function formatPrice(p) \{ return '$' + p.toLocaleString('es-CO'); \}\
+\
+        function renderTable() \{\
+            const tbody = document.getElementById('productsTableBody');\
+            const search = document.getElementById('searchBox').value.toLowerCase();\
+            let filtered = products;\
+            if (search) filtered = products.filter(p => p.name.toLowerCase().includes(search) || (p.code && p.code.toLowerCase().includes(search)) || getCategoryName(p.category).toLowerCase().includes(search));\
+\
+            if (filtered.length === 0) \{\
+                tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">&#128230;</div><p>No hay productos</p></div></td></tr>';\
+                return;\
+            \}\
+\
+            tbody.innerHTML = filtered.map(p => \{\
+                const sizesHtml = p.sizes.map(s => \{\
+                    const isOut = p.outOfStock && p.outOfStock.includes(s);\
+                    return '<span class="size-pill ' + (isOut ? 'out' : '') + '">' + s + '</span>';\
+                \}).join('');\
+                const badgeHtml = p.badge ? '<span class="badge-tag badge-' + (p.badge === 'bestseller' ? 'best' : 'new') + '">' + (p.badge === 'bestseller' ? '&#128293; Mas vendido' : '&#10024; Nuevo') + '</span>' : '-';\
+                return '<tr>' +\
+                    '<td data-label="Imagen"><img class="product-img-small" src="' + (p.image || '') + '" alt="' + p.name + '" onerror="this.style.opacity=\\'0.3\\'"></td>' +\
+                    '<td data-label="Producto"><div class="product-name-cell">' + p.name + '</div><div class="product-code-cell">Ref: ' + (p.code || 'N/A') + '</div></td>' +\
+                    '<td data-label="Categoria"><span class="product-category-cell ' + getCategoryClass(p.category) + '">' + getCategoryName(p.category) + '</span></td>' +\
+                    '<td data-label="Precio"><div class="price-cell">' + formatPrice(p.price) + '</div><div class="old-price-cell">' + formatPrice(p.oldPrice) + '</div></td>' +\
+                    '<td data-label="Tallas"><div class="sizes-cell">' + sizesHtml + '</div></td>' +\
+                    '<td data-label="Estado">' + badgeHtml + '</td>' +\
+                    '<td data-label="Acciones"><div class="action-btns"><button class="action-btn edit" onclick="editProduct(' + p.id + ')" title="Editar">&#9999;&#65039;</button><button class="action-btn delete" onclick="deleteProduct(' + p.id + ')" title="Eliminar">&#128465;&#65039;</button></div></td>' +\
+                    '</tr>';\
+            \}).join('');\
+        \}\
+\
+        function initSizesEditor(selectedSizes, outOfStock) \{\
+            currentSizes = \{\};\
+            allSizes.forEach(s => \{ currentSizes[s] = \{ active: selectedSizes.includes(s), out: outOfStock.includes(s) \}; \});\
+            renderSizesEditor();\
+        \}\
+\
+        function renderSizesEditor() \{\
+            const container = document.getElementById('sizesEditor');\
+            container.innerHTML = '';\
+            allSizes.forEach(s => \{\
+                const btn = document.createElement('div');\
+                btn.className = 'size-toggle' + (currentSizes[s].active ? ' active' : '') + (currentSizes[s].out ? ' out' : '');\
+                btn.textContent = s;\
+                btn.onclick = function() \{\
+                    if (!currentSizes[s].active) \{ currentSizes[s].active = true; currentSizes[s].out = false; \}\
+                    else if (currentSizes[s].active && !currentSizes[s].out) \{ currentSizes[s].out = true; \}\
+                    else \{ currentSizes[s].active = false; currentSizes[s].out = false; \}\
+                    renderSizesEditor();\
+                \};\
+                container.appendChild(btn);\
+            \});\
+        \}\
+\
+        function openModal(productId) \{\
+            document.getElementById('modalOverlay').classList.add('active');\
+            document.body.style.overflow = 'hidden';\
+            if (productId) \{\
+                const p = products.find(x => x.id === productId);\
+                if (!p) return;\
+                document.getElementById('modalTitle').textContent = 'Editar Producto';\
+                document.getElementById('editId').value = p.id;\
+                document.getElementById('prodName').value = p.name;\
+                document.getElementById('prodCode').value = p.code || '';\
+                document.getElementById('prodCategory').value = p.category;\
+                document.getElementById('prodPrice').value = p.price;\
+                document.getElementById('prodOldPrice').value = p.oldPrice || '';\
+                document.getElementById('prodImage').value = p.image || '';\
+                document.getElementById('prodDesc').value = p.desc || '';\
+                document.getElementById('prodBadge').value = p.badge || '';\
+                initSizesEditor(p.sizes || [], p.outOfStock || []);\
+            \} else \{\
+                document.getElementById('modalTitle').textContent = 'Nuevo Producto';\
+                document.getElementById('editId').value = '';\
+                document.getElementById('prodName').value = '';\
+                document.getElementById('prodCode').value = '';\
+                document.getElementById('prodCategory').value = 'nino-sintetica-corta';\
+                document.getElementById('prodPrice').value = '';\
+                document.getElementById('prodOldPrice').value = '';\
+                document.getElementById('prodImage').value = '';\
+                document.getElementById('prodDesc').value = '';\
+                document.getElementById('prodBadge').value = '';\
+                initSizesEditor([], []);\
+            \}\
+        \}\
+\
+        function closeModal() \{\
+            document.getElementById('modalOverlay').classList.remove('active');\
+            document.body.style.overflow = '';\
+        \}\
+\
+        function saveProduct() \{\
+            const editId = document.getElementById('editId').value;\
+            const name = document.getElementById('prodName').value.trim();\
+            const code = document.getElementById('prodCode').value.trim();\
+            const category = document.getElementById('prodCategory').value;\
+            const price = parseInt(document.getElementById('prodPrice').value) || 0;\
+            const oldPrice = parseInt(document.getElementById('prodOldPrice').value) || 0;\
+            const image = document.getElementById('prodImage').value.trim();\
+            const desc = document.getElementById('prodDesc').value.trim();\
+            const badge = document.getElementById('prodBadge').value;\
+\
+            if (!name) \{ showToast('El nombre es obligatorio', '&#9888;&#65039;'); return; \}\
+            if (!code) \{ showToast('El codigo de referencia es obligatorio', '&#9888;&#65039;'); return; \}\
+            if (price <= 0) \{ showToast('El precio debe ser mayor a 0', '&#9888;&#65039;'); return; \}\
+\
+            const sizes = [];\
+            const outOfStock = [];\
+            allSizes.forEach(s => \{\
+                if (currentSizes[s].active) sizes.push(s);\
+                if (currentSizes[s].out) outOfStock.push(s);\
+            \});\
+            if (sizes.length === 0) \{ showToast('Selecciona al menos una talla', '&#9888;&#65039;'); return; \}\
+\
+            if (editId) \{\
+                const idx = products.findIndex(p => p.id == editId);\
+                if (idx >= 0) \{\
+                    products[idx] = \{ id: parseInt(editId), name, code, category, price, oldPrice, image, sizes, outOfStock, desc, badge: badge || null \};\
+                    showToast('Producto actualizado', '&#9989;');\
+                \}\
+            \} else \{\
+                products.push(\{ id: nextId++, name, code, category, price, oldPrice, image, sizes, outOfStock, desc, badge: badge || null \});\
+                showToast('Producto creado', '&#9989;');\
+            \}\
+            saveProducts();\
+            closeModal();\
+        \}\
+\
+        function editProduct(id) \{ openModal(id); \}\
+        function deleteProduct(id) \{\
+            if (!confirm('Estas seguro de eliminar este producto?')) return;\
+            products = products.filter(p => p.id !== id);\
+            saveProducts();\
+            showToast('Producto eliminado', '&#128465;&#65039;');\
+        \}\
+\
+        function resetToDefault() \{\
+            if (!confirm('Restaurar los productos de ejemplo? Se perderan los cambios actuales.')) return;\
+            products = JSON.parse(JSON.stringify(defaultProducts));\
+            nextId = 9;\
+            saveProducts();\
+            showToast('Productos restaurados', '&#128260;');\
+        \}\
+\
+        function exportData() \{\
+            const data = JSON.stringify(products, null, 2);\
+            document.getElementById('exportText').value = data;\
+            document.getElementById('exportArea').style.display = 'block';\
+            document.getElementById('exportArea').scrollIntoView(\{ behavior: 'smooth' \});\
+        \}\
+\
+        function copyExport() \{\
+            const text = document.getElementById('exportText').value;\
+            navigator.clipboard.writeText(text).then(() => showToast('Datos copiados', '&#128203;')).catch(() => showToast('Error al copiar', '&#10060;'));\
+        \}\
+\
+        function importData() \{\
+            document.getElementById('importOverlay').classList.add('active');\
+            document.body.style.overflow = 'hidden';\
+        \}\
+        function closeImportModal() \{\
+            document.getElementById('importOverlay').classList.remove('active');\
+            document.body.style.overflow = '';\
+        \}\
+        function doImport() \{\
+            const text = document.getElementById('importText').value.trim();\
+            if (!text) \{ showToast('Pega los datos primero', '&#9888;&#65039;'); return; \}\
+            try \{\
+                const parsed = JSON.parse(text);\
+                if (!Array.isArray(parsed)) throw new Error('No es un array');\
+                if (parsed.length > 0 && (!parsed[0].id || !parsed[0].name)) throw new Error('Formato invalido');\
+                products = parsed;\
+                nextId = Math.max(...products.map(p => p.id), 0) + 1;\
+                saveProducts();\
+                closeImportModal();\
+                showToast('Datos importados correctamente', '&#9989;');\
+            \} catch(e) \{ showToast('Error: formato invalido', '&#10060;'); \}\
+        \}\
+\
+        let toastTimeout;\
+        function showToast(msg, icon) \{\
+            clearTimeout(toastTimeout);\
+            const toast = document.getElementById('toast');\
+            document.getElementById('toastIcon').textContent = icon || '&#9989;';\
+            document.getElementById('toastMsg').textContent = msg;\
+            toast.classList.add('show');\
+            toastTimeout = setTimeout(() => toast.classList.remove('show'), 2500);\
+        \}\
+\
+        document.getElementById('modalOverlay').addEventListener('click', function(e) \{ if (e.target === this) closeModal(); \});\
+        document.getElementById('importOverlay').addEventListener('click', function(e) \{ if (e.target === this) closeImportModal(); \});\
+        document.addEventListener('keydown', function(e) \{ if (e.key === 'Escape') \{ closeModal(); closeImportModal(); \} \});\
+\
+        loadProducts();\
+    </script>\
+</body>\
+</html>\
+}
