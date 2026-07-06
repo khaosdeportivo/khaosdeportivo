@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Términos, Envíos y Garantías — Khaos Deportivo</title>
+<style>
+:root {
+  --gold:#D4AF37;--gold-light:#F0D878;--gold-dim:#B8960C;--gold-glow:rgba(212,175,55,0.15);
+  --void:#050505;--ink:#0a0a0a;--charcoal:#111;--graphite:#141414;--slate:#1a1a1a;--stone:#222;--ash:#333;--fog:#555;--mist:#888;--silver:#b0b0b0;--pearl:#d0d0d0;--ivory:#f5f5f5;--white:#fff;
+  --danger:#ef4444;--success:#22c55e;--warning:#f59e0b;--info:#3b82f6;
+  --font-display:Georgia,'Times New Roman',serif;
+  --font-body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+  --r-sm:8px;--r-md:14px;--r-lg:20px;--r-xl:28px;
+  --shadow-md:0 8px 32px rgba(0,0,0,0.5);--shadow-lg:0 16px 48px rgba(0,0,0,0.6);
+  --ease:cubic-bezier(0.4,0,0.2,1);--ease-expo:cubic-bezier(0.16,1,0.3,1);
+}
+[data-theme="light"]{--void:#f8f9fa;--ink:#fff;--charcoal:#f1f3f5;--graphite:#fff;--slate:#f8f9fa;--stone:#e9ecef;--ash:#dee2e6;--fog:#adb5bd;--mist:#6c757d;--silver:#495057;--pearl:#343a40;--ivory:#212529;--white:#1a1a1a;--shadow-md:0 8px 32px rgba(0,0,0,0.08);--shadow-lg:0 16px 48px rgba(0,0,0,0.1);}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font-body);background:var(--void);color:var(--ivory);min-height:100vh;line-height:1.7;overflow-x:hidden}
+::selection{background:var(--gold);color:var(--void)}
+
+/* NAV */
+.nav-header{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 32px;height:72px;display:flex;align-items:center;justify-content:space-between;background:transparent;transition:all .4s var(--ease)}
+.nav-header.scrolled{background:rgba(5,5,5,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(212,175,55,0.08);height:64px}
+[data-theme="light"] .nav-header.scrolled{background:rgba(255,255,255,0.85);border-bottom:1px solid rgba(0,0,0,0.06)}
+.nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+.nav-logo-mark{width:40px;height:40px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:var(--void);box-shadow:0 2px 12px rgba(212,175,55,0.3);transition:transform .3s var(--ease-bounce)}
+.nav-logo:hover .nav-logo-mark{transform:scale(1.1) rotate(-5deg)}
+.nav-logo-text{font-family:var(--font-display);font-size:20px;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.5px}
+.nav-logo-sub{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--fog);margin-top:-2px}
+.nav-center{display:flex;align-items:center;gap:8px}
+.nav-link{padding:8px 16px;color:var(--silver);text-decoration:none;font-size:13px;font-weight:600;letter-spacing:.3px;border-radius:var(--r-md);transition:all .3s var(--ease);position:relative}
+.nav-link::after{content:'';position:absolute;bottom:2px;left:50%;width:0;height:2px;background:var(--gold);border-radius:2px;transition:all .3s var(--ease);transform:translateX(-50%)}
+.nav-link:hover{color:var(--white)}
+.nav-link:hover::after{width:60%}
+.nav-right{display:flex;align-items:center;gap:12px}
+.nav-btn{width:42px;height:42px;border-radius:50%;border:1px solid var(--stone);background:var(--charcoal);color:var(--silver);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s var(--ease);font-size:16px;position:relative}
+.nav-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--slate);transform:translateY(-2px)}
+.mobile-menu-btn{display:none;width:42px;height:42px;border-radius:var(--r-md);border:1px solid var(--stone);background:var(--charcoal);color:var(--silver);cursor:pointer;font-size:18px;align-items:center;justify-content:center}
+
+/* SCROLL */
+.scroll-indicator{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--gold-light));z-index:1000;width:0%;transition:width .1s linear}
+
+/* CONTENT */
+.legal-hero{position:relative;min-height:40vh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;background:var(--void);padding:120px 24px 60px;text-align:center}
+.legal-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 50%,rgba(212,175,55,0.08) 0%,transparent 60%),linear-gradient(180deg,var(--void) 0%,var(--ink) 40%,var(--charcoal) 100%);z-index:0}
+.legal-hero-content{position:relative;z-index:2;max-width:700px;animation:hfi 1.2s var(--ease-expo) forwards;opacity:0}
+@keyframes hfi{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+.legal-hero-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.2);border-radius:50px;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:24px}
+.legal-hero h1{font-family:var(--font-display);font-size:clamp(2rem,5vw,3.2rem);font-weight:800;color:var(--white);margin-bottom:12px;background:linear-gradient(135deg,var(--white) 0%,var(--gold-light) 50%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.legal-hero p{color:var(--fog);font-size:15px;max-width:500px;margin:0 auto}
+
+.container{max-width:1000px;margin:0 auto;padding:0 24px 80px}
+
+.legal-tabs{display:flex;gap:8px;justify-content:center;margin-bottom:48px;flex-wrap:wrap;position:sticky;top:80px;z-index:50;padding:16px;background:rgba(5,5,5,0.8);backdrop-filter:blur(20px);border-radius:var(--r-xl);border:1px solid var(--stone);box-shadow:var(--shadow-md)}
+[data-theme="light"] .legal-tabs{background:rgba(255,255,255,0.8);border-color:rgba(0,0,0,0.06)}
+.legal-tab{padding:12px 24px;background:var(--charcoal);border:1px solid var(--stone);border-radius:var(--r-xl);color:var(--silver);font-family:var(--font-body);font-weight:700;font-size:13px;letter-spacing:.5px;cursor:pointer;transition:all .3s}
+.legal-tab:hover{border-color:var(--gold);color:var(--gold)}
+.legal-tab.active{background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:var(--void);border-color:var(--gold);box-shadow:0 4px 20px rgba(212,175,55,0.3)}
+
+.legal-section{display:none;animation:fadeIn .5s ease forwards}
+.legal-section.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.legal-card{background:var(--charcoal);border:1px solid var(--stone);border-radius:var(--r-lg);padding:36px;margin-bottom:24px;transition:all .3s;position:relative;overflow:hidden}
+.legal-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold-light));opacity:0;transition:opacity .4s}
+.legal-card:hover{border-color:rgba(212,175,55,0.3);box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.legal-card:hover::before{opacity:1}
+.legal-card h2{font-family:var(--font-display);font-size:1.6rem;font-weight:800;color:var(--white);margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.legal-card h2 .icon{width:40px;height:40px;border-radius:12px;background:var(--gold-glow);border:1px solid rgba(212,175,55,0.15);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:20px;flex-shrink:0}
+.legal-card h3{font-size:1.05rem;font-weight:800;color:var(--gold);margin:28px 0 12px;display:flex;align-items:center;gap:10px}
+.legal-card h3::before{content:'';width:8px;height:8px;background:var(--gold);border-radius:50%;flex-shrink:0;box-shadow:0 0 8px rgba(212,175,55,0.4)}
+.legal-card p{color:var(--silver);font-size:14px;margin-bottom:14px}
+.legal-card ul{list-style:none;padding-left:0;margin-bottom:16px}
+.legal-card ul li{color:var(--silver);font-size:14px;padding:10px 0 10px 32px;position:relative;border-bottom:1px solid rgba(255,255,255,0.03)}
+.legal-card ul li:last-child{border-bottom:none}
+.legal-card ul li::before{content:'✓';position:absolute;left:0;color:var(--gold);font-weight:800;font-size:16px}
+.legal-card .highlight{background:rgba(212,175,55,0.08);border-left:3px solid var(--gold);padding:16px 20px;border-radius:0 var(--r-sm) var(--r-sm) 0;margin:16px 0;color:var(--pearl);font-size:14px;line-height:1.7}
+.legal-card .warning-box{background:rgba(239,68,68,0.08);border-left:3px solid var(--danger);padding:16px 20px;border-radius:0 var(--r-sm) var(--r-sm) 0;margin:16px 0;color:var(--pearl);font-size:14px;line-height:1.7}
+.legal-card .success-box{background:rgba(34,197,94,0.08);border-left:3px solid var(--success);padding:16px 20px;border-radius:0 var(--r-sm) var(--r-sm) 0;margin:16px 0;color:var(--pearl);font-size:14px;line-height:1.7}
+.legal-card .info-box{background:rgba(59,130,246,0.08);border-left:3px solid var(--info);padding:16px 20px;border-radius:0 var(--r-sm) var(--r-sm) 0;margin:16px 0;color:var(--pearl);font-size:14px;line-height:1.7}
+
+.breadcrumb{color:var(--fog);font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:24px;display:flex;align-items:center;gap:8px}
+.breadcrumb a{color:var(--gold);text-decoration:none;transition:opacity .3s}
+.breadcrumb a:hover{opacity:.7}
+.breadcrumb span{color:var(--silver)}
+
+/* FOOTER */
+.footer{background:var(--ink);border-top:1px solid var(--stone);padding:60px 32px 30px}
+.footer-grid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px}
+.footer-brand h3{font-family:var(--font-display);font-size:24px;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:12px}
+.footer-brand p{color:var(--fog);font-size:14px;line-height:1.7;margin-bottom:20px;max-width:300px}
+.footer-social{display:flex;gap:10px}
+.footer-social a{width:40px;height:40px;border-radius:50%;background:var(--slate);border:1px solid var(--ash);display:flex;align-items:center;justify-content:center;color:var(--silver);text-decoration:none;font-size:16px;transition:all .3s}
+.footer-social a:hover{background:var(--gold);color:var(--void);border-color:var(--gold);transform:translateY(-3px)}
+.footer-col h4{font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:20px}
+.footer-col a{display:block;color:var(--fog);text-decoration:none;font-size:14px;padding:6px 0;transition:all .2s}
+.footer-col a:hover{color:var(--gold);padding-left:4px}
+.footer-bottom{max-width:1200px;margin:0 auto;padding-top:24px;border-top:1px solid var(--stone);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.footer-bottom p{font-size:12px;color:var(--fog)}
+.footer-bottom a{color:var(--gold);text-decoration:none;font-size:11px;opacity:.5;transition:opacity .3s}
+.footer-bottom a:hover{opacity:1}
+
+/* RESPONSIVE */
+@media(max-width:1024px){.footer-grid{grid-template-columns:repeat(2,1fr)}.nav-center{display:none}}
+@media(max-width:768px){.nav-header{padding:0 16px;height:64px}.mobile-menu-btn{display:flex}.legal-hero{padding:100px 16px 40px}.legal-tabs{top:72px;padding:12px}.legal-tab{padding:10px 16px;font-size:12px}.legal-card{padding:24px}.container{padding:0 16px 60px}.footer-grid{grid-template-columns:1fr;gap:32px}.footer-bottom{flex-direction:column;text-align:center}}
+@media(max-width:480px){.legal-hero h1{font-size:1.8rem}}
+</style>
+</head>
+<body>
+<div class="scroll-indicator" id="scrollIndicator"></div>
+
+<header class="nav-header" id="navHeader">
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-mark">K</div>
+    <div><div class="nav-logo-text">KHAOS</div><div class="nav-logo-sub">Deportivo</div></div>
+  </a>
+  <nav class="nav-center">
+    <a href="index.html#catalogo" class="nav-link">Catálogo</a>
+    <a href="index.html" class="nav-link">Inicio</a>
+  </nav>
+  <div class="nav-right">
+    <button class="nav-btn" onclick="toggleTheme()" title="Cambiar tema">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</header>
+
+<section class="legal-hero">
+  <div class="legal-hero-content">
+    <div class="legal-hero-badge">⚖️ INFORMACIÓN LEGAL</div>
+    <h1>Términos, Envíos y Garantías</h1>
+    <p>Tu confianza es nuestra prioridad. Conoce las reglas que rigen nuestra relación comercial, cómo llega tu pedido y cómo te protegemos.</p>
+  </div>
+</section>
+
+<div class="container">
+
+  <div class="legal-tabs" id="legalTabs">
+    <button class="legal-tab active" onclick="showTab('terminos')">📋 Términos y Condiciones</button>
+    <button class="legal-tab" onclick="showTab('envios')">🚚 Política de Envíos</button>
+    <button class="legal-tab" onclick="showTab('garantias')">🛡️ Garantía</button>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!-- TÉRMINOS Y CONDICIONES                                     -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <div class="legal-section active" id="tab-terminos">
+
+    <div class="legal-card">
+      <h2><span class="icon">📋</span> Términos y Condiciones de Uso</h2>
+      <p>Al acceder y utilizar el sitio web de <strong style="color:var(--white)">Khaos Deportivo</strong>, usted acepta cumplir con los siguientes términos y condiciones. Si no está de acuerdo con alguna parte de estos términos, le recomendamos no utilizar nuestros servicios.</p>
+    </div>
+
+    <div class="legal-card">
+      <h3>1. Identificación del Vendedor</h3>
+      <p><strong style="color:var(--white)">Khaos Deportivo</strong> es una marca comercial dedicada a la comercialización de calzado deportivo de importación (réplicas AAA) para el mercado colombiano. Operamos exclusivamente a través de canales digitales (WhatsApp, Instagram, Facebook y este sitio web).</p>
+      <div class="highlight">
+        <strong style="color:var(--gold)">Contacto:</strong> WhatsApp 310 562 4563 | Ubicación: Bogotá, Colombia | Horario de atención: Lunes a Sábado, 9:00 a.m. – 7:00 p.m.
+      </div>
+    </div>
+
+    <div class="legal-card">
+      <h3>2. Naturaleza de los Productos</h3>
+      <p>Todos los productos ofrecidos en nuestro catálogo son <strong style="color:var(--white)">réplicas de importación de calidad AAA</strong>. Esto significa que son productos fabricados con materiales y procesos que imitan fielmente los diseños originales de las marcas, pero <strong style="color:var(--white)">no son productos originales ni autorizados por las casas matrices</strong>.</p>
+      <div class="warning-box">
+        <strong style="color:var(--danger)">Importante:</strong> Khaos Deportivo no representa ni está afiliada a ninguna marca deportiva internacional (Nike, Adidas, Puma, etc.). Las marcas mencionadas son propiedad de sus respectivos titulares y se utilizan únicamente con fines descriptivos del modelo.
+      </div>
+    </div>
+
+    <div class="legal-card">
+      <h3>3. Proceso de Compra</h3>
+      <ul>
+        <li>El cliente selecciona los productos y tallas deseadas a través del catálogo web.</li>
+        <li>El pedido se confirma vía WhatsApp, donde se valida disponibilidad de stock.</li>
+        <li>Se solicita el pago del <strong style="color:var(--white)">100 % del valor del pedido</strong> para proceder con el envío.</li>
+        <li>Una vez confirmado el pago, el pedido se prepara y despacha en un plazo de <strong style="color:var(--white)">24 a 48 horas hábiles</strong>.</li>
+        <li>Se envía número de guía y empresa transportadora para el seguimiento del envío.</li>
+      </ul>
+    </div>
+
+    <div class="legal-card">
+      <h3>4. Precios y Pagos</h3>
+      <p>Los precios publicados están expresados en <strong style="color:var(--white)">pesos colombianos (COP)</strong> e incluyen IVA cuando aplique. Los métodos de pago aceptados son:</p>
+      <ul>
+        <li><strong style="color:var(--white)">Nequi</strong></li>
+        <li><strong style="color:var(--white)">Daviplata</strong></li>
+        <li><strong style="color:var(--white)">Transferencia bancaria</strong> (Bancolombia, Davivienda, etc.)</li>
+        <li><strong style="color:var(--white)">Efectivo</strong> únicamente para entregas personales en Bogotá previo acuerdo.</li>
+      </ul>
+      <div class="info-box">
+        <strong style="color:var(--info)">Contra entrega:</strong> Disponible únicamente en Bogotá y área metropolitana, sujeto a verificación de datos del cliente y previo pago de un anticipo del <strong style="color:var(--white)">30 %</strong>.
+      </div>
+    </div>
+
+    <div class="legal-card">
+      <h3>5. Responsabilidad del Cliente</h3>
+      <p>El cliente es responsable de:</p>
+      <ul>
+        <li>Verificar que la talla seleccionada sea la correcta antes de confirmar el pedido.</li>
+        <li>Proporcionar datos de contacto y dirección de envío exactos y actualizados.</li>
+        <li>Revisar el producto al momento de la recepción y reportar cualquier novedad dentro de las <strong style="color:var(--white)">24 horas</strong> siguientes.</li>
+      </ul>
+    </div>
+
+    <div class="legal-card">
+      <h3>6. Propiedad Intelectual</h3>
+      <p>El contenido de este sitio web (imágenes, textos, diseño, código) es propiedad de Khaos Deportivo y está protegido por las leyes de derechos de autor. Queda prohibida su reproducción total o parcial sin autorización expresa.</p>
+    </div>
+
+    <div class="legal-card">
+      <h3>7. Modificaciones</h3>
+      <p>Khaos Deportivo se reserva el derecho de modificar estos términos en cualquier momento. Las modificaciones entrarán en vigor desde su publicación en el sitio web. Se recomienda revisar periódicamente esta sección.</p>
+      <p style="color:var(--fog);font-size:12px;margin-top:20px;"><strong>Última actualización:</strong> 6 de julio de 2026</p>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!-- POLÍTICA DE ENVÍOS                                         -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <div class="legal-section" id="tab-envios">
+
+    <div class="legal-card">
+      <h2><span class="icon">🚚</span> Política de Envíos</h2>
+      <p>En Khaos Deportivo nos comprometemos a entregar tu pedido de manera rápida, segura y económica. A continuación encontrarás toda la información sobre nuestros tiempos, costos y cobertura de envíos.</p>
+    </div>
+
+    <div class="legal-card">
+      <h3>1. Cobertura Geográfica</h3>
+      <p>Realizamos envíos a <strong style="color:var(--white)">todo el territorio colombiano</strong>, incluyendo:</p>
+      <ul>
+        <li><strong style="color:var(--white)">Ciudades principales:</strong> Bogotá, Medellín, Cali, Barranquilla, Cartagena, Bucaramanga, Pereira, Manizales, Armenia, Ibagué, Villavicencio, Neiva, Pasto, Cúcuta, Montería, Sincelejo, Valledupar, Santa Marta.</li>
+        <li><strong style="color:var(--white)">Municipios y zonas rurales:</strong> a través de transportadoras con cobertura nacional (Servientrega, Interrapidísimo, Coordinadora, Envía).</li>
+      </ul>
+      <div class="success-box">
+        <strong style="color:var(--success)">Envío gratis:</strong> En compras superiores a <strong style="color:var(--white)">$350.000 COP</strong> para ciudades principales. En compras superiores a <strong style="color:var(--white)">$500.000 COP</strong> para el resto del país.
+      </div>
+    </div>
+
+    <div class="legal-card">
+      <h3>2. Tiempos de Entrega</h3>
+      <p>Los tiempos de entrega se cuentan desde la confirmación del pago y preparación del pedido:</p>
+      <ul>
+        <li><strong style="color:var(--white)">Bogotá y área metropolitana:</strong> 1 a 2 días hábiles.</li>
+        <li><strong style="color:var(--white)">Ciudades principales:</strong> 2 a 4 días hábiles.</li>
+        <li><strong style="color:var(--white)">Municipios y zonas intermedias:</strong> 3 a 6 días hábiles.</li>
+        <li><strong style="color:var(--white)">Zonas rurales o de difícil acceso:</strong> 5 a 8 días hábiles.</li>
+      </ul>
+      <div class="warning-box">
+        <strong style="color:var(--danger)">Nota:</strong> Los tiempos de entrega son estimados y pueden verse afectados por factores ajenos a nuestra operación, como condiciones climáticas, cierres viales, días festivos o eventualidades de la transportadora. No nos hacemos responsables por retrasos causados por terceros.
+      </div>
+    </div>
+
+    <div class="legal-card">
+      <h3>3. Costos de Envío</h3>
+      <p>Los costos varían según el destino y el peso del paquete:</p>
+      <ul>
+        <li><strong style="color:var(--white)">Bogotá:</strong> $8.000 – $12.000 COP (gratis en compras &gt; $350.000).</li>
+        <li><strong style="color:var(--white)">Ciudades principales:</strong> $12.000 – $18.000 COP (gratis en compras &gt; $350.000).</li>
+        <li><strong style="color:var(--white)">Resto del país:</strong> $15.000 – $25.000 COP (gratis en compras &gt; $500.000).</li>
+      </ul>
+      <p>El costo exacto se confirmará al momento de realizar el pedido vía WhatsApp, ya que depende de la transportadora disponible en tu zona.</p>
+    </div>
+
+    <div class="legal-card">
+      <h3>4. Proceso de Despacho</h3>
+      <ul>
+        <li>Una vez confirmado el pago, tu pedido se prepara y empaca con material de protección (bolsa sellada + caja de cartón si aplica).</li>
+        <li>Recibirás el <strong style="color:var(--white)">número de guía</strong> y el nombre de la transportadora asignada en un plazo máximo de 24 horas.</li>
+        <li>Puedes hacer seguimiento de tu envío directamente en la página web de la transportadora con el número de guía proporcionado.</li>
+        <li>La transportadora realizará hasta <strong style="color:var(--white)">dos intentos de entrega</strong>. Si no hay respuesta, el paquete regresa a nuestras oficinas y deberás coordinar un nuevo envío (con costo adicional).</li>
+      </ul>
+    </div>
+
+    <div class="legal-card">
+      <h3>5. Entrega a Terceros</h3>
+      <p>Si no estás presente en el momento de la entrega, la transportadora puede entregar el paquete a un tercero autorizado (familiar, vecino, portero) siempre y cuando firme el comprobante de recibo. Khaos Deportivo no se hace responsable por pérdidas posteriores si el tercero autorizado no entrega el paquete al destinatario final.</p>
+    </div>
+
+    <div class="legal-card">
+      <h3>6. Pérdida o Daño en Tránsito</h3>
+      <p>Si el paquete llega en mal estado o no llega en el tiempo estimado, debes notificarnos dentro de las <strong style="color:var(--white)">48 horas</strong> siguientes a la fecha de entrega esperada. Evaluaremos el caso y, si corresponde, gestionaremos el reenvío del producto o el reembolso parcial correspondiente.</p>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!-- GARANTÍA                                                   -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <div class="legal-section" id="tab-garantias">
+
+    <div class="legal-card">
+      <h2><span class="icon">🛡️</span> Política de Garantía</h2>
+      <p>En Khaos Deportivo confiamos en la calidad de nuestros productos. Por eso ofrecemos una garantía de satisfacción que te protege ante defectos de fabricación y te da tranquilidad en cada compra.</p>
+    </div>
+
+    <div class="legal-card">
+      <h3>1. Garantía por Defectos de Fabricación</h3>
+      <p>Todos nuestros productos cuentan con una garantía de <strong style="color:var(--white)">15 días calendario</strong> contra defectos de fabricación, contados desde la fecha de recepción del pedido. Esta garantía cubre:</p>
+      <ul>
+        <li>Desprendimiento de la suela o de piezas estructurales <strong style="color:var(--white)">sin uso previo</strong>.</li>
+        <li>Roturas de costuras en el upper (parte superior) <strong style="color:var(--white)">sin uso previo</strong>.</li>
+        <li>Defectos visibles en el material (grietas, burbujas, deformaciones) que impidan el uso normal del calzado.</li>
+        <li>Talla incorrecta enviada por error de nuestro almacén (verificable con foto del etiquetado).</li>
+      </ul>
+      <div class="warning-box">
+        <strong style="color:var(--danger)">Queda excluido:</strong> Daños causados por uso indebido, desgaste normal, exposición a temperaturas extremas, contacto con productos químicos, o modificaciones realizadas por el cliente.
+      </div>
+    </div>
+
+    <div class="legal-card">
+      <h3>2. Garantía de Satisfacción «No te Encantan, los Cambiamos»</h3>
+      <p>Si el producto no cumple con tus expectativas de calidad o talla, ofrecemos <strong style="color:var(--white)">un cambio por otro modelo o talla</strong> dentro de los primeros <strong style="color:var(--white)">7 días calendario</strong> después de recibirlo, siempre que:</p>
+      <ul>
+        <li>El producto <strong style="color:var(--white)">no haya sido usado</strong> ni presente señales de desgaste.</li>
+        <li>Se conserve en su <strong style="color:var(--white)">empaque original</strong> (caja o bolsa) con todas las etiquetas.</li>
+        <li>El cliente asuma el costo del envío de devolución y del nuevo envío (excepto si el error fue nuestro).</li>
+      </ul>
+      <div class="success-box">
+        <strong style="color:var(--success)">Buena noticia:</strong> Si el error fue nuestro (talla equivocada, producto dañado en origen), Khaos Deportivo asume <strong style="color:var(--white)">todos los costos de envío</strong> del cambio.
+      </div>
+    </div>
+
+    <div class="legal-card">
+      <h3>3. Proceso de Reclamo</h3>
+      <p>Para hacer válida tu garantía, sigue estos pasos:</p>
+      <ul>
+        <li><strong style="color:var(--white)">Paso 1:</strong> Escríbenos por WhatsApp (310 562 4563) dentro del plazo de garantía.</li>
+        <li><strong style="color:var(--white)">Paso 2:</strong> Envía fotos claras del defecto o del motivo del cambio, junto con el número de pedido.</li>
+        <li><strong style="color:var(--white)">Paso 3:</strong> Nuestro equipo evaluará el caso en un plazo máximo de 48 horas hábiles.</li>
+        <li><strong style="color:var(--white)">Paso 4:</strong> Si el reclamo es aprobado, coordinamos la devolución del producto y el envío del reemplazo.</li>
+      </ul>
+    </div>
+
+    <div class="legal-card">
+      <h3>4. Reembolsos</h3>
+      <p>Los reembolsos se procesan únicamente en los siguientes casos:</p>
+      <ul>
+        <li>El producto presenta un defecto de fabricación irreparable y no hay stock de reemplazo disponible.</li>
+        <li>El pedido no fue entregado por causas atribuibles a Khaos Deportivo (pérdida confirmada en almacén).</li>
+      </ul>
+      <p>El reembolso se realizará por el <strong style="color:var(--white)">mismo medio de pago</strong> utilizado en la compra, en un plazo de <strong style="color:var(--white)">5 a 10 días hábiles</strong> una vez aprobado el caso. No se realizan reembolsos por arrepentimiento de compra una vez despachado el pedido.</p>
+    </div>
+
+    <div class="legal-card">
+      <h3>5. Durabilidad y Uso Recomendado</h3>
+      <p>Los productos réplicas AAA están diseñados para uso recreativo y amateur. Si bien ofrecen excelente calidad y acabado, su durabilidad puede variar según la intensidad de uso, la frecuencia de juego y el tipo de superficie. Recomendamos:</p>
+      <ul>
+        <li>Usar los guayos en la <strong style="color:var(--white)">superficie para la que fueron diseñados</strong> (FG para césped natural, TF para sintética, IC para indoor).</li>
+        <li>Secar los productos a la sombra después de cada uso; evitar secadoras o exposición directa al sol.</li>
+        <li>Usar plantillas de repuesto para prolongar la vida útil del calzado.</li>
+      </ul>
+    </div>
+
+    <div class="legal-card">
+      <h3>6. Limitaciones</h3>
+      <p>La garantía no cubre:</p>
+      <ul>
+        <li>Desgaste natural por uso (suela desgastada, upper descolorido, olores).</li>
+        <li>Daños por accidentes, negligencia o uso inadecuado.</li>
+        <li>Productos modificados o reparados por terceros.</li>
+        <li>Pérdida de accesorios (cordones, plantillas) tras la entrega.</li>
+      </ul>
+    </div>
+
+  </div>
+
+</div>
+
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <h3>KHAOS DEPORTIVO</h3>
+      <p>Réplicas AAA de importación con la mejor calidad del mercado. Guayos, botas, futsal y sintética para los verdaderos amantes del fútbol.</p>
+      <div class="footer-social">
+        <a href="https://wa.me/573105624563" target="_blank" rel="noopener noreferrer" title="WhatsApp">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </a>
+        <a href="https://www.instagram.com/khaosdeportivo" target="_blank" rel="noopener noreferrer" title="Instagram">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+        </a>
+        <a href="https://www.facebook.com/share/1Bkqc7LWJW/" target="_blank" rel="noopener noreferrer" title="Facebook">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Categorías</h4>
+      <a href="index.html">Guayos</a>
+      <a href="index.html">Sintética</a>
+      <a href="index.html">Futsal</a>
+      <a href="index.html">Línea Niño</a>
+    </div>
+    <div class="footer-col">
+      <h4>Atención</h4>
+      <a href="https://wa.me/573105624563" target="_blank">WhatsApp: 310 562 4563</a>
+      <a href="#">Bogotá, Colombia</a>
+      <a href="#">Lun-Sab: 9am - 7pm</a>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <a href="#" onclick="showTab('terminos');return false;">Términos y condiciones</a>
+      <a href="#" onclick="showTab('envios');return false;">Política de envíos</a>
+      <a href="#" onclick="showTab('garantias');return false;">Garantía</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 Khaos Deportivo. Todos los derechos reservados.</p>
+  </div>
+</footer>
+
+<script>
+function showTab(tabId) {
+  document.querySelectorAll('.legal-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.legal-section').forEach(s => s.classList.remove('active'));
+
+  // Activar el tab correspondiente
+  const tabs = document.querySelectorAll('.legal-tab');
+  if (tabId === 'terminos') tabs[0].classList.add('active');
+  else if (tabId === 'envios') tabs[1].classList.add('active');
+  else if (tabId === 'garantias') tabs[2].classList.add('active');
+
+  document.getElementById('tab-' + tabId).classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  if (isLight) {
+    document.documentElement.removeAttribute('data-theme');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+}
+
+// Scroll effects
+let lastScroll = 0;
+window.addEventListener('scroll', function() {
+  const scrollTop = window.pageYOffset;
+  const nav = document.getElementById('navHeader');
+  nav.classList.toggle('scrolled', scrollTop > 50);
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  document.getElementById('scrollIndicator').style.width = (docHeight > 0 ? (scrollTop / docHeight) * 100 : 0) + '%';
+  lastScroll = scrollTop;
+});
+</script>
+
+</body>
+</html>
