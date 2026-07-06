@@ -60,9 +60,12 @@ body{font-family:var(--font-body);background:var(--void);color:var(--ivory);min-
 .nav-header.scrolled{background:rgba(5,5,5,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(212,175,55,0.08);height:64px}
 [data-theme="light"] .nav-header.scrolled{background:rgba(255,255,255,0.85);border-bottom:1px solid rgba(0,0,0,0.06)}
 .nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none}
-.nav-logo-mark{width:40px;height:40px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:var(--void);box-shadow:0 2px 12px rgba(212,175,55,0.3);transition:transform .3s var(--ease-bounce)}
+.nav-logo-mark{width:40px;height:40px;border-radius:12px;object-fit:cover;display:block;box-shadow:0 2px 12px rgba(212,175,55,0.3);transition:transform .3s var(--ease-bounce);animation:glowPulse 3s ease-in-out infinite}
+
 .nav-logo:hover .nav-logo-mark{transform:scale(1.1) rotate(-5deg)}
-.nav-logo-text{font-family:var(--font-display);font-size:20px;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.5px}
+@keyframes glowPulse{0%,100%{box-shadow:0 2px 12px rgba(212,175,55,0.3),0 0 20px rgba(212,175,55,0.1)}50%{box-shadow:0 2px 16px rgba(212,175,55,0.5),0 0 35px rgba(212,175,55,0.2)}}
+
+  .nav-logo-text{font-family:var(--font-display);font-size:20px;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.5px}
 .nav-logo-sub{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--fog);margin-top:-2px}
 .nav-center{display:flex;align-items:center;gap:8px}
 .nav-link{padding:8px 16px;color:var(--silver);text-decoration:none;font-size:13px;font-weight:600;letter-spacing:.3px;border-radius:var(--r-md);transition:all .3s var(--ease);position:relative}
