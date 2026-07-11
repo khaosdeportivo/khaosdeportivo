@@ -22,6 +22,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
 body{font-family:var(--font-body);background:var(--void);color:var(--ivory);min-height:100vh;line-height:1.6;overflow-x:hidden}
+body.cart-open{overflow:hidden;position:fixed;width:100%;height:100%}
 ::selection{background:var(--gold);color:var(--void)}
 
 /* HERO */
@@ -196,8 +197,8 @@ body{font-family:var(--font-body);background:var(--void);color:var(--ivory);min-
 .modal-section{margin-bottom:22px}
 .modal-section h4{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .modal-section p{color:var(--silver);font-size:14px;line-height:1.7}
-.size-selector{display:flex;gap:8px;flex-wrap:wrap}
-.size-option{min-width:48px;padding:10px 14px;background:var(--slate);border:2px solid var(--ash);border-radius:var(--r-sm);color:var(--silver);font-family:var(--font-body);font-weight:700;font-size:13px;cursor:pointer;transition:all .3s var(--ease);text-align:center}
+.size-selector{display:flex;gap:10px;flex-wrap:wrap}
+.size-option{width:48px;height:48px;padding:0;background:var(--slate);border:2px solid var(--ash);border-radius:var(--r-sm);color:var(--silver);font-family:var(--font-body);font-weight:700;font-size:13px;cursor:pointer;transition:all .3s var(--ease);text-align:center;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .size-option:hover:not(.out-of-stock){border-color:var(--gold);color:var(--gold);background:var(--gold-glow)}
 .size-option.selected{background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:var(--void);border-color:var(--gold);box-shadow:var(--shadow-gold);transform:scale(1.05)}
 .size-option.out-of-stock{opacity:.3;cursor:not-allowed;text-decoration:line-through;border-color:var(--stone)}
@@ -224,18 +225,18 @@ body{font-family:var(--font-body);background:var(--void);color:var(--ivory);min-
 @keyframes cp{0%{transform:scale(0)}70%{transform:scale(1.3)}100%{transform:scale(1)}}
 .cart-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);z-index:180;opacity:0;transition:opacity .3s}
 .cart-overlay.active{display:block;opacity:1}
-.cart-panel{position:fixed;top:0;right:-460px;width:100%;max-width:440px;height:100vh;background:var(--charcoal);border-left:1px solid var(--stone);z-index:190;transition:right .5s var(--ease-expo);display:flex;flex-direction:column;box-shadow:-10px 0 40px rgba(0,0,0,0.5)}
-.cart-panel.open{right:0}
-.cart-header{padding:28px 24px;border-bottom:1px solid var(--stone);display:flex;align-items:center;justify-content:space-between}
+.cart-panel{position:fixed;top:0;right:-100%;width:100%;max-width:420px;height:100dvh;background:var(--charcoal);border-left:1px solid var(--stone);z-index:190;transition:right .5s var(--ease-expo);display:flex;flex-direction:column;box-shadow:-10px 0 40px rgba(0,0,0,0.5);overscroll-behavior:contain}
+.cart-panel.open{right:0;overflow-y:auto}
+.cart-header{padding:16px 20px 12px;border-bottom:1px solid var(--stone);display:flex;align-items:center;justify-content:space-between}
 .cart-header h2{font-size:20px;font-weight:800;display:flex;align-items:center;gap:10px}
 .cart-close{width:40px;height:40px;border-radius:50%;background:var(--slate);border:1px solid var(--ash);color:var(--silver);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s}
 .cart-close:hover{background:rgba(239,68,68,0.2);color:var(--danger);border-color:rgba(239,68,68,0.3);transform:rotate(90deg)}
-.cart-items{flex:1;overflow-y:auto;padding:20px}
+.cart-items{flex:1;overflow-y:auto;padding:12px 16px;min-height:0}
 .cart-empty{text-align:center;padding:60px 20px;color:var(--fog)}
 .cart-empty-icon{width:80px;height:80px;border-radius:50%;background:var(--slate);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 20px;color:var(--ash)}
 .cart-empty h3{font-size:18px;font-weight:700;color:var(--silver);margin-bottom:8px}
-.cart-item{display:flex;gap:14px;padding:16px;background:var(--graphite);border:1px solid var(--stone);border-radius:var(--r-md);margin-bottom:12px;animation:sir .4s var(--ease-expo);transition:all .3s}
-.cart-item:hover{border-color:rgba(212,175,55,0.2)}
+.cart-item{display:flex;gap:10px;padding:12px;background:var(--graphite);border-radius:var(--r-md);margin-bottom:6px;animation:sir .4s var(--ease-expo);transition:all .3s}
+.cart-item:hover{background:var(--slate)}
 @keyframes sir{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
 .cart-item-img{width:72px;height:72px;object-fit:cover;border-radius:var(--r-sm);flex-shrink:0;background:linear-gradient(135deg,#1a1a2e,#16213e)}
 .cart-item-info{flex:1;min-width:0}
@@ -248,21 +249,22 @@ body{font-family:var(--font-body);background:var(--void);color:var(--ivory);min-
 .cart-item-price{font-weight:900;color:var(--gold-light);font-size:15px;text-align:right}
 .cart-item-remove{background:none;border:none;color:var(--ash);font-size:18px;cursor:pointer;padding:4px;transition:all .2s;margin-top:4px}
 .cart-item-remove:hover{color:var(--danger);transform:scale(1.2)}
-.cart-footer{padding:24px;border-top:1px solid var(--stone);background:var(--ink)}
-.cart-subtotal{display:flex;justify-content:space-between;margin-bottom:6px;font-size:14px;color:var(--fog)}
-.cart-total{display:flex;justify-content:space-between;margin-bottom:20px;font-size:24px;font-weight:900}
-.cart-total span:last-child{color:var(--gold)}
-.cart-actions{display:flex;flex-direction:column;gap:10px}
-.cart-btn{padding:16px;border-radius:var(--r-md);border:none;font-family:var(--font-body);font-weight:800;font-size:14px;cursor:pointer;transition:all .3s;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.3px}
-.cart-btn-whatsapp{background:linear-gradient(135deg,#25D366,#128C7E);color:white;box-shadow:0 4px 20px rgba(37,211,102,0.3)}
-.cart-btn-whatsapp:hover{transform:translateY(-2px);box-shadow:0 6px 30px rgba(37,211,102,0.4)}
-.cart-btn-copy{background:var(--slate);color:var(--gold);border:1px solid var(--ash);font-size:13px}
-.cart-btn-copy:hover{border-color:var(--gold);background:var(--gold-glow)}
+.cart-footer{padding:16px 20px 24px;border-top:1px solid var(--stone);background:var(--ink);flex-shrink:0}
+.cart-summary{margin-bottom:16px}
+.cart-summary-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:14px;color:var(--fog)}
+.cart-summary-total{padding-top:10px;margin-top:8px;border-top:1px solid var(--stone);font-size:20px;font-weight:900;color:var(--white)}
+.cart-summary-total span:last-child{color:var(--gold)}
+.cart-actions{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+@media(min-width:400px){.cart-actions{flex-direction:row;gap:10px;margin-bottom:0}}
+.cart-btn{flex:1;padding:14px 10px;border-radius:var(--r-md);border:none;font-family:var(--font-body);font-weight:700;font-size:13px;cursor:pointer;transition:all .3s;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;min-height:48px}
+.cart-btn-whatsapp{background:linear-gradient(135deg,#25D366,#128C7E);color:white}
+.cart-btn-whatsapp:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(37,211,102,0.3)}
+.cart-btn-copy{background:var(--slate);color:var(--silver);border:1px solid var(--ash)}
+.cart-btn-copy:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-glow)}
 .cart-btn-copy.copied{background:var(--gold);color:var(--void);border-color:var(--gold);animation:cp2 .5s ease}
 @keyframes cp2{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
-.cart-saved-notice{display:none;position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--charcoal);border:1px solid rgba(212,175,55,0.3);border-radius:var(--r-lg);padding:12px 20px;font-size:13px;font-weight:600;color:var(--gold);cursor:pointer;z-index:160;box-shadow:var(--shadow-md);animation:ns .5s var(--ease-expo);gap:8px;align-items:center}
 .cart-saved-notice.show{display:flex}
-@keyframes ns{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+to{opacity:1;transform:translateX(-50%) translateY(0)}}
 
 /* TOAST */
 .toast-container{position:fixed;bottom:24px;right:24px;z-index:400;display:flex;flex-direction:column;gap:10px;pointer-events:none}
@@ -304,6 +306,244 @@ body{font-family:var(--font-body);background:var(--void);color:var(--ivory);min-
 @media(max-width:1024px){.mega-menu-grid{grid-template-columns:repeat(2,1fr)}.trust-grid{grid-template-columns:repeat(2,1fr)}.footer-grid{grid-template-columns:repeat(2,1fr)}.nav-center{display:none}}
 @media(max-width:768px){.nav-header{padding:0 16px;height:64px}.nav-right .nav-btn:not(.nav-cart-btn){display:none}.mobile-menu-btn{display:flex}.hero-stats{gap:24px}.hero-stat-number{font-size:1.8rem}.trust-grid{grid-template-columns:1fr}.catalog-toolbar{flex-direction:column;align-items:stretch}.search-box{max-width:100%}.filter-chips{justify-content:center}.products-grid{grid-template-columns:repeat(2,1fr);gap:16px}.catalog-section{padding:40px 16px 60px}.footer-grid{grid-template-columns:1fr;gap:32px}.footer-bottom{flex-direction:column;text-align:center}.cart-panel{max-width:100%}.mega-menu{display:none!important}}
 @media(max-width:480px){.products-grid{grid-template-columns:1fr}.hero-cta-group{flex-direction:column;width:100%}.btn-hero{width:100%;justify-content:center}.hero-title{font-size:2.2rem}}
+
+/* FAVORITOS */
+.btn-fav{width:40px;height:40px;border-radius:var(--r-md);background:var(--slate);border:1px solid var(--ash);color:var(--gold);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .3s var(--ease)}
+.btn-fav:hover{background:var(--gold);color:var(--void);border-color:var(--gold);transform:scale(1.1);box-shadow:var(--shadow-gold)}
+.btn-fav.active{background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:var(--void);border-color:var(--gold);box-shadow:var(--shadow-gold);animation:heartPop .4s var(--ease-bounce)}
+.btn-fav.active:hover{background:linear-gradient(135deg,var(--gold-light),var(--gold));box-shadow:var(--shadow-gold-lg)}
+@keyframes heartPop{0%{transform:scale(1)}30%{transform:scale(1.3)}60%{transform:scale(.9)}100%{transform:scale(1)}}
+.fav-panel{position:fixed;top:0;right:-460px;width:100%;max-width:440px;height:100vh;background:var(--charcoal);border-left:1px solid var(--stone);z-index:190;transition:right .5s var(--ease-expo);display:flex;flex-direction:column;box-shadow:-10px 0 40px rgba(0,0,0,0.5)}
+.fav-panel.open{right:0}
+.fav-header{padding:28px 24px;border-bottom:1px solid var(--stone);display:flex;align-items:center;justify-content:space-between}
+.fav-header h2{font-size:20px;font-weight:800;display:flex;align-items:center;gap:10px;color:var(--white)}
+.fav-header h2 svg{color:var(--gold)}
+.fav-items{flex:1;overflow-y:auto;padding:20px}
+.fav-empty{text-align:center;padding:60px 20px;color:var(--fog)}
+.fav-empty-icon{width:80px;height:80px;border-radius:50%;background:var(--slate);border:1px solid var(--stone);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 20px;color:var(--gold);transition:all .3s}
+.fav-empty:hover .fav-empty-icon{border-color:rgba(212,175,55,0.3);box-shadow:0 0 20px rgba(212,175,55,0.1)}
+.fav-item{display:flex;gap:14px;padding:16px;background:var(--graphite);border:1px solid var(--stone);border-radius:var(--r-md);margin-bottom:12px;animation:sir .4s var(--ease-expo);transition:all .3s;position:relative}
+.fav-item:hover{border-color:rgba(212,175,55,0.25);box-shadow:0 4px 16px rgba(212,175,55,0.05)}
+.fav-item-img{width:72px;height:72px;border-radius:var(--r-sm);flex-shrink:0;background:linear-gradient(135deg,#1a1a2e,#16213e);display:flex;align-items:center;justify-content:center;font-size:28px;opacity:0.6}
+.fav-item-info{flex:1;min-width:0}
+.fav-item-name{font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fav-item-meta{font-size:12px;color:var(--gold);margin-bottom:10px;font-weight:600;letter-spacing:.3px}
+.fav-item-price{font-weight:900;color:var(--gold-light);font-size:15px}
+.fav-item-remove{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:var(--slate);border:1px solid var(--ash);color:var(--ash);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s}
+.fav-item-remove:hover{background:rgba(239,68,68,0.15);color:var(--danger);border-color:rgba(239,68,68,0.3);transform:scale(1.1) rotate(90deg)}
+.fav-item-actions{display:flex;gap:8px;margin-top:10px}
+.fav-btn-cart{flex:1;padding:10px;background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:var(--void);border:none;border-radius:var(--r-sm);font-family:var(--font-body);font-weight:800;font-size:12px;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:6px;letter-spacing:.3px}
+.fav-btn-cart:hover{transform:scale(1.02);box-shadow:var(--shadow-gold)}
+.fav-btn-cart svg{stroke-width:2.5}
+.fav-count{position:absolute;top:-4px;right:-4px;width:20px;height:20px;background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:var(--void);border-radius:50%;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid var(--void);animation:cp .3s var(--ease-bounce)}
+
+
+
+/* ===== CUPONES ===== */
+.coupon-section {
+  padding: 0;
+  border-top: 1px solid var(--stone);
+  margin-bottom: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.coupon-toggle {
+  width: 100%;
+  padding: 10px 0;
+  background: none;
+  border: none;
+  color: var(--fog);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all .3s;
+}
+.coupon-toggle:hover {
+  color: var(--gold);
+}
+.coupon-toggle-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.coupon-toggle-arrow {
+  font-size: 10px;
+  transition: transform .3s var(--ease);
+}
+.coupon-toggle-arrow.open {
+  transform: rotate(180deg);
+  color: var(--gold);
+}
+.coupon-body {
+  padding: 8px 0 0 0;
+  animation: couponSlide .3s var(--ease);
+}
+@keyframes couponSlide {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.coupon-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.coupon-hint {
+  font-size: 11px;
+  color: var(--fog);
+  margin-top: 8px;
+  line-height: 1.5;
+  display: none;
+}
+.coupon-hint.show {
+  display: block;
+}
+.coupon-input-wrap {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.coupon-input {
+  flex: 1;
+  padding: 10px 14px;
+  background: var(--graphite);
+  border: 1px solid var(--stone);
+  border-radius: var(--r-md);
+  color: var(--ivory);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 700;
+  outline: none;
+  transition: all .3s;
+  text-transform: uppercase;
+}
+.coupon-input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px var(--gold-glow);
+}
+.coupon-input::placeholder {
+  color: var(--fog);
+  text-transform: none;
+  font-weight: 500;
+}
+.coupon-btn {
+  padding: 10px 18px;
+  background: var(--slate);
+  border: 1px solid var(--ash);
+  border-radius: var(--r-md);
+  color: var(--silver);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all .3s;
+  white-space: nowrap;
+}
+.coupon-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: var(--gold-glow);
+}
+.coupon-btn:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+.coupon-info {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: var(--r-sm);
+  display: none;
+  align-items: center;
+  gap: 6px;
+}
+.coupon-info.show {
+  display: flex;
+}
+.coupon-info.success {
+  background: rgba(34,197,94,0.1);
+  color: var(--success);
+  border: 1px solid rgba(34,197,94,0.2);
+}
+.coupon-info.error {
+  background: rgba(239,68,68,0.1);
+  color: var(--danger);
+  border: 1px solid rgba(239,68,68,0.2);
+}
+.coupon-info.warning {
+  background: rgba(245,158,11,0.1);
+  color: var(--warning);
+  border: 1px solid rgba(245,158,11,0.2);
+}
+.coupon-applied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--gold-glow);
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: var(--r-md);
+  margin-bottom: 8px;
+  margin-top: 8px;
+}
+.coupon-applied-code {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--gold);
+  letter-spacing: 1px;
+}
+.coupon-applied-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--success);
+}
+.coupon-remove {
+  background: none;
+  border: none;
+  color: var(--fog);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px;
+  transition: all .2s;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.coupon-remove:hover {
+  color: var(--danger);
+  background: rgba(239,68,68,0.1);
+}
+.cart-discount {
+  display: none;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+.cart-discount.show {
+  display: flex;
+}
+.cart-discount-label {
+  color: var(--success);
+  font-weight: 700;
+}
+.cart-discount-value {
+  color: var(--success);
+  font-weight: 800;
+}
+
 </style>
 </head>
 <body>
@@ -328,6 +568,10 @@ body{font-family:var(--font-body);background:var(--void);color:var(--ivory);min-
     <button class="nav-btn" onclick="openSearchMobile()" title="Buscar">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     </button>
+    <button class="nav-btn" onclick="toggleFavPanel()" title="Mis Favoritos" style="position:relative">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      <span class="nav-badge" id="navFavBadge" style="display:none;background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:var(--void);border-color:var(--void)">0</span>
+    </button>
     <button class="nav-cart-btn" onclick="toggleCart()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
       <span id="navCartText">Carrito</span>
@@ -343,29 +587,29 @@ body{font-family:var(--font-body);background:var(--void);color:var(--ivory);min-
   <div class="mega-menu-grid">
     <div class="mega-menu-col">
       <h4>Guayos</h4>
-      <button class="mega-menu-item" onclick="filterProducts('guayo-corto');hideMegaMenu();"><div class="mega-menu-item-icon">&#9889;</div><span>Guayo Corto</span></button>
-      <button class="mega-menu-item" onclick="filterProducts('guayo-bota');hideMegaMenu();"><div class="mega-menu-item-icon">&#128095;</div><span>Guayo Bota</span></button>
-      <button class="mega-menu-item" onclick="filterProducts('gc-tache-aluminio');hideMegaMenu();"><div class="mega-menu-item-icon">&#128297;</div><span>Tache Aluminio Corto</span></button>
-      <button class="mega-menu-item" onclick="filterProducts('gb-tache-aluminio');hideMegaMenu();"><div class="mega-menu-item-icon">&#128297;</div><span>Tache Aluminio Bota</span></button>
+      <button class="mega-menu-item" onclick="filterProducts('guayo-corto');hideMegaMenu();"><div class="mega-menu-item-icon">⚡</div><span>Guayo Corto</span></button>
+      <button class="mega-menu-item" onclick="filterProducts('guayo-bota');hideMegaMenu();"><div class="mega-menu-item-icon">👟</div><span>Guayo Bota</span></button>
+      <button class="mega-menu-item" onclick="filterProducts('gc-tache-aluminio');hideMegaMenu();"><div class="mega-menu-item-icon">🔩</div><span>Tache Aluminio Corto</span></button>
+      <button class="mega-menu-item" onclick="filterProducts('gb-tache-aluminio');hideMegaMenu();"><div class="mega-menu-item-icon">🔩</div><span>Tache Aluminio Bota</span></button>
     </div>
     <div class="mega-menu-col">
       <h4>Sintética</h4>
-      <button class="mega-menu-item" onclick="filterProducts('sintetica-corta');hideMegaMenu();"><div class="mega-menu-item-icon">&#127939;</div><span>Sintética Corta</span></button>
-      <button class="mega-menu-item" onclick="filterProducts('sintetica-bota');hideMegaMenu();"><div class="mega-menu-item-icon">&#127939;</div><span>Sintética Bota</span></button>
+      <button class="mega-menu-item" onclick="filterProducts('sintetica-corta');hideMegaMenu();"><div class="mega-menu-item-icon">🏃</div><span>Sintética Corta</span></button>
+      <button class="mega-menu-item" onclick="filterProducts('sintetica-bota');hideMegaMenu();"><div class="mega-menu-item-icon">🏃</div><span>Sintética Bota</span></button>
     </div>
     <div class="mega-menu-col">
       <h4>Futsal</h4>
-      <button class="mega-menu-item" onclick="filterProducts('futsal-corto');hideMegaMenu();"><div class="mega-menu-item-icon">&#9917;</div><span>Futsal Corto</span></button>
-      <button class="mega-menu-item" onclick="filterProducts('futsal-bota');hideMegaMenu();"><div class="mega-menu-item-icon">&#9917;</div><span>Futsal Bota</span></button>
+      <button class="mega-menu-item" onclick="filterProducts('futsal-corto');hideMegaMenu();"><div class="mega-menu-item-icon">⚽</div><span>Futsal Corto</span></button>
+      <button class="mega-menu-item" onclick="filterProducts('futsal-bota');hideMegaMenu();"><div class="mega-menu-item-icon">⚽</div><span>Futsal Bota</span></button>
     </div>
     <div class="mega-menu-col">
       <h4>Línea Niño</h4>
-      <button class="mega-menu-item" onclick="filterProducts('nino-guayo-corto');hideMegaMenu();"><div class="mega-menu-item-icon">&#128102;</div><span>Guayo Corto Niño</span></button>
-      <button class="mega-menu-item" onclick="filterProducts('nino-guayo-bota');hideMegaMenu();"><div class="mega-menu-item-icon">&#128102;</div><span>Guayo Bota Niño</span></button>
-      <button class="mega-menu-item" onclick="filterProducts('nino-sintetica-corta');hideMegaMenu();"><div class="mega-menu-item-icon">&#128102;</div><span>Sintética Corta Niño</span></button>
-      <button class="mega-menu-item" onclick="filterProducts('nino-sintetica-bota');hideMegaMenu();"><div class="mega-menu-item-icon">&#128102;</div><span>Sintética Bota Niño</span></button>
-      <button class="mega-menu-item" onclick="filterProducts('nino-futsal-corto');hideMegaMenu();"><div class="mega-menu-item-icon">&#128102;</div><span>Futsal Corto Niño</span></button>
-      <button class="mega-menu-item" onclick="filterProducts('nino-futsal-bota');hideMegaMenu();"><div class="mega-menu-item-icon">&#128102;</div><span>Futsal Bota Niño</span></button>
+      <button class="mega-menu-item" onclick="filterProducts('nino-guayo-corto');hideMegaMenu();"><div class="mega-menu-item-icon">👦</div><span>Guayo Corto Niño</span></button>
+      <button class="mega-menu-item" onclick="filterProducts('nino-guayo-bota');hideMegaMenu();"><div class="mega-menu-item-icon">👦</div><span>Guayo Bota Niño</span></button>
+      <button class="mega-menu-item" onclick="filterProducts('nino-sintetica-corta');hideMegaMenu();"><div class="mega-menu-item-icon">👦</div><span>Sintética Corta Niño</span></button>
+      <button class="mega-menu-item" onclick="filterProducts('nino-sintetica-bota');hideMegaMenu();"><div class="mega-menu-item-icon">👦</div><span>Sintética Bota Niño</span></button>
+      <button class="mega-menu-item" onclick="filterProducts('nino-futsal-corto');hideMegaMenu();"><div class="mega-menu-item-icon">👦</div><span>Futsal Corto Niño</span></button>
+      <button class="mega-menu-item" onclick="filterProducts('nino-futsal-bota');hideMegaMenu();"><div class="mega-menu-item-icon">👦</div><span>Futsal Bota Niño</span></button>
     </div>
   </div>
 </div>
@@ -380,13 +624,14 @@ body{font-family:var(--font-body);background:var(--void);color:var(--ivory);min-
   </div>
   <div style="display:flex;flex-direction:column;gap:8px;">
     <a href="#catalogo" class="nav-link" style="padding:14px 16px;font-size:15px;" onclick="toggleMobileDrawer()">Catálogo</a>
+    <a href="#" class="nav-link" style="padding:14px 16px;font-size:15px;" onclick="toggleMobileDrawer();toggleFavPanel();return false;">❤️ Mis Favoritos</a>
     <a href="#" class="nav-link" style="padding:14px 16px;font-size:15px;" onclick="toggleMobileDrawer();toggleCart();return false;">Mi Carrito</a>
   </div>
   <div style="margin-top:auto;padding-top:24px;border-top:1px solid var(--stone);">
     <div style="display:flex;gap:12px;justify-content:center;">
-      <a href="https://wa.me/573105624563" target="_blank" style="text-decoration:none;"><span style="width:44px;height:44px;border-radius:50%;background:#25D366;color:white;display:flex;align-items:center;justify-content:center;font-size:18px;">&#128242;</span></a>
-      <a href="https://www.instagram.com/khaosdeportivo" target="_blank" style="text-decoration:none;"><span style="width:44px;height:44px;border-radius:50%;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:white;display:flex;align-items:center;justify-content:center;font-size:18px;">&#128247;</span></a>
-      <a href="https://www.facebook.com/share/1Bkqc7LWJW/" target="_blank" style="text-decoration:none;"><span style="width:44px;height:44px;border-radius:50%;background:#1877F2;color:white;display:flex;align-items:center;justify-content:center;font-size:18px;">&#127942;</span></a>
+      <a href="https://wa.me/573105624563" target="_blank" style="text-decoration:none;"><span style="width:44px;height:44px;border-radius:50%;background:#25D366;color:white;display:flex;align-items:center;justify-content:center;font-size:18px;">📲</span></a>
+      <a href="https://www.instagram.com/khaosdeportivo" target="_blank" style="text-decoration:none;"><span style="width:44px;height:44px;border-radius:50%;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:white;display:flex;align-items:center;justify-content:center;font-size:18px;">📷</span></a>
+      <a href="https://www.facebook.com/share/1Bkqc7LWJW/" target="_blank" style="text-decoration:none;"><span style="width:44px;height:44px;border-radius:50%;background:#1877F2;color:white;display:flex;align-items:center;justify-content:center;font-size:18px;">🏆</span></a>
     </div>
   </div>
 </div>
@@ -394,10 +639,10 @@ body{font-family:var(--font-body);background:var(--void);color:var(--ivory);min-
 <section class="hero" id="hero">
   <div class="hero-bg"><div class="hero-particles" id="heroParticles"></div></div>
   <div class="hero-content">
-    <div class="hero-badge"><span class="pulse-dot"></span>&#127464;&#127476; ENVÍO A TODO COLOMBIA</div>
+    <div class="hero-badge"><span class="pulse-dot"></span>🇨🇴 ENVÍO A TODO COLOMBIA</div>
     <span class="hero-title-accent">Réplicas AAA de Importación</span>
     <h1 class="hero-title">Domina el campo<br>con estilo</h1>
-    <p class="hero-subtitle">Guayos, botas y futsal de la más alta calidad. Diseño profesional, precios imbatibles. Elige tu talla y juega como los grandes.</p>
+    <p class="hero-subtitle">Guayos, sintéticas y futsal de la más alta calidad. Diseño profesional, precios imbatibles. Elige tu talla y juega como los grandes.</p>
     <div class="hero-cta-group">
       <a href="#catalogo" class="btn-hero btn-hero-primary">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
@@ -461,7 +706,7 @@ body{font-family:var(--font-body);background:var(--void);color:var(--ivory);min-
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       </span>
       <input type="text" id="searchInput" placeholder="Buscar por nombre, categoría o referencia..." autocomplete="off">
-      <button class="search-clear" id="searchClear">&#10005;</button>
+      <button class="search-clear" id="searchClear">✕</button>
     </div>
     <div class="filter-chips" id="filterChips">
       <button class="filter-chip active" data-filter="todos">Todos</button>
@@ -490,7 +735,7 @@ body{font-family:var(--font-body);background:var(--void);color:var(--ivory);min-
 
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal()">&#10005;</button>
+    <button class="modal-close" onclick="closeModal()">✕</button>
     <div class="modal-img-wrap" id="modalImgWrap">
       <img class="modal-img" id="modalImg" src="" alt="" style="display:none;">
     </div>
@@ -518,18 +763,18 @@ body{font-family:var(--font-body);background:var(--void);color:var(--ivory);min-
       <div class="modal-section">
         <h4><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg> Cantidad</h4>
         <div class="qty-selector">
-          <button onclick="changeModalQty(-1)">&#8722;</button>
+          <button onclick="changeModalQty(-1)">−</button>
           <div class="qty-display" id="modalQtyDisplay">1</div>
           <button onclick="changeModalQty(1)">+</button>
         </div>
       </div>
       <div class="modal-section">
         <h4><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> Env&#237;o &amp; Pagos</h4>
-        <p>&#128666; Env&#237;o a todo Colombia. Pagos por Nequi, Daviplata o transferencia bancaria. Contra entrega disponible en Bogot&#225; y &#225;rea metropolitana.</p>
+        <p>🚚 Env&#237;o a todo Colombia. Pagos por Nequi, Daviplata o transferencia bancaria. Contra entrega disponible en Bogot&#225; y &#225;rea metropolitana.</p>
       </div>
       <div class="modal-actions">
         <button class="modal-btn modal-btn-primary" id="modalAddBtn" onclick="addToCartFromModal()" disabled>
-          <span id="modalAddBtnText">&#128717; Selecciona una talla</span>
+          <span id="modalAddBtnText"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;vertical-align:middle"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 9.5-5 5"/><path d="m11.5 11.5 3-3"/><path d="m8.5 8.5 3-3"/><path d="m17.5 15.5 3-3"/><path d="m14.5 18.5 3-3"/></svg>Selecciona una talla disponible</span>
         </button>
       </div>
     </div>
@@ -541,16 +786,11 @@ body{font-family:var(--font-body);background:var(--void);color:var(--ivory);min-
   <span class="cart-count" id="cartCount" style="display:none">0</span>
 </button>
 
-<div class="cart-saved-notice" id="cartSavedNotice" onclick="toggleCart()">
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-  Tienes <strong id="savedCount">0</strong> producto(s) en tu carrito
-</div>
-
 <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
 <div class="cart-panel" id="cartPanel">
   <div class="cart-header">
-    <h2><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--gold)"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg> Tu Pedido</h2>
-    <button class="cart-close" onclick="toggleCart()">&#10005;</button>
+    <h2>Tu Pedido</h2>
+    <button class="cart-close" onclick="toggleCart()">✕</button>
   </div>
   <div class="cart-items" id="cartItems">
     <div class="cart-empty">
@@ -562,16 +802,38 @@ body{font-family:var(--font-body);background:var(--void);color:var(--ivory);min-
     </div>
   </div>
   <div class="cart-footer" id="cartFooter" style="display:none">
-    <div class="cart-subtotal"><span>Subtotal</span><span id="cartSubtotal">$0</span></div>
-    <div class="cart-total"><span>Total</span><span id="cartTotal">$0</span></div>
+    <div class="cart-summary">
+      <div class="cart-summary-row"><span>Subtotal</span><span id="cartSubtotal">$0</span></div>
+      <div class="cart-summary-row cart-discount" id="cartDiscountRow"><span id="cartDiscountLabel">Descuento</span><span id="cartDiscountValue">-$0</span></div>
+      <div class="cart-summary-row cart-summary-total"><span>Total</span><span id="cartTotal">$0</span></div>
+    </div>
+    <div class="coupon-section" id="couponSection">
+      <button class="coupon-toggle" id="couponToggle" onclick="toggleCouponSection()">
+        <span class="coupon-toggle-left">🎟️ Cupón de descuento</span>
+        <span class="coupon-toggle-arrow" id="couponArrow">▼</span>
+      </button>
+      <div class="coupon-body" id="couponBody" style="display:none">
+        <div class="coupon-input-wrap" id="couponInputWrap">
+          <input type="text" class="coupon-input" id="couponInput" placeholder="Ej: KHAOS10" maxlength="20" autocomplete="off">
+          <button class="coupon-btn" id="couponApplyBtn" onclick="applyCoupon()">Aplicar</button>
+        </div>
+        <div class="coupon-info" id="couponInfo"></div>
+        <div class="coupon-applied" id="couponApplied" style="display:none">
+          <span class="coupon-applied-code" id="couponAppliedCode"></span>
+          <span class="coupon-applied-value" id="couponAppliedValue"></span>
+          <button class="coupon-remove" onclick="removeCoupon()" title="Quitar cupón">✕</button>
+        </div>
+        <div class="coupon-hint" id="couponHint"></div>
+      </div>
+    </div>
     <div class="cart-actions">
       <a href="#" class="cart-btn cart-btn-whatsapp" id="cartWaBtn" target="_blank" rel="noopener noreferrer">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        Enviar pedido por WhatsApp
+        WhatsApp
       </a>
       <button class="cart-btn cart-btn-copy" id="cartCopyBtn" onclick="copyCartToClipboard()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-        Copiar pedido
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v2"/></svg>
+        Copiar
       </button>
     </div>
   </div>
@@ -579,11 +841,26 @@ body{font-family:var(--font-body);background:var(--void);color:var(--ivory);min-
 
 <div class="toast-container" id="toastContainer"></div>
 
+
+<div class="fav-panel" id="favPanel">
+  <div class="fav-header">
+    <h2>❤️ Mis Favoritos</h2>
+    <button class="cart-close" onclick="toggleFavPanel()">✕</button>
+  </div>
+  <div class="fav-items" id="favItems">
+    <div class="fav-empty">
+      <div class="fav-empty-icon">🤍</div>
+      <h3>No tienes favoritos</h3>
+      <p>Guarda los productos que te gusten para verlos después</p>
+    </div>
+  </div>
+</div>
+
 <footer class="footer">
   <div class="footer-grid">
     <div class="footer-brand">
       <h3>KHAOS DEPORTIVO</h3>
-      <p>R&#233;plicas AAA de importaci&#243;n con la mejor calidad del mercado. Guayos, botas, futsal y sint&#233;tica para los verdaderos amantes del f&#250;tbol.</p>
+      <p>R&#233;plicas AAA de importaci&#243;n con la mejor calidad del mercado. Guayos, sint&#233;ticas, futsal y m&#225;s para los verdaderos amantes del f&#250;tbol.</p>
       <div class="footer-social">
         <a href="https://wa.me/573105624563" target="_blank" rel="noopener noreferrer" title="WhatsApp">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -619,7 +896,7 @@ body{font-family:var(--font-body);background:var(--void);color:var(--ivory);min-
   </div>
   <div class="footer-bottom">
     <p>&#169; 2026 Khaos Deportivo. Todos los derechos reservados.</p>
-    <a href="admin.html" style="color:var(--stone);font-size:10px;text-decoration:none;opacity:0.15;transition:all .3s;" onmouseover="this.style.opacity=0.6;this.style.color='var(--gold)'" onmouseout="this.style.opacity=0.15">&#9881; Admin</a>
+    <a href="admin.html" style="color:var(--stone);font-size:10px;text-decoration:none;opacity:0.15;transition:all .3s;" onmouseover="this.style.opacity=0.6;this.style.color='var(--gold)'" onmouseout="this.style.opacity=0.15">⚙️ Admin</a>
   </div>
 
 </footer>
@@ -646,13 +923,59 @@ const categoryNames = {
   "futsal-corto":"Futsal Corto","futsal-bota":"Futsal Bota"
 };
 
+const categoryHierarchy = {
+  adulto: {
+    label: 'Adulto',
+    families: {
+      sintetica: { categories: ['sintetica-corta', 'sintetica-bota'] },
+      guayo: { categories: ['guayo-corto', 'guayo-bota', 'gc-tache-aluminio', 'gb-tache-aluminio'] },
+      futsal: { categories: ['futsal-corto', 'futsal-bota'] }
+    }
+  },
+  nino: {
+    label: 'Niño',
+    families: {
+      sintetica: { categories: ['nino-sintetica-corta', 'nino-sintetica-bota'] },
+      guayo: { categories: ['nino-guayo-corto', 'nino-guayo-bota'] },
+      futsal: { categories: ['nino-futsal-corto', 'nino-futsal-bota'] }
+    }
+  }
+};
+
+// Config de tienda (se lee desde localStorage del admin)
+let storeConfig = {
+  storeName: 'Khaos Deportivo',
+  whatsapp: '573105624563',
+  instagram: 'https://www.instagram.com/khaosdeportivo',
+  facebook: 'https://www.facebook.com/share/1Bkqc7LWJW/',
+  color: '#D4AF37'
+};
+
 let products = [];
+let favorites = [];
 const state = {
   currentFilter: 'todos', searchQuery: '', sortBy: 'default',
   modalProduct: null, modalSize: null, modalQty: 1,
   cart: [], lastScroll: 0
 };
 
+/* ===== CONFIG DE TIENDA ===== */
+function loadStoreConfig() {
+  try {
+    const saved = localStorage.getItem('khaos_settings');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      storeConfig = { ...storeConfig, ...parsed };
+      // Actualizar WhatsApp en el catálogo
+      const waLinks = document.querySelectorAll('a[href*="wa.me"]');
+      waLinks.forEach(link => {
+        link.href = 'https://wa.me/' + storeConfig.whatsapp;
+      });
+    }
+  } catch(e) {}
+}
+
+/* ===== PRODUCTOS ===== */
 function loadProducts() {
   try {
     const saved = localStorage.getItem('khaos_admin_products');
@@ -665,6 +988,7 @@ function loadProducts() {
   try { localStorage.setItem('khaos_admin_products', JSON.stringify(products)); } catch(e) {}
 }
 
+/* ===== CARRITO ===== */
 function loadCart() {
   try {
     const saved = localStorage.getItem('khaos_cart');
@@ -672,23 +996,644 @@ function loadCart() {
   } catch(e) { state.cart = []; }
 }
 
+function saveCart() {
+  try { localStorage.setItem('khaos_cart', JSON.stringify(state.cart)); } catch(e) {}
+}
+
+/* ===== FAVORITOS ===== */
+function loadFavorites() {
+  try {
+    const saved = localStorage.getItem('khaos_favorites');
+    if (saved) { const parsed = JSON.parse(saved); if (Array.isArray(parsed)) favorites = parsed; }
+  } catch(e) { favorites = []; }
+}
+
+function saveFavorites() {
+  try { localStorage.setItem('khaos_favorites', JSON.stringify(favorites)); } catch(e) {}
+}
+
+function toggleFavorite(productId) {
+  const product = products.find(p => p.id === productId);
+  if (!product) return;
+  const idx = favorites.findIndex(f => f.id === productId);
+  if (idx >= 0) {
+    favorites.splice(idx, 1);
+    showToast(product.name + ' eliminado de favoritos', 'info');
+  } else {
+    favorites.push({ id: product.id, name: product.name, price: product.price, category: product.category, code: product.code || '' });
+    showToast(product.name + ' agregado a favoritos ❤️', 'success');
+  }
+  saveFavorites();
+  updateFavButtons();
+  updateFavBadge();
+}
+
+function updateFavButtons() {
+  document.querySelectorAll('.btn-fav').forEach(btn => {
+    const match = btn.id.match(/favBtn-(\d+)/);
+    if (match) {
+      const pid = parseInt(match[1]);
+      const isFav = favorites.some(f => f.id === pid);
+      btn.textContent = isFav ? '❤️' : '🤍';
+      btn.classList.toggle('active', isFav);
+    }
+  });
+}
+
+function updateFavBadge() {
+  const badge = document.getElementById('navFavBadge');
+  if (!badge) return;
+  badge.textContent = favorites.length;
+  badge.style.display = favorites.length > 0 ? 'flex' : 'none';
+}
+
+function toggleFavPanel() {
+  const panel = document.getElementById('favPanel');
+  const overlay = document.getElementById('cartOverlay');
+  if (panel.classList.contains('open')) {
+    panel.classList.remove('open');
+    if (!document.getElementById('cartPanel').classList.contains('open')) {
+      overlay.classList.remove('active');
+      document.body.classList.remove('cart-open');
+      document.body.style.overflow = '';
+    }
+  } else {
+    overlay.classList.add('active');
+    panel.classList.add('open');
+    document.body.classList.add('cart-open');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function updateFavPanel() {
+  const container = document.getElementById('favItems');
+  if (!container) return;
+  if (favorites.length === 0) {
+    container.innerHTML = '<div class="fav-empty"><div class="fav-empty-icon">🤍</div><h3>No tienes favoritos</h3><p>Guarda los productos que te gusten para verlos después</p></div>';
+    return;
+  }
+  container.innerHTML = favorites.map((item, index) =>
+    '<div class="fav-item"><div class="fav-item-img" style="background:linear-gradient(135deg,#1a1a2e,#16213e);display:flex;align-items:center;justify-content:center;font-size:28px;opacity:0.6">⚽</div><div class="fav-item-info"><div class="fav-item-name">' + item.name + '</div><div class="fav-item-meta">' + getCategoryName(item.category) + ' | Ref: ' + (item.code || '') + '</div><div class="fav-item-price">' + formatPrice(item.price) + '</div><div class="fav-item-actions"><button class="fav-btn-cart" onclick="openModal(' + item.id + ');toggleFavPanel();"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Ver Detalles</button></div></div><button class="fav-item-remove" onclick="removeFavorite(' + index + ')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>'
+  ).join('');
+}
+
+function removeFavorite(index) {
+  if (index < 0 || index >= favorites.length) return;
+  const name = favorites[index].name;
+  favorites.splice(index, 1);
+  saveFavorites();
+  updateFavButtons();
+  updateFavPanel();
+  updateFavBadge();
+  showToast(name + ' eliminado de favoritos', 'info');
+}
+
+/* ===== THEME ===== */
 function loadTheme() {
   try {
     const theme = localStorage.getItem('khaos_theme');
     if (theme === 'light') {
       document.documentElement.setAttribute('data-theme', 'light');
-      document.getElementById('themeIcon').innerHTML = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+      updateThemeIcon();
     }
   } catch(e) {}
 }
 
-function init() {
-  loadProducts(); loadCart(); loadTheme();
-  createParticles(); updateHeroStats(); renderProducts(); updateCartUI();
-  initEventListeners(); initScrollEffects();
-  showToast('¡Bienvenido a Khaos Deportivo!', 'success');
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  if (isLight) document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', 'light');
+  try { localStorage.setItem('khaos_theme', isLight ? 'dark' : 'light'); } catch(e) {}
+  updateThemeIcon();
 }
 
+function updateThemeIcon() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const icon = document.getElementById('themeToggle');
+  if (icon) {
+    icon.innerHTML = isLight 
+      ? '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>'
+      : '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+  }
+}
+
+/* ===== HELPERS ===== */
+function formatPrice(price) {
+  return '$' + price.toLocaleString('es-CO');
+}
+
+function getCategoryName(cat) {
+  return categoryNames[cat] || cat;
+}
+
+function getCategoryMeta(catId) {
+  for (const [groupKey, group] of Object.entries(categoryHierarchy)) {
+    for (const [familyKey, family] of Object.entries(group.families)) {
+      if (family.categories.includes(catId)) {
+        return { group: groupKey, groupLabel: group.label, family: familyKey, familyLabel: family.label };
+      }
+    }
+  }
+  return { group: 'adulto', groupLabel: 'Adulto', family: 'otros', familyLabel: 'Otros' };
+}
+
+function getDiscountPercent(price, oldPrice) {
+  if (!oldPrice || oldPrice <= price) return 0;
+  return Math.round((1 - price / oldPrice) * 100);
+}
+
+/* ===== BADGES ===== */
+const badgeConfig = {
+  bestseller:  { label: 'Más vendido',   icon: '🔥', color: '#ef4444', bg: 'rgba(239,68,68,0.9)' },
+  new:         { label: 'Nuevo',         icon: '⭐', color: '#22c55e', bg: 'rgba(34,197,94,0.9)' },
+  promo:       { label: 'Promoción',     icon: '🏷️', color: '#f59e0b', bg: 'rgba(245,158,11,0.9)' },
+  lastunits:   { label: 'Últimas unid.', icon: '⚡', color: '#f97316', bg: 'rgba(249,115,22,0.9)' },
+  limited:     { label: 'Ed. limitada',  icon: '💎', color: '#a855f7', bg: 'rgba(168,85,247,0.9)' },
+  recommended: { label: 'Recomendado',   icon: '👑', color: '#D4AF37', bg: 'rgba(212,175,55,0.9)' },
+  clearance:   { label: 'Liquidación',   icon: '🧹', color: '#ec4899', bg: 'rgba(236,72,153,0.9)' },
+  preorder:    { label: 'Preventa',      icon: '📅', color: '#3b82f6', bg: 'rgba(59,130,246,0.9)' },
+  webonly:     { label: 'Exclusivo web', icon: '🌐', color: '#06b6d4', bg: 'rgba(6,182,212,0.9)' }
+};
+
+function getBadgeHTML(badge) {
+  if (!badge || !badgeConfig[badge]) return '';
+  const b = badgeConfig[badge];
+  return '<span class="product-card-badge ' + badge + '" style="background:' + b.bg + ';color:white;">' + b.icon + ' ' + b.label + '</span>';
+}
+
+/* ===== RENDER PRODUCTS ===== */
+function renderProducts() {
+  const grid = document.getElementById('productsGrid');
+  const info = document.getElementById('resultsInfo');
+
+  let filtered = [...products];
+
+  // Filtro por categoría
+  if (state.currentFilter !== 'todos') {
+    if (state.currentFilter === 'nino') {
+      filtered = filtered.filter(p => p.category.startsWith('nino-'));
+    } else if (state.currentFilter === 'adulto') {
+      filtered = filtered.filter(p => !p.category.startsWith('nino-'));
+    } else {
+      filtered = filtered.filter(p => p.category === state.currentFilter || p.category.includes(state.currentFilter));
+    }
+  }
+
+  // Búsqueda
+  if (state.searchQuery) {
+    const q = state.searchQuery.toLowerCase();
+    filtered = filtered.filter(p => 
+      p.name.toLowerCase().includes(q) || 
+      (p.code && p.code.toLowerCase().includes(q)) ||
+      getCategoryName(p.category).toLowerCase().includes(q)
+    );
+  }
+
+  // Ordenamiento
+  if (state.sortBy === 'price-asc') {
+    filtered.sort((a, b) => a.price - b.price);
+  } else if (state.sortBy === 'price-desc') {
+    filtered.sort((a, b) => b.price - a.price);
+  } else if (state.sortBy === 'name-asc') {
+    filtered.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  info.innerHTML = filtered.length > 0 
+    ? 'Mostrando <span>' + filtered.length + '</span> producto' + (filtered.length !== 1 ? 's' : '')
+    : 'No se encontraron productos';
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📦</div><h3>No hay productos</h3><p>Intenta con otra búsqueda o filtro</p></div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map((p, i) => {
+    const discount = getDiscountPercent(p.price, p.oldPrice);
+    const sizesHtml = p.sizes.slice(0, 6).map(s => {
+      const isOut = p.outOfStock && p.outOfStock.includes(s);
+      return '<span class="size-pill ' + (isOut ? 'out' : 'available') + '">' + s + '</span>';
+    }).join('');
+    const moreSizes = p.sizes.length > 6 ? '<span class="size-pill available">+' + (p.sizes.length - 6) + '</span>' : '';
+    const isFav = favorites.some(f => f.id === p.id);
+
+    return '<div class="product-card" style="animation-delay:' + (i * 0.05) + 's">' +
+      getBadgeHTML(p.badge) +
+      '<div class="product-card-img-wrap" onclick="openModal(' + p.id + ')">' +
+        '<img class="product-card-img" src="' + (p.image || '') + '" alt="' + p.name + '" onerror="this.style.display=\'none\'">' +
+        '<div class="product-card-img-overlay">' +
+          '<button class="product-card-quick-btn" onclick="event.stopPropagation();openModal(' + p.id + ')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;vertical-align:middle"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Ver detalles</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="product-card-info">' +
+        '<div class="product-card-category">' + getCategoryName(p.category) + '</div>' +
+        '<div class="product-card-name">' + p.name + '</div>' +
+        '<div class="product-card-code">Ref: ' + (p.code || 'N/A') + '</div>' +
+        '<div class="product-card-price-row">' +
+          '<div class="product-card-price">' + formatPrice(p.price) + '</div>' +
+          (p.oldPrice ? '<div class="product-card-old-price">' + formatPrice(p.oldPrice) + '</div>' : '') +
+          (discount > 0 ? '<div class="product-card-discount">-' + discount + '%</div>' : '') +
+        '</div>' +
+        '<div class="product-card-sizes">' + sizesHtml + moreSizes + '</div>' +
+        '<div class="product-card-actions">' +
+          '<button class="btn-card-primary" onclick="openModal(' + p.id + ')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;vertical-align:middle"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Comprar</button>' +
+          '<button class="btn-card-icon btn-fav ' + (isFav ? 'active' : '') + '" id="favBtn-' + p.id + '" onclick="event.stopPropagation();toggleFavorite(' + p.id + ')">' + (isFav ? '❤️' : '🤍') + '</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+/* ===== MODAL ===== */
+function openModal(productId) {
+  const p = products.find(x => x.id === productId);
+  if (!p) return;
+
+  state.modalProduct = p;
+  state.modalSize = null;
+  state.modalQty = 1;
+
+  document.getElementById('modalImg').src = p.image || '';
+  document.getElementById('modalImg').style.display = p.image ? 'block' : 'none';
+  document.getElementById('modalCategory').textContent = getCategoryName(p.category);
+  document.getElementById('modalTitle').textContent = p.name;
+  document.getElementById('modalCode').textContent = 'Ref: ' + (p.code || 'N/A');
+  document.getElementById('modalPrice').textContent = formatPrice(p.price);
+  document.getElementById('modalOldPrice').textContent = p.oldPrice ? formatPrice(p.oldPrice) : '';
+  document.getElementById('modalOldPrice').style.display = p.oldPrice ? 'block' : 'none';
+
+  const discount = getDiscountPercent(p.price, p.oldPrice);
+  document.getElementById('modalDiscount').textContent = discount > 0 ? '-' + discount + '%' : '';
+  document.getElementById('modalDiscount').style.display = discount > 0 ? 'inline-flex' : 'none';
+
+  document.getElementById('modalDesc').textContent = p.desc || 'Sin descripción disponible.';
+  document.getElementById('modalQtyDisplay').textContent = '1';
+
+  // Badge en modal
+  const badgeEl = document.getElementById('modalImgWrap').querySelector('.modal-img-badge');
+  if (badgeEl) badgeEl.remove();
+  if (p.badge && badgeConfig[p.badge]) {
+    const b = document.createElement('div');
+    b.className = 'modal-img-badge ' + p.badge;
+    b.textContent = badgeConfig[p.badge].label;
+    b.style.cssText = 'background:' + badgeConfig[p.badge].bg + ';color:white;';
+    document.getElementById('modalImgWrap').appendChild(b);
+  }
+
+  // Stock counter
+  const availableCount = p.sizes.filter(s => !p.outOfStock || !p.outOfStock.includes(s)).length;
+  const stockEl = document.getElementById('stockCounter');
+  if (availableCount <= 3 && availableCount > 0) {
+    stockEl.style.display = 'flex';
+    document.getElementById('stockText').textContent = '¡Solo quedan ' + availableCount + ' tallas disponibles!';
+  } else {
+    stockEl.style.display = 'none';
+  }
+
+  // Render sizes - BLOQUEAR LAS AGOTADAS
+  const sizeSelector = document.getElementById('sizeSelector');
+  sizeSelector.innerHTML = p.sizes.map(s => {
+    const isOut = p.outOfStock && p.outOfStock.includes(s);
+    return '<div class="size-option ' + (isOut ? 'out-of-stock' : '') + '" ' + 
+           (isOut ? '' : 'onclick="selectSize(\'' + s + '\')"') + '>' +
+           s + 
+           (isOut ? '<br><small style="font-size:9px;font-weight:500;">Agotada</small>' : '') +
+           '</div>';
+  }).join('');
+
+  updateModalAddButton();
+  document.getElementById('modalOverlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+  document.body.style.overflow = '';
+  state.modalProduct = null;
+  state.modalSize = null;
+  state.modalQty = 1;
+}
+
+function selectSize(size) {
+  state.modalSize = size;
+  document.querySelectorAll('.size-option').forEach(el => {
+    el.classList.remove('selected');
+    if (el.textContent.trim().startsWith(size)) el.classList.add('selected');
+  });
+  updateModalAddButton();
+}
+
+function changeModalQty(delta) {
+  state.modalQty = Math.max(1, Math.min(10, state.modalQty + delta));
+  document.getElementById('modalQtyDisplay').textContent = state.modalQty;
+}
+
+function updateModalAddButton() {
+  const btn = document.getElementById('modalAddBtn');
+  const btnText = document.getElementById('modalAddBtnText');
+  if (!state.modalSize) {
+    btn.disabled = true;
+    btnText.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;vertical-align:middle"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 9.5-5 5"/><path d="m11.5 11.5 3-3"/><path d="m8.5 8.5 3-3"/><path d="m17.5 15.5 3-3"/><path d="m14.5 18.5 3-3"/></svg>Selecciona una talla disponible';
+  } else {
+    btn.disabled = false;
+    btnText.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;vertical-align:middle"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Agregar ' + state.modalQty + ' al carrito — ' + formatPrice(state.modalProduct.price * state.modalQty);
+  }
+}
+
+function addToCartFromModal() {
+  if (!state.modalProduct || !state.modalSize) return;
+
+  // Verificar que la talla NO esté agotada (doble seguridad)
+  if (state.modalProduct.outOfStock && state.modalProduct.outOfStock.includes(state.modalSize)) {
+    showToast('Esta talla está agotada', 'error');
+    return;
+  }
+
+  const existing = state.cart.find(item => item.id === state.modalProduct.id && item.size === state.modalSize);
+  if (existing) {
+    existing.qty += state.modalQty;
+  } else {
+    state.cart.push({
+      id: state.modalProduct.id,
+      name: state.modalProduct.name,
+      price: state.modalProduct.price,
+      size: state.modalSize,
+      qty: state.modalQty,
+      image: state.modalProduct.image,
+      category: state.modalProduct.category,
+      code: state.modalProduct.code || ''
+    });
+  }
+
+  saveCart();
+  updateCartUI();
+  closeModal();
+
+  // Animación del carrito
+  const cartFloat = document.getElementById('cartFloat');
+  cartFloat.classList.add('bounce');
+  setTimeout(() => cartFloat.classList.remove('bounce'), 600);
+
+  showToast(state.modalProduct.name + ' (talla ' + state.modalSize + ') agregado al carrito', 'success');
+}
+
+/* ===== CART ===== */
+function toggleCart() {
+  const panel = document.getElementById('cartPanel');
+  const overlay = document.getElementById('cartOverlay');
+  if (panel.classList.contains('open')) {
+    panel.classList.remove('open');
+    overlay.classList.remove('active');
+    document.body.classList.remove('cart-open');
+    document.body.style.overflow = '';
+  } else {
+    overlay.classList.add('active');
+    panel.classList.add('open');
+    document.body.classList.add('cart-open');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function updateCartUI() {
+  const itemsContainer = document.getElementById('cartItems');
+  const footer = document.getElementById('cartFooter');
+  const countBadge = document.getElementById('cartCount');
+  const navBadge = document.getElementById('navCartBadge');
+  const navText = document.getElementById('navCartText');
+
+  const totalItems = state.cart.reduce((s, item) => s + item.qty, 0);
+
+  countBadge.textContent = totalItems;
+  countBadge.style.display = totalItems > 0 ? 'flex' : 'none';
+  navBadge.textContent = totalItems;
+  navBadge.style.display = totalItems > 0 ? 'flex' : 'none';
+  navText.textContent = totalItems > 0 ? 'Carrito (' + totalItems + ')' : 'Carrito';
+
+  if (state.cart.length === 0) {
+    itemsContainer.innerHTML = '<div class="cart-empty"><div class="cart-empty-icon">🛒</div><h3>Tu carrito está vacío</h3><p>Agrega productos para empezar tu pedido</p></div>';
+    footer.style.display = 'none';
+    return;
+  }
+
+  footer.style.display = 'block';
+
+  itemsContainer.innerHTML = state.cart.map((item, i) => 
+    '<div class="cart-item">' +
+      '<img class="cart-item-img" src="' + (item.image || '') + '" onerror="this.style.display=\'none\'" alt="">' +
+      '<div class="cart-item-info">' +
+        '<div class="cart-item-name">' + item.name + '</div>' +
+        '<div class="cart-item-meta">Talla ' + item.size + ' | ' + formatPrice(item.price) + ' c/u</div>' +
+        '<div class="cart-item-controls">' +
+          '<button class="qty-btn" onclick="updateCartQty(' + i + ', -1)">−</button>' +
+          '<span class="qty-value">' + item.qty + '</span>' +
+          '<button class="qty-btn" onclick="updateCartQty(' + i + ', 1)">+</button>' +
+        '</div>' +
+      '</div>' +
+      '<div style="text-align:right;">' +
+        '<div class="cart-item-price">' + formatPrice(item.price * item.qty) + '</div>' +
+        '<button class="cart-item-remove" onclick="removeFromCart(' + i + ')">🗑️</button>' +
+      '</div>' +
+    '</div>'
+  ).join('');
+
+  // Subtotal y descuento
+  const subtotal = getCartSubtotal();
+  document.getElementById('cartSubtotal').textContent = formatPrice(subtotal);
+
+  let discount = 0;
+  if (currentCoupon) {
+    discount = currentCoupon.discount || 0;
+    document.getElementById('cartDiscountRow').classList.add('show');
+    document.getElementById('cartDiscountLabel').textContent = 'Descuento (' + currentCoupon.code + ')';
+    document.getElementById('cartDiscountValue').textContent = '-' + formatPrice(discount);
+  } else {
+    document.getElementById('cartDiscountRow').classList.remove('show');
+  }
+
+  const total = subtotal - discount;
+  document.getElementById('cartTotal').textContent = formatPrice(total);
+
+  // Actualizar botón de WhatsApp
+  updateWhatsAppButton();
+}
+
+function updateCartQty(index, delta) {
+  if (index < 0 || index >= state.cart.length) return;
+  state.cart[index].qty = Math.max(1, Math.min(10, state.cart[index].qty + delta));
+  saveCart();
+  updateCartUI();
+}
+
+function removeFromCart(index) {
+  if (index < 0 || index >= state.cart.length) return;
+  const name = state.cart[index].name;
+  state.cart.splice(index, 1);
+  saveCart();
+  updateCartUI();
+  showToast(name + ' eliminado del carrito', 'info');
+}
+
+function getCartSubtotal() {
+  return state.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+}
+
+/* ===== WHATSAPP & GUARDAR PEDIDO ===== */
+function updateWhatsAppButton() {
+  const btn = document.getElementById('cartWaBtn');
+  if (!btn || state.cart.length === 0) return;
+
+  const subtotal = getCartSubtotal();
+  let discount = 0;
+  if (currentCoupon) discount = currentCoupon.discount || 0;
+  const total = subtotal - discount;
+
+  let msg = '¡Hola! 👋 Quiero hacer un pedido de Khaos Deportivo:%0A%0A';
+  state.cart.forEach(item => {
+    msg += '• ' + item.name + '%0A';
+    msg += '  Talla: ' + item.size + ' x' + item.qty + '%0A';
+    msg += '  Precio: ' + formatPrice(item.price) + ' c/u%0A%0A';
+  });
+
+  msg += 'Subtotal: ' + formatPrice(subtotal) + '%0A';
+  if (discount > 0) msg += 'Descuento (' + currentCoupon.code + '): -' + formatPrice(discount) + '%0A';
+  msg += '*Total: ' + formatPrice(total) + '*%0A%0A';
+  msg += 'Por favor confirmame disponibilidad y método de pago. ¡Gracias! 🙏';
+
+  btn.href = 'https://wa.me/' + storeConfig.whatsapp + '?text=' + msg;
+}
+
+function copyCartToClipboard() {
+  const subtotal = getCartSubtotal();
+  let discount = 0;
+  if (currentCoupon) discount = currentCoupon.discount || 0;
+  const total = subtotal - discount;
+
+  let text = '🛒 Pedido Khaos Deportivo\n\n';
+  state.cart.forEach(item => {
+    text += '• ' + item.name + '\n';
+    text += '  Talla ' + item.size + ' x' + item.qty + ' = ' + formatPrice(item.price * item.qty) + '\n\n';
+  });
+  text += 'Subtotal: ' + formatPrice(subtotal) + '\n';
+  if (discount > 0) text += 'Descuento: -' + formatPrice(discount) + '\n';
+  text += 'TOTAL: ' + formatPrice(total) + '\n';
+
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('cartCopyBtn');
+    btn.classList.add('copied');
+    btn.innerHTML = '✅ ¡Copiado!';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v2"/></svg> Copiar pedido';
+    }, 2000);
+    showToast('Pedido copiado al portapapeles', 'success');
+  });
+}
+
+/* ===== GUARDAR PEDIDO EN LOCALSTORAGE ===== */
+function saveOrderToLocalStorage() {
+  if (state.cart.length === 0) return;
+
+  const subtotal = getCartSubtotal();
+  let discount = 0;
+  if (currentCoupon) discount = currentCoupon.discount || 0;
+  const total = subtotal - discount;
+
+  const order = {
+    id: Date.now(),
+    customer: 'Cliente Web',
+    phone: '',
+    address: '',
+    items: state.cart.map(item => ({
+      productId: item.id,
+      name: item.name,
+      size: item.size,
+      price: item.price,
+      qty: item.qty
+    })),
+    subtotal: subtotal,
+    discount: discount,
+    coupon: currentCoupon ? currentCoupon.code : null,
+    total: total,
+    status: 'pending',
+    date: new Date().toISOString(),
+    source: 'web'
+  };
+
+  // Guardar en el mismo formato que el admin usa
+  try {
+    let orders = [];
+    const saved = localStorage.getItem('khaos_admin_orders');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) orders = parsed;
+    }
+    orders.unshift(order);
+    localStorage.setItem('khaos_admin_orders', JSON.stringify(orders));
+
+    // Disparar evento para notificar al admin (si está abierto en otra pestaña)
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'khaos_admin_orders',
+      newValue: JSON.stringify(orders),
+      oldValue: saved,
+      storageArea: localStorage
+    }));
+
+    showToast('Pedido guardado. El admin será notificado.', 'success');
+  } catch(e) {
+    console.error('Error guardando pedido:', e);
+  }
+}
+
+/* ===== FILTROS ===== */
+function filterProducts(filter) {
+  state.currentFilter = filter;
+  state.searchQuery = '';
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClear').classList.remove('show');
+
+  document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.classList.toggle('active', chip.dataset.filter === filter);
+  });
+
+  renderProducts();
+  document.getElementById('catalogo').scrollIntoView({ behavior: 'smooth' });
+}
+
+function sortProducts(sortBy) {
+  state.sortBy = sortBy;
+  document.querySelectorAll('.sort-option').forEach(opt => {
+    opt.classList.toggle('active', opt.dataset.sort === sortBy);
+  });
+  document.getElementById('sortDropdown').classList.remove('open');
+
+  const labels = { 'default': 'Ordenar', 'price-asc': 'Precio: menor a mayor', 'price-desc': 'Precio: mayor a menor', 'name-asc': 'Nombre: A-Z' };
+  document.getElementById('sortLabel').textContent = labels[sortBy] || 'Ordenar';
+
+  renderProducts();
+}
+
+function toggleSortMenu() {
+  document.getElementById('sortDropdown').classList.toggle('open');
+}
+
+/* ===== MEGA MENU ===== */
+function showMegaMenu() {
+  document.getElementById('megaMenu').classList.add('active');
+}
+function hideMegaMenu() {
+  document.getElementById('megaMenu').classList.remove('active');
+}
+
+/* ===== MOBILE ===== */
+function toggleMobileDrawer() {
+  document.getElementById('mobileDrawer').classList.toggle('open');
+  document.getElementById('mobileDrawerOverlay').classList.toggle('active');
+}
+function openSearchMobile() {
+  document.getElementById('searchInput').focus();
+  document.getElementById('catalogo').scrollIntoView({ behavior: 'smooth' });
+}
+
+/* ===== PARTICLES ===== */
 function createParticles() {
   const container = document.getElementById('heroParticles');
   if (!container) return;
@@ -704,365 +1649,428 @@ function createParticles() {
   }
 }
 
+/* ===== HERO STATS ===== */
+function updateHeroStats() {
+  document.getElementById('heroStatProducts').textContent = products.length;
+}
+
+/* ===== SCROLL ===== */
 function initScrollEffects() {
   const nav = document.getElementById('navHeader');
-  let ticking = false;
-  window.addEventListener('scroll', function() {
-    if (!ticking) {
-      requestAnimationFrame(function() {
-        const scrollTop = window.pageYOffset;
-        nav.classList.toggle('scrolled', scrollTop > 50);
-        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-        document.getElementById('scrollIndicator').style.width = (docHeight > 0 ? (scrollTop / docHeight) * 100 : 0) + '%';
-        if (Math.abs(state.lastScroll - scrollTop) > 5) {
-          nav.style.transform = (scrollTop > state.lastScroll && scrollTop > 100) ? 'translateY(-100%)' : 'translateY(0)';
-        }
-        state.lastScroll = scrollTop; ticking = false;
-      });
-      ticking = true;
-    }
+  const indicator = document.getElementById('scrollIndicator');
+
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    nav.classList.toggle('scrolled', y > 50);
+
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    indicator.style.width = docHeight > 0 ? (y / docHeight * 100) + '%' : '0%';
   });
 }
 
-function getCategoryName(cat) { return categoryNames[cat] || cat; }
-function formatPrice(price) { return '$' + price.toLocaleString('es-CO'); }
-function getDiscount(p) { return p.oldPrice ? Math.round((1 - p.price / p.oldPrice) * 100) : 0; }
-function updateHeroStats() { document.getElementById('heroStatProducts').textContent = products.length; }
-
-function getFilteredProducts() {
-  let result = [...products];
-  if (state.currentFilter !== 'todos') {
-    if (state.currentFilter === 'nino') result = result.filter(p => p.category.startsWith('nino-'));
-    else result = result.filter(p => p.category === state.currentFilter);
-  }
-  if (state.searchQuery.trim()) {
-    const q = state.searchQuery.toLowerCase();
-    result = result.filter(p => p.name.toLowerCase().includes(q) || (p.code && p.code.toLowerCase().includes(q)) || getCategoryName(p.category).toLowerCase().includes(q));
-  }
-  if (state.sortBy === 'price-asc') result.sort((a, b) => a.price - b.price);
-  else if (state.sortBy === 'price-desc') result.sort((a, b) => b.price - a.price);
-  else if (state.sortBy === 'name-asc') result.sort((a, b) => a.name.localeCompare(b.name));
-  return result;
-}
-
-function renderProducts() {
-  const grid = document.getElementById('productsGrid');
-  const filtered = getFilteredProducts();
-  const infoEl = document.getElementById('resultsInfo');
-  if (filtered.length === 0) {
-    infoEl.innerHTML = 'No se encontraron productos con los filtros actuales';
-    grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#128269;</div><h3>No se encontraron productos</h3><p>Prueba con otra búsqueda o selecciona otra categoría</p></div>';
-    return;
-  }
-  infoEl.innerHTML = 'Mostrando <span>' + filtered.length + '</span> producto' + (filtered.length !== 1 ? 's' : '');
-  grid.innerHTML = '';
-  filtered.forEach((product, index) => {
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    card.style.animationDelay = (Math.min(index, 12) * 0.08) + 's';
-    let badgeHtml = '';
-    if (product.badge === 'bestseller') badgeHtml = '<div class="product-card-badge bestseller">&#128293; Más Vendido</div>';
-    else if (product.badge === 'new') badgeHtml = '<div class="product-card-badge new">&#10024; Nuevo</div>';
-    const sizesPreview = product.sizes.slice(0, 5).map(s => {
-      const isOut = product.outOfStock && product.outOfStock.includes(s);
-      return '<span class="size-pill ' + (isOut ? 'out' : 'available') + '">' + s + '</span>';
-    }).join('');
-    const moreSizes = product.sizes.length > 5 ? '<span class="size-pill available">+' + (product.sizes.length - 5) + '</span>' : '';
-    const discount = getDiscount(product);
-    const discountHtml = discount > 0 ? '<span class="product-card-discount">-' + discount + '%</span>' : '';
-    card.innerHTML = badgeHtml +
-      '<div class="product-card-img-wrap" style="background:linear-gradient(135deg,hsl(' + (product.id * 45 % 360) + ',60%,15%),hsl(' + (product.id * 45 % 360) + ',50%,25%))"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:64px;opacity:0.15">&#9917;</div><div class="product-card-img-overlay"><button class="product-card-quick-btn" onclick="event.stopPropagation();openModal(' + product.id + ')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Ver Detalles</button></div></div>' +
-      '<div class="product-card-info"><div class="product-card-category">' + getCategoryName(product.category) + '</div><div class="product-card-name">' + product.name + '</div><div class="product-card-code">Ref: ' + (product.code || 'N/A') + '</div><div class="product-card-price-row"><div class="product-card-price">' + formatPrice(product.price) + '</div><div class="product-card-old-price">' + (product.oldPrice ? formatPrice(product.oldPrice) : '') + '</div>' + discountHtml + '</div><div class="product-card-sizes">' + sizesPreview + moreSizes + '</div><div class="product-card-actions"><button class="btn-card-primary" onclick="openModal(' + product.id + ')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Ver Detalles</button><button class="btn-card-icon" onclick="event.stopPropagation();openModal(' + product.id + ')" title="Agregar al carrito"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></button></div></div>';
-    card.addEventListener('click', function(e) { if (!e.target.closest('button')) openModal(product.id); });
-    grid.appendChild(card);
-  });
-}
-
-function filterProducts(category) {
-  state.currentFilter = category;
-  document.querySelectorAll('.filter-chip').forEach(chip => {
-    chip.classList.toggle('active', chip.dataset.filter === category);
-  });
-  renderProducts();
-  document.getElementById('catalogo').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function sortProducts(sort) {
-  state.sortBy = sort;
-  document.querySelectorAll('.sort-option').forEach(opt => {
-    opt.classList.toggle('active', opt.dataset.sort === sort);
-  });
-  const labels = { 'default': 'Ordenar', 'price-asc': 'Menor precio', 'price-desc': 'Mayor precio', 'name-asc': 'A-Z' };
-  document.getElementById('sortLabel').textContent = labels[sort] || 'Ordenar';
-  document.getElementById('sortDropdown').classList.remove('open');
-  renderProducts();
-}
-
-function toggleSortMenu() {
-  document.getElementById('sortDropdown').classList.toggle('open');
-}
-
-let megaMenuTimeout;
-function showMegaMenu() { clearTimeout(megaMenuTimeout); document.getElementById('megaMenu').classList.add('active'); }
-function hideMegaMenu() { megaMenuTimeout = setTimeout(() => document.getElementById('megaMenu').classList.remove('active'), 150); }
-
-function toggleMobileDrawer() {
-  document.getElementById('mobileDrawer').classList.toggle('open');
-  document.getElementById('mobileDrawerOverlay').classList.toggle('active');
-}
-
-function openSearchMobile() {
-  document.getElementById('searchInput').focus();
-  document.getElementById('catalogo').scrollIntoView({ behavior: 'smooth' });
-}
-
-function toggleTheme() {
-  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-  if (isLight) {
-    document.documentElement.removeAttribute('data-theme');
-    document.getElementById('themeIcon').innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
-    try { localStorage.setItem('khaos_theme', 'dark'); } catch(e) {}
-  } else {
-    document.documentElement.setAttribute('data-theme', 'light');
-    document.getElementById('themeIcon').innerHTML = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
-    try { localStorage.setItem('khaos_theme', 'light'); } catch(e) {}
-  }
-}
-
-function openModal(productId) {
-  const product = products.find(p => p.id === productId);
-  if (!product) return;
-  state.modalProduct = product; state.modalSize = null; state.modalQty = 1;
-  const imgWrap = document.getElementById('modalImgWrap');
-  imgWrap.style.background = 'linear-gradient(135deg,hsl(' + (product.id * 45 % 360) + ',60%,15%),hsl(' + (product.id * 45 % 360) + ',50%,25%))';
-  imgWrap.innerHTML = '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:80px;opacity:0.15">&#9917;</div>';
-  const badgeEl = document.getElementById('modalBadge');
-  if (!badgeEl) {
-    const badge = document.createElement('div');
-    badge.id = 'modalBadge';
-    badge.className = 'modal-img-badge';
-    imgWrap.appendChild(badge);
-  }
-  const modalBadge = document.getElementById('modalBadge');
-  if (product.badge === 'bestseller') { modalBadge.className = 'modal-img-badge bestseller'; modalBadge.textContent = '&#128293; Más Vendido'; modalBadge.style.display = 'block'; }
-  else if (product.badge === 'new') { modalBadge.className = 'modal-img-badge new'; modalBadge.textContent = '&#10024; Nuevo'; modalBadge.style.display = 'block'; }
-  else { modalBadge.style.display = 'none'; }
-  document.getElementById('modalCategory').textContent = getCategoryName(product.category);
-  document.getElementById('modalTitle').textContent = product.name;
-  document.getElementById('modalCode').textContent = 'Referencia: ' + (product.code || 'N/A');
-  document.getElementById('modalPrice').textContent = formatPrice(product.price);
-  document.getElementById('modalOldPrice').textContent = product.oldPrice ? formatPrice(product.oldPrice) : '';
-  const discount = getDiscount(product);
-  const discountEl = document.getElementById('modalDiscount');
-  if (discount > 0) { discountEl.textContent = '-' + discount + '% OFF'; discountEl.style.display = 'inline-flex'; }
-  else { discountEl.style.display = 'none'; }
-  document.getElementById('modalDesc').textContent = product.desc;
-  const availableCount = product.sizes.filter(s => !product.outOfStock.includes(s)).length;
-  const stockEl = document.getElementById('stockCounter');
-  if (availableCount <= 3) { document.getElementById('stockText').textContent = '¡Solo quedan ' + availableCount + ' tallas disponibles!'; stockEl.style.display = 'flex'; }
-  else { stockEl.style.display = 'none'; }
-  const sizeSelector = document.getElementById('sizeSelector');
-  sizeSelector.innerHTML = '';
-  product.sizes.forEach(size => {
-    const isOut = product.outOfStock && product.outOfStock.includes(size);
-    const btn = document.createElement('button');
-    btn.className = 'size-option' + (isOut ? ' out-of-stock' : '');
-    btn.textContent = size; btn.type = 'button';
-    if (!isOut) btn.addEventListener('click', function() {
-      document.querySelectorAll('.size-option').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected'); state.modalSize = size; updateModalButton();
-    });
-    sizeSelector.appendChild(btn);
-  });
-  updateModalQtyDisplay(); updateModalButton();
-  document.getElementById('modalOverlay').classList.add('active');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('active');
-  document.body.style.overflow = '';
-  state.modalProduct = null; state.modalSize = null; state.modalQty = 1;
-}
-
-function changeModalQty(delta) {
-  state.modalQty += delta;
-  if (state.modalQty < 1) state.modalQty = 1;
-  if (state.modalQty > 10) state.modalQty = 10;
-  updateModalQtyDisplay(); updateModalButton();
-}
-
-function updateModalQtyDisplay() { document.getElementById('modalQtyDisplay').textContent = state.modalQty; }
-
-function updateModalButton() {
-  const btn = document.getElementById('modalAddBtn');
-  const btnText = document.getElementById('modalAddBtnText');
-  if (state.modalSize && state.modalProduct) {
-    btn.disabled = false;
-    btnText.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg> Agregar ' + state.modalQty + ' al carrito — ' + formatPrice(state.modalProduct.price * state.modalQty);
-  } else {
-    btn.disabled = true;
-    btnText.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/><line x1="7" y1="7" x2="7" y2="17"/><line x1="11" y1="7" x2="11" y2="17"/><line x1="15" y1="7" x2="15" y2="17"/></svg> Selecciona una talla primero';
-  }
-}
-
-function addToCartFromModal() {
-  if (!state.modalProduct || !state.modalSize) { showToast('Selecciona una talla primero', 'warning'); return; }
-  const product = state.modalProduct, size = state.modalSize, qty = state.modalQty;
-  const existingIndex = state.cart.findIndex(item => item.id === product.id && item.size === size);
-  if (existingIndex >= 0) state.cart[existingIndex].qty += qty;
-  else state.cart.push({ id: product.id, name: product.name, price: product.price, image: product.image, size: size, qty: qty, code: product.code || '' });
-  saveCart(); updateCartUI(); animateCartFloat();
-  showToast(product.name + ' (talla ' + size + ') x' + qty + ' agregado', 'success');
-  closeModal();
-}
-
-function saveCart() { try { localStorage.setItem('khaos_cart', JSON.stringify(state.cart)); } catch(e) {} }
-
-function toggleCart() {
-  const overlay = document.getElementById('cartOverlay');
-  const panel = document.getElementById('cartPanel');
-  if (panel.classList.contains('open')) {
-    panel.classList.remove('open');
-    setTimeout(() => overlay.classList.remove('active'), 300);
-    document.body.style.overflow = '';
-  } else {
-    overlay.classList.add('active'); panel.classList.add('open');
-    document.body.style.overflow = 'hidden';
-    document.getElementById('cartSavedNotice').classList.remove('show');
-  }
-}
-
-function updateCartUI() {
-  const count = document.getElementById('cartCount');
-  const navBadge = document.getElementById('navCartBadge');
-  const navText = document.getElementById('navCartText');
-  const itemsContainer = document.getElementById('cartItems');
-  const footer = document.getElementById('cartFooter');
-  const subtotalEl = document.getElementById('cartSubtotal');
-  const totalEl = document.getElementById('cartTotal');
-  const waBtn = document.getElementById('cartWaBtn');
-  const savedNotice = document.getElementById('cartSavedNotice');
-  const savedCount = document.getElementById('savedCount');
-  const totalItems = state.cart.reduce((sum, item) => sum + item.qty, 0);
-  const totalPrice = state.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-  count.textContent = totalItems; count.style.display = totalItems > 0 ? 'flex' : 'none';
-  navBadge.textContent = totalItems; navBadge.style.display = totalItems > 0 ? 'flex' : 'none';
-  navText.textContent = totalItems > 0 ? 'Carrito (' + totalItems + ')' : 'Carrito';
-  if (totalItems > 0 && !document.getElementById('cartPanel').classList.contains('open')) {
-    savedCount.textContent = totalItems; savedNotice.classList.add('show');
-  } else { savedNotice.classList.remove('show'); }
-  if (state.cart.length === 0) {
-    itemsContainer.innerHTML = '<div class="cart-empty"><div class="cart-empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div><h3>Tu carrito est&#225; vac&#237;o</h3><p>Agrega productos para empezar tu pedido</p></div>';
-    footer.style.display = 'none';
-  } else {
-    itemsContainer.innerHTML = state.cart.map((item, index) =>
-      '<div class="cart-item"><div class="cart-item-img" style="background:linear-gradient(135deg,#1a1a2e,#16213e);display:flex;align-items:center;justify-content:center;font-size:24px;opacity:0.5">&#9917;</div><div class="cart-item-info"><div class="cart-item-name">' + item.name + '</div><div class="cart-item-meta">Ref: ' + (item.code || '') + ' | Talla ' + item.size + '</div><div class="cart-item-controls"><button class="qty-btn" onclick="updateQty(' + index + ', -1)">&#8722;</button><span class="qty-value">' + item.qty + '</span><button class="qty-btn" onclick="updateQty(' + index + ', 1)">+</button></div></div><div style="text-align:right;"><div class="cart-item-price">' + formatPrice(item.price * item.qty) + '</div><button class="cart-item-remove" onclick="removeFromCart(' + index + ')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></div>'
-    ).join('');
-    footer.style.display = 'block';
-  }
-  subtotalEl.textContent = formatPrice(totalPrice);
-  totalEl.textContent = formatPrice(totalPrice);
-  if (state.cart.length > 0) {
-    const lines = state.cart.map(item => '&#8226; ' + item.name + ' (Ref: ' + (item.code || '') + ') &#8212; Talla ' + item.size + ' x' + item.qty + ' = ' + formatPrice(item.price * item.qty)).join('\n');
-    waBtn.href = 'https://wa.me/573105624563?text=' + encodeURIComponent('¡Hola! Vengo del catálogo de *Khaos Deportivo* y quiero hacer este pedido:\n\n' + lines + '\n\n*Total: ' + formatPrice(totalPrice) + '*\n\n¿Están disponibles? ¿Cómo hago el pago?');
-  }
-}
-
-function updateQty(index, delta) {
-  if (index < 0 || index >= state.cart.length) return;
-  state.cart[index].qty += delta;
-  if (state.cart[index].qty <= 0) { removeFromCart(index); return; }
-  saveCart(); updateCartUI();
-}
-
-function removeFromCart(index) {
-  if (index < 0 || index >= state.cart.length) return;
-  state.cart.splice(index, 1); saveCart(); updateCartUI();
-  showToast('Producto eliminado del carrito', 'info');
-}
-
-function animateCartFloat() {
-  const float = document.getElementById('cartFloat');
-  float.classList.remove('bounce'); void float.offsetWidth; float.classList.add('bounce');
-  setTimeout(() => float.classList.remove('bounce'), 600);
-}
-
-function copyCartToClipboard() {
-  if (state.cart.length === 0) return;
-  const totalPrice = state.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-  const lines = state.cart.map(item => '- ' + item.name + ' (Ref: ' + (item.code || '') + ') — Talla ' + item.size + ' x' + item.qty + ' = ' + formatPrice(item.price * item.qty)).join('\n');
-  const text = 'Pedido Khaos Deportivo:\n\n' + lines + '\n\nTotal: ' + formatPrice(totalPrice);
-  const copyBtn = document.getElementById('cartCopyBtn');
-  function showCopySuccess() {
-    copyBtn.classList.add('copied');
-    copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> ¡Pedido copiado!';
-    showToast('Pedido copiado al portapapeles', 'success');
-    setTimeout(() => { copyBtn.classList.remove('copied'); copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copiar pedido'; }, 2000);
-  }
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(showCopySuccess).catch(() => { fallbackCopy(text) && showCopySuccess(); });
-  } else { fallbackCopy(text) && showCopySuccess(); }
-}
-
-function fallbackCopy(text) {
-  const textarea = document.createElement('textarea');
-  textarea.value = text; textarea.style.position = 'fixed'; textarea.style.opacity = '0';
-  document.body.appendChild(textarea); textarea.select();
-  try { document.execCommand('copy'); return true; } catch(err) { return false; }
-  finally { document.body.removeChild(textarea); }
-}
-
+/* ===== TOAST ===== */
 function showToast(message, type) {
   const container = document.getElementById('toastContainer');
   const toast = document.createElement('div');
-  toast.className = 'toast ' + type;
-  const icons = {
-    success: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>',
-    error: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
-    warning: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
-    info: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
-  };
-  toast.innerHTML = '<div class="toast-icon">' + (icons[type] || icons.success) + '</div><span>' + message + '</span><button class="toast-close" onclick="this.parentElement.remove()">&#10005;</button>';
+  toast.className = 'toast ' + (type || 'success');
+  const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+  toast.innerHTML = '<div class="toast-icon">' + (icons[type] || icons.success) + '</div><span>' + message + '</span><button class="toast-close" onclick="this.parentElement.remove()">✕</button>';
   container.appendChild(toast);
   requestAnimationFrame(() => toast.classList.add('show'));
-  setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 500); }, 3500);
+  setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3000);
+}
+
+/* ===== INIT ===== */
+function init() {
+  loadStoreConfig();
+  loadProducts();
+  loadCart();
+  loadFavorites();
+  loadTheme();
+  loadCouponsFromAdmin();
+  loadAppliedCoupon();
+  createParticles();
+  updateHeroStats();
+  renderProducts();
+  updateCartUI();
+  updateFavButtons();
+  updateFavBadge();
+  updateFavPanel();
+  initEventListeners();
+  initScrollEffects();
+  showToast('¡Bienvenido a Khaos Deportivo!', 'success');
 }
 
 function initEventListeners() {
+  // Bloquear scroll del fondo cuando el input del cupón tiene foco (móvil)
+  const couponInput = document.getElementById('couponInput');
+  if (couponInput) {
+    couponInput.addEventListener('focus', function() {
+      // Asegurar que el panel del carrito sea el único scrollable
+      document.getElementById('cartPanel').style.overscrollBehavior = 'contain';
+    });
+    couponInput.addEventListener('blur', function() {
+      document.getElementById('cartPanel').style.overscrollBehavior = '';
+    });
+  }
+
   const searchInput = document.getElementById('searchInput');
   const searchClear = document.getElementById('searchClear');
+
   searchInput.addEventListener('input', function() {
     state.searchQuery = this.value;
     searchClear.classList.toggle('show', this.value.length > 0);
     renderProducts();
   });
+
   searchClear.addEventListener('click', function() {
-    searchInput.value = ''; state.searchQuery = ''; searchClear.classList.remove('show');
-    renderProducts(); searchInput.focus();
+    searchInput.value = '';
+    state.searchQuery = '';
+    searchClear.classList.remove('show');
+    renderProducts();
+    searchInput.focus();
   });
+
   document.querySelectorAll('.filter-chip').forEach(chip => {
     chip.addEventListener('click', function() { filterProducts(this.dataset.filter); });
   });
+
   document.addEventListener('click', function(e) {
     if (!e.target.closest('.sort-dropdown')) document.getElementById('sortDropdown').classList.remove('open');
   });
-  document.getElementById('modalOverlay').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+  document.getElementById('modalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
       closeModal();
       if (document.getElementById('cartPanel').classList.contains('open')) toggleCart();
+      if (document.getElementById('favPanel').classList.contains('open')) toggleFavPanel();
       document.getElementById('mobileDrawer').classList.remove('open');
       document.getElementById('mobileDrawerOverlay').classList.remove('active');
     }
   });
+
+  // Escuchar cambios en productos del admin
   window.addEventListener('storage', function(e) {
     if (e.key === 'khaos_admin_products') {
-      try { const parsed = JSON.parse(e.newValue); if (Array.isArray(parsed)) { products = parsed; renderProducts(); updateHeroStats(); } }
-      catch(err) {}
+      try {
+        const parsed = JSON.parse(e.newValue);
+        if (Array.isArray(parsed)) {
+          products = parsed;
+          renderProducts();
+          updateHeroStats();
+          showToast('Catálogo actualizado desde el admin', 'info');
+        }
+      } catch(err) {}
     }
   });
 }
+
+/* ===== SISTEMA DE CUPONES ===== */
+let currentCoupon = null;  // Cupón aplicado actualmente
+let availableCoupons = []; // Cupones cargados del admin
+
+function loadCouponsFromAdmin() {
+  try {
+    const saved = localStorage.getItem('khaos_admin_coupons');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        availableCoupons = parsed;
+        console.log('Cupones cargados del admin:', availableCoupons.length);
+        return;
+      }
+    }
+  } catch(e) {}
+  // Sin cupones del admin: lista vacía
+  availableCoupons = [];
+}
+function isCouponValid(coupon) {
+  if (!coupon || !coupon.active) return { valid: false, reason: 'Cupón inactivo' };
+
+  // Verificar usos máximos
+  if (coupon.maxUses > 0 && coupon.usedCount >= coupon.maxUses) {
+    return { valid: false, reason: 'Cupón agotado (usos máximos alcanzados)' };
+  }
+
+  // Verificar fechas
+  const now = new Date();
+  if (coupon.startDate) {
+    const start = new Date(coupon.startDate);
+    if (now < start) return { valid: false, reason: 'Cupón aún no está activo' };
+  }
+  if (coupon.endDate) {
+    const end = new Date(coupon.endDate);
+    if (now > end) return { valid: false, reason: 'Cupón vencido' };
+  }
+
+  return { valid: true };
+}
+
+function isCouponApplicable(coupon, cartItems) {
+  // Si aplica a todos los productos
+  if (coupon.appliesTo === 'all' && (!coupon.productIds || coupon.productIds.length === 0)) {
+    return { applicable: true, eligibleSubtotal: getCartSubtotal() };
+  }
+
+  let eligibleSubtotal = 0;
+  let hasEligibleItems = false;
+
+  // Verificar por categoría
+  if (coupon.appliesTo && coupon.appliesTo !== 'all') {
+    for (const item of cartItems) {
+      const product = products.find(p => p.id === item.id);
+      if (product) {
+        const meta = getCategoryMeta(product.category);
+        const isEligible = 
+          coupon.appliesTo === 'guayo' && meta.family === 'guayo' ||
+          coupon.appliesTo === 'sintetica' && meta.family === 'sintetica' ||
+          coupon.appliesTo === 'futsal' && meta.family === 'futsal' ||
+          coupon.appliesTo === 'nino' && meta.group === 'nino';
+
+        if (isEligible) {
+          eligibleSubtotal += item.price * item.qty;
+          hasEligibleItems = true;
+        }
+      }
+    }
+  }
+
+  // Verificar por productos específicos
+  if (coupon.productIds && coupon.productIds.length > 0) {
+    for (const item of cartItems) {
+      if (coupon.productIds.includes(item.id)) {
+        eligibleSubtotal += item.price * item.qty;
+        hasEligibleItems = true;
+      }
+    }
+  }
+
+  if (!hasEligibleItems) {
+    return { applicable: false, reason: 'Este cupón no aplica a los productos de tu carrito' };
+  }
+
+  return { applicable: true, eligibleSubtotal: eligibleSubtotal };
+}
+
+
+
+
+function calculateDiscount(coupon, eligibleSubtotal) {
+  if (!coupon || eligibleSubtotal <= 0) return 0;
+
+  let discount = 0;
+  if (coupon.type === 'percentage') {
+    discount = Math.round(eligibleSubtotal * coupon.value / 100);
+  } else {
+    discount = coupon.value;
+  }
+
+  // El descuento no puede superar el subtotal elegible
+  if (discount > eligibleSubtotal) discount = eligibleSubtotal;
+
+  return discount;
+}
+
+function toggleCouponSection() {
+  const body = document.getElementById('couponBody');
+  const arrow = document.getElementById('couponArrow');
+  const isOpen = body.style.display !== 'none';
+
+  if (isOpen) {
+    body.style.display = 'none';
+    arrow.classList.remove('open');
+  } else {
+    body.style.display = 'block';
+    arrow.classList.add('open');
+    // Mostrar cupones aplicables si hay productos en el carrito
+    updateCouponHint();
+  }
+}
+
+function updateCouponHint() {
+  const hint = document.getElementById('couponHint');
+  if (!hint) return;
+
+  // Cargar cupones del admin
+  loadCouponsFromAdmin();
+
+  if (availableCoupons.length === 0) {
+    hint.style.display = 'none';
+    return;
+  }
+
+  // Filtrar cupones aplicables al carrito actual
+  const applicable = availableCoupons.filter(c => {
+    const valid = isCouponValid(c);
+    if (!valid.valid) return false;
+    const app = isCouponApplicable(c, state.cart);
+    return app.applicable;
+  });
+
+  if (applicable.length > 0) {
+    const codes = applicable.map(c => c.code).join(', ');
+    hint.innerHTML = '💡 Cupones disponibles: <strong>' + codes + '</strong>';
+    hint.classList.add('show');
+  } else if (state.cart.length > 0) {
+    hint.innerHTML = '💡 No hay cupones aplicables a tu carrito actual';
+    hint.classList.add('show');
+  } else {
+    hint.style.display = 'none';
+  }
+}
+
+function applyCoupon() {
+  const input = document.getElementById('couponInput');
+  const info = document.getElementById('couponInfo');
+  const code = input.value.trim().toUpperCase();
+
+  if (!code) {
+    showCouponMessage('Ingresa un código de cupón', 'warning');
+    return;
+  }
+
+  // Recargar cupones por si el admin los actualizó
+  loadCouponsFromAdmin();
+
+  const coupon = availableCoupons.find(c => c.code === code);
+
+  if (!coupon) {
+    showCouponMessage('Cupón no encontrado', 'error');
+    return;
+  }
+
+  // Validar estado del cupón
+  const validation = isCouponValid(coupon);
+  if (!validation.valid) {
+    showCouponMessage(validation.reason, 'error');
+    return;
+  }
+
+  // Verificar mínimo de compra
+  const subtotal = getCartSubtotal();
+  if (subtotal < (coupon.minPurchase || 0)) {
+    showCouponMessage('Mínimo de compra: ' + formatPrice(coupon.minPurchase), 'warning');
+    return;
+  }
+
+  // Verificar si aplica a productos del carrito
+  const applicability = isCouponApplicable(coupon, state.cart);
+  if (!applicability.applicable) {
+    showCouponMessage(applicability.reason, 'warning');
+    return;
+  }
+
+  // Calcular descuento
+  const discount = calculateDiscount(coupon, applicability.eligibleSubtotal);
+
+  if (discount <= 0) {
+    showCouponMessage('Este cupón no genera descuento para tu carrito', 'warning');
+    return;
+  }
+
+  // Aplicar cupón
+  currentCoupon = {
+    code: coupon.code,
+    type: coupon.type,
+    value: coupon.value,
+    discount: discount,
+    eligibleSubtotal: applicability.eligibleSubtotal
+  };
+
+  // Guardar en localStorage para persistencia
+  try {
+    localStorage.setItem('khaos_cart_coupon', JSON.stringify(currentCoupon));
+  } catch(e) {}
+
+  // Actualizar UI
+  showCouponApplied(coupon, discount);
+  updateCartUI();
+  showToast('Cupón ' + coupon.code + ' aplicado: -' + formatPrice(discount), 'success');
+}
+
+function showCouponMessage(message, type) {
+  const info = document.getElementById('couponInfo');
+  info.textContent = message;
+  info.className = 'coupon-info show ' + type;
+  setTimeout(() => {
+    info.classList.remove('show');
+  }, 4000);
+}
+
+function showCouponApplied(coupon, discount) {
+  const inputWrap = document.getElementById('couponInputWrap');
+  const applied = document.getElementById('couponApplied');
+  const codeEl = document.getElementById('couponAppliedCode');
+  const valueEl = document.getElementById('couponAppliedValue');
+
+  inputWrap.style.display = 'none';
+  applied.style.display = 'flex';
+  codeEl.textContent = coupon.code;
+  valueEl.textContent = coupon.type === 'percentage' ? '-' + coupon.value + '%' : '-' + formatPrice(discount);
+}
+
+function removeCoupon() {
+  currentCoupon = null;
+  try { localStorage.removeItem('khaos_cart_coupon'); } catch(e) {}
+
+  const inputWrap = document.getElementById('couponInputWrap');
+  const applied = document.getElementById('couponApplied');
+  const input = document.getElementById('couponInput');
+
+  inputWrap.style.display = 'flex';
+  applied.style.display = 'none';
+  input.value = '';
+
+  updateCartUI();
+  showToast('Cupón removido', 'info');
+}
+
+function loadAppliedCoupon() {
+  try {
+    const saved = localStorage.getItem('khaos_cart_coupon');
+    if (saved) {
+      currentCoupon = JSON.parse(saved);
+      // Recalcular descuento con precios actuales
+      loadCouponsFromAdmin();
+      const couponData = availableCoupons.find(c => c.code === currentCoupon.code);
+      if (couponData) {
+        const applicability = isCouponApplicable(couponData, state.cart);
+        if (applicability.applicable) {
+          const discount = calculateDiscount(couponData, applicability.eligibleSubtotal);
+          currentCoupon.discount = discount;
+          showCouponApplied(couponData, discount);
+        } else {
+          removeCoupon();
+        }
+      } else {
+        removeCoupon();
+      }
+    }
+  } catch(e) {
+    currentCoupon = null;
+  }
+}
+
+// Escuchar cambios en cupones del admin
+window.addEventListener('storage', function(e) {
+  if (e.key === 'khaos_admin_coupons') {
+    loadCouponsFromAdmin();
+    // Revalidar cupón aplicado
+    if (currentCoupon) {
+      const coupon = availableCoupons.find(c => c.code === currentCoupon.code);
+      if (!coupon || !isCouponValid(coupon).valid) {
+        showToast('El cupón aplicado ya no está disponible', 'warning');
+        removeCoupon();
+      }
+    }
+  }
+});
+
+
 
 document.addEventListener('DOMContentLoaded', init);
 </script>
