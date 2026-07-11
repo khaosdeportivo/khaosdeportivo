@@ -8,7 +8,7 @@
   <meta property="og:title" content="Khaos Deportivo">
   <meta property="og:description" content="Réplicas AAA de importación. Guayos, sintéticas, futsal y más. Envío a todo Colombia.">
   <meta property="og:type" content="website">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E⚽%3C/text%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48dGV4dCB5PSIuOWVtIiBmb250LXNpemU9IjkwIj7imr08L3RleHQ+PC9zdmc+">
 
 <style>
 :root {
@@ -267,9 +267,7 @@ body.cart-open{overflow:hidden;position:fixed;width:100%;height:100%}
 .cart-btn-copy:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-glow)}
 .cart-btn-copy.copied{background:var(--gold);color:var(--void);border-color:var(--gold);animation:cp2 .5s ease}
 @keyframes cp2{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
-.cart-saved-notice.show{display:flex}
-@keyframes cartSavedIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-.cart-saved-notice.show{animation:cartSavedIn .4s var(--ease-expo)}
+/* cartSavedIn animation removed - unused element */
 
 /* TOAST */
 .toast-container{position:fixed;bottom:24px;right:24px;z-index:400;display:flex;flex-direction:column;gap:10px;pointer-events:none}
@@ -309,8 +307,8 @@ body.cart-open{overflow:hidden;position:fixed;width:100%;height:100%}
 
 /* RESPONSIVE */
 @media(max-width:1024px){.mega-menu-grid{grid-template-columns:repeat(2,1fr)}.trust-grid{grid-template-columns:repeat(2,1fr)}.footer-grid{grid-template-columns:repeat(2,1fr)}.nav-center{display:none}}
-@media(max-width:768px){.nav-header{padding:0 16px;height:64px}.nav-right .nav-btn:not(.nav-cart-btn){display:none}.mobile-menu-btn{display:flex}.hero-stats{gap:24px}.hero-stat-number{font-size:1.8rem}.trust-grid{grid-template-columns:1fr}.catalog-toolbar{flex-direction:column;align-items:stretch}.search-box{max-width:100%}.filter-chips{justify-content:center}.products-grid{grid-template-columns:repeat(2,1fr);gap:16px}.catalog-section{padding:40px 16px 60px}.footer-grid{grid-template-columns:1fr;gap:32px}.footer-bottom{flex-direction:column;text-align:center}.cart-panel{max-width:100%}.mega-menu{display:none!important}}
-@media(max-width:480px){.products-grid{grid-template-columns:1fr}.hero-cta-group{flex-direction:column;width:100%}.btn-hero{width:100%;justify-content:center}.hero-title{font-size:2.2rem}}
+@media(max-width:768px){.nav-header{padding:0 16px;height:64px}.nav-right .nav-btn:not(.nav-cart-btn){display:none}.mobile-menu-btn{display:flex}.hero-stats{gap:24px}.hero-stat-number{font-size:1.8rem}.trust-grid{grid-template-columns:1fr}.catalog-toolbar{flex-direction:column;align-items:center;gap:16px;padding:16px}.search-box{max-width:100%;width:100%}.filter-chips{justify-content:center;width:100%}.sort-dropdown{align-self:flex-end;margin-top:8px}.products-grid{grid-template-columns:repeat(2,1fr);gap:16px}.catalog-section{padding:40px 16px 60px}.footer-grid{grid-template-columns:1fr;gap:32px}.footer-bottom{flex-direction:column;text-align:center}.cart-panel{max-width:100%}.mega-menu{display:none!important}}
+@media(max-width:480px){.products-grid{grid-template-columns:1fr}.hero-cta-group{flex-direction:column;width:100%}.btn-hero{width:100%;justify-content:center}.sort-dropdown{width:100%}.sort-btn{width:100%;justify-content:center}.hero-title{font-size:2.2rem}}
 
 /* FAVORITOS */
 .btn-fav{width:40px;height:40px;border-radius:var(--r-md);background:var(--slate);border:1px solid var(--ash);color:var(--gold);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .3s var(--ease)}
@@ -643,23 +641,23 @@ body.cart-open{overflow:hidden;position:fixed;width:100%;height:100%}
     <a href="#" class="nav-link" onclick="toggleCart();return false;">Pedidos</a>
   </nav>
   <div class="nav-right">
-    <button class="nav-btn" id="themeToggle" onclick="toggleTheme()" title="Cambiar tema">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    <button class="nav-btn" id="themeToggle" onclick="toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
     </button>
-    <button class="nav-btn" onclick="openSearchMobile()" title="Buscar">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <button class="nav-btn" onclick="openSearchMobile()" title="Buscar" aria-label="Buscar productos">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     </button>
-    <button class="nav-btn" onclick="toggleFavPanel()" title="Mis Favoritos" style="position:relative">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    <button class="nav-btn" onclick="toggleFavPanel()" title="Mis Favoritos" aria-label="Mis Favoritos" style="position:relative">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
       <span class="nav-badge" id="navFavBadge" style="display:none;background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:var(--void);border-color:var(--void)">0</span>
     </button>
-    <button class="nav-cart-btn" onclick="toggleCart()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+    <button class="nav-cart-btn" onclick="toggleCart()" aria-label="Ver carrito de compras">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
       <span id="navCartText">Carrito</span>
       <span class="nav-badge" id="navCartBadge" style="display:none">0</span>
     </button>
-    <button class="mobile-menu-btn" onclick="toggleMobileDrawer()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    <button class="mobile-menu-btn" onclick="toggleMobileDrawer()" aria-label="Abrir menú móvil">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
   </div>
 </header>
@@ -699,8 +697,8 @@ body.cart-open{overflow:hidden;position:fixed;width:100%;height:100%}
 <div class="mobile-drawer" id="mobileDrawer">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;">
     <div class="nav-logo-text" style="font-size:22px;">KHAOS</div>
-    <button class="nav-btn" onclick="toggleMobileDrawer()" style="width:40px;height:40px;">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    <button class="nav-btn" onclick="toggleMobileDrawer()" style="width:40px;height:40px;" aria-label="Cerrar menú">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
   </div>
   <div style="display:flex;flex-direction:column;gap:4px;">
@@ -833,9 +831,9 @@ body.cart-open{overflow:hidden;position:fixed;width:100%;height:100%}
   <div class="catalog-toolbar">
     <div class="search-box">
       <span class="search-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       </span>
-      <input type="text" id="searchInput" placeholder="Buscar por nombre, categoría o referencia..." autocomplete="off">
+      <input type="text" id="searchInput" placeholder="Buscar por nombre, categoría o referencia..." autocomplete="off" aria-label="Buscar productos">
       <button class="search-clear" id="searchClear">✕</button>
     </div>
     <div class="filter-chips" id="filterChips">
@@ -865,9 +863,9 @@ body.cart-open{overflow:hidden;position:fixed;width:100%;height:100%}
 
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal()">✕</button>
+    <button class="modal-close" onclick="closeModal()" aria-label="Cerrar detalles del producto">✕</button>
     <div class="modal-img-wrap" id="modalImgWrap">
-      <img class="modal-img" id="modalImg" width="520" height="325" src="" alt="" style="display:none;">
+      <img class="modal-img" id="modalImg" width="520" height="325" alt="" style="display:none;">
     </div>
     <div class="modal-body">
       <div class="modal-category" id="modalCategory"></div>
@@ -911,7 +909,7 @@ body.cart-open{overflow:hidden;position:fixed;width:100%;height:100%}
   </div>
 </div>
 
-<button class="cart-float" id="cartFloat" onclick="toggleCart()">
+<button class="cart-float" id="cartFloat" onclick="toggleCart()" aria-label="Ver carrito">
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
   <span class="cart-count" id="cartCount" style="display:none">0</span>
 </button>
@@ -920,7 +918,7 @@ body.cart-open{overflow:hidden;position:fixed;width:100%;height:100%}
 <div class="cart-panel" id="cartPanel">
   <div class="cart-header">
     <h2>Tu Pedido</h2>
-    <button class="cart-close" onclick="toggleCart()">✕</button>
+    <button class="cart-close" onclick="toggleCart()" aria-label="Cerrar carrito">✕</button>
   </div>
   <div class="cart-items" id="cartItems">
     <div class="cart-empty">
@@ -944,7 +942,7 @@ body.cart-open{overflow:hidden;position:fixed;width:100%;height:100%}
       </button>
       <div class="coupon-body" id="couponBody" style="display:none">
         <div class="coupon-input-wrap" id="couponInputWrap">
-          <input type="text" class="coupon-input" id="couponInput" placeholder="Ej: KHAOS10" maxlength="20" autocomplete="off">
+          <input type="text" class="coupon-input" id="couponInput" placeholder="Ej: KHAOS10" maxlength="20" autocomplete="off" aria-label="Código de cupón de descuento">
           <button class="coupon-btn" id="couponApplyBtn" onclick="applyCoupon()">Aplicar</button>
         </div>
         <div class="coupon-info" id="couponInfo"></div>
@@ -975,7 +973,7 @@ body.cart-open{overflow:hidden;position:fixed;width:100%;height:100%}
 <div class="fav-panel" id="favPanel">
   <div class="fav-header">
     <h2>❤️ Mis Favoritos</h2>
-    <button class="cart-close" onclick="toggleFavPanel()">✕</button>
+    <button class="cart-close" onclick="toggleFavPanel()" aria-label="Cerrar favoritos">✕</button>
   </div>
   <div class="fav-items" id="favItems">
     <div class="fav-empty">
@@ -1132,6 +1130,24 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+function sanitizeUrl(url) {
+  if (!url) return '';
+  const allowedProtocols = ['http:', 'https:', 'data:'];
+  try {
+    const parsed = new URL(url, window.location.href);
+    if (!allowedProtocols.includes(parsed.protocol)) return '';
+    return url;
+  } catch (e) {
+    if (url.startsWith('data:') || url.startsWith('/') || url.startsWith('./')) return url;
+    return '';
+  }
+}
+
+function sanitizeNumber(num, defaultVal) {
+  const n = Number(num);
+  return isNaN(n) ? defaultVal : n;
+}
+
 
 /* ===== CONFIG DE TIENDA ===== */
 function loadStoreConfig() {
@@ -1242,19 +1258,21 @@ function updateFavBadge() {
 function toggleFavPanel() {
   const panel = document.getElementById('favPanel');
   const overlay = document.getElementById('cartOverlay');
+  const cartPanel = document.getElementById('cartPanel');
   if (panel.classList.contains('open')) {
     panel.classList.remove('open');
-    if (!document.getElementById('cartPanel').classList.contains('open')) {
+    if (!cartPanel.classList.contains('open')) {
       overlay.classList.remove('active');
       document.body.classList.remove('cart-open');
-      document.body.style.overflow = ''; document.body.style.touchAction = '';
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
     }
   } else {
     overlay.classList.add('active');
     panel.classList.add('open');
     document.body.classList.add('cart-open');
     document.body.style.overflow = 'hidden';
-    document.body.style.touchAction = 'none'; document.body.style.touchAction = 'none';
+    document.body.style.touchAction = 'none';
   }
 }
 
@@ -1306,7 +1324,7 @@ function updateThemeIcon() {
   if (!icon) return;
   icon.innerHTML = isLight 
     ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
-    : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+    : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
 }
 
 /* ===== HELPERS ===== */
@@ -1411,7 +1429,7 @@ function renderProducts() {
     return '<div class="product-card" style="animation-delay:' + (i * 0.05) + 's">' +
       getBadgeHTML(p.badge) +
       '<div class="product-card-img-wrap" onclick="openModal(' + p.id + ')">' +
-        '<img class="product-card-img" loading="lazy" width="400" height="300" src="' + (p.image || '') + '" alt="' + p.name + '" >' +
+        '<img class="product-card-img" loading="lazy" width="400" height="300" src="' + sanitizeUrl(p.image) + '" alt="' + escapeHtml(p.name) + '" >' +
         '<div class="product-card-img-overlay">' +
           '<button class="product-card-quick-btn" onclick="event.stopPropagation();openModal(' + p.id + ')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;vertical-align:middle"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Ver detalles</button>' +
         '</div>' +
@@ -1444,8 +1462,14 @@ function openModal(productId) {
   state.modalSize = null;
   state.modalQty = 1;
 
-  document.getElementById('modalImg').src = p.image || '';
-  document.getElementById('modalImg').style.display = p.image ? 'block' : 'none';
+  const modalImg = document.getElementById('modalImg');
+  if (p.image) {
+    modalImg.src = p.image;
+    modalImg.style.display = 'block';
+  } else {
+    modalImg.removeAttribute('src');
+    modalImg.style.display = 'none';
+  }
   safeText('modalCategory', getCategoryName(p.category));
   safeText('modalTitle', p.name);
   safeText('modalCode', 'Ref: ' + (p.code || 'N/A'));
@@ -1572,18 +1596,21 @@ function addToCartFromModal() {
 function toggleCart() {
   const panel = document.getElementById('cartPanel');
   const overlay = document.getElementById('cartOverlay');
+  const favPanel = document.getElementById('favPanel');
   if (panel.classList.contains('open')) {
     panel.classList.remove('open');
-    overlay.classList.remove('active');
-    document.body.classList.remove('cart-open');
-    document.body.style.overflow = '';
-    document.body.style.touchAction = ''; document.body.style.touchAction = '';
+    if (!favPanel.classList.contains('open')) {
+      overlay.classList.remove('active');
+      document.body.classList.remove('cart-open');
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    }
   } else {
     overlay.classList.add('active');
     panel.classList.add('open');
     document.body.classList.add('cart-open');
     document.body.style.overflow = 'hidden';
-    document.body.style.touchAction = 'none'; document.body.style.touchAction = 'none';
+    document.body.style.touchAction = 'none';
   }
 }
 
@@ -1612,7 +1639,7 @@ function updateCartUI() {
 
   itemsContainer.innerHTML = state.cart.map((item, i) => 
     '<div class="cart-item">' +
-      '<img class="cart-item-img" src="' + (item.image || '') + '"  alt="">' +
+      '<img class="cart-item-img" src="' + sanitizeUrl(item.image) + '" alt="">' +
       '<div class="cart-item-info">' +
         '<div class="cart-item-name">' + escapeHtml(item.name) + '</div>' +
         '<div class="cart-item-meta">Talla ' + item.size + ' | ' + formatPrice(item.price) + ' c/u</div>' +
@@ -1881,6 +1908,8 @@ function showToast(message, type) {
 }
 
 /* ===== INIT ===== */
+let searchDebounceTimer;
+
 function init() {
   loadStoreConfig();
   loadProducts();
@@ -1921,7 +1950,6 @@ function initEventListeners() {
   const searchInput = document.getElementById('searchInput');
   const searchClear = document.getElementById('searchClear');
 
-  let searchDebounceTimer;
   searchInput.addEventListener('input', function() {
     state.searchQuery = this.value;
     searchClear.classList.toggle('show', this.value.length > 0);
@@ -2002,14 +2030,14 @@ function isCouponValid(coupon) {
     return { valid: false, reason: 'Cupón agotado (usos máximos alcanzados)' };
   }
 
-  // Verificar fechas
+  // Verificar fechas (usando UTC para consistencia entre zonas horarias)
   const now = new Date();
   if (coupon.startDate) {
-    const start = new Date(coupon.startDate);
+    const start = new Date(coupon.startDate + 'T00:00:00Z');
     if (now < start) return { valid: false, reason: 'Cupón aún no está activo' };
   }
   if (coupon.endDate) {
-    const end = new Date(coupon.endDate);
+    const end = new Date(coupon.endDate + 'T23:59:59Z');
     if (now > end) return { valid: false, reason: 'Cupón vencido' };
   }
 
@@ -2296,16 +2324,7 @@ function toggleMobileAccordion(btn) {
   const panel = btn.nextElementSibling;
   const isOpen = btn.getAttribute('aria-expanded') === 'true';
 
-  // Close all other accordions in the same container
-  const container = btn.closest('div');
-  container.querySelectorAll('.mobile-accordion-btn[aria-expanded="true"]').forEach(otherBtn => {
-    if (otherBtn !== btn) {
-      otherBtn.setAttribute('aria-expanded', 'false');
-      otherBtn.nextElementSibling.style.display = 'none';
-    }
-  });
-
-  // Toggle current
+  // Toggle current accordion only (allow multiple open)
   btn.setAttribute('aria-expanded', !isOpen);
   panel.style.display = isOpen ? 'none' : 'flex';
 }
@@ -2314,8 +2333,10 @@ function toggleMobileAccordion(btn) {
 document.addEventListener('error', function(e) {
   if (e.target.tagName === 'IMG') {
     const img = e.target;
-    // No ocultar logos o iconos importantes
+    // No ocultar logos o iconos importantes, ni imágenes ya procesadas
     if (img.classList.contains('nav-logo-mark')) return;
+    if (img.dataset.errorHandled === 'true') return;
+    img.dataset.errorHandled = 'true';
     // Para productos, mostrar un placeholder con emoji
     img.style.display = 'none';
     const wrap = img.closest('.product-card-img-wrap, .modal-img-wrap, .cart-item-img');
