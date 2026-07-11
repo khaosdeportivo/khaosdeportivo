@@ -1149,17 +1149,84 @@ function loadStoreConfig() {
 }
 
 /* ===== PRODUCTOS ===== */
+const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/khaosdeportivo/khaosdeportivo/principal/productos.json';
+const GITHUB_API_URL = 'https://api.github.com/repos/khaosdeportivo/khaosdeportivo/contents/productos.json?ref=principal';
+
 function loadProducts() {
-  try {
-    const saved = localStorage.getItem('khaos_admin_products');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; return; }
-    }
-  } catch(e) {}
-  // Sin productos por defecto - esperar que el admin los cree
-  products = [];
+    // Primero intentar cargar desde GitHub (más actualizado)
+    return fetchFromGithub();
 }
+
+async function fetchFromGithub() {
+    try {
+        // Usar fetch con cache-buster para evitar caché del navegador
+        const response = await fetch(GITHUB_RAW_URL + '?t=' + Date.now(), {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+        });
+
+        if (!response.ok) {
+            throw new Error('GitHub respondió ' + response.status);
+        }
+
+        const datos = await response.json();
+
+        if (datos.productos && Array.isArray(datos.productos) && datos.productos.length > 0) {
+            products = datos.productos;
+
+            // También cargar cupones si existen
+            if (datos.cupones && Array.isArray(datos.cupones)) {
+                availableCoupons = datos.cupones;
+            }
+
+            // Guardar en localStorage como caché local
+            try {
+                localStorage.setItem('khaos_admin_products', JSON.stringify(products));
+                if (datos.cupones) {
+                    localStorage.setItem('khaos_admin_coupons', JSON.stringify(datos.cupones));
+                }
+            } catch(e) {}
+
+            console.log('✅ Productos cargados desde GitHub:', products.length);
+            return true;
+        }
+    } catch(e) {
+        console.log('⚠️ No se pudo cargar desde GitHub:', e.message);
+    }
+
+    // Fallback: intentar localStorage
+    try {
+        const saved = localStorage.getItem('khaos_admin_products');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                products = parsed;
+                console.log('✅ Productos cargados desde localStorage:', products.length);
+                return true;
+            }
+        }
+    } catch(e) {}
+
+    // Si no hay nada, array vacío
+    products = [];
+    console.log('ℹ️ Sin productos disponibles');
+    return false;
+}
+
+// Función para forzar recarga desde GitHub
+async function recargarDesdeGithub() {
+    showToast('🔄 Actualizando catálogo...', 'info');
+    const ok = await fetchFromGithub();
+    if (ok) {
+        renderProducts();
+        updateHeroStats();
+        updateFavButtons();
+        showToast('✅ Catálogo actualizado', 'success');
+    } else {
+        showToast('❌ No se pudo actualizar', 'error');
+    }
+}
+
 
 /* ===== CARRITO ===== */
 function loadCart() {
