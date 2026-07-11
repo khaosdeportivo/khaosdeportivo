@@ -1404,7 +1404,42 @@ input, select, textarea { font-size: 16px; }
                                 <button class="btn btn-secondary" onclick="showChangePasswordModal()">Cambiar</button>
                             </div>
                         </div>
-                        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:24px;border-top:1px solid var(--stone);">
+                        
+                        <div class="settings-section">
+                            <h4><i class="fas fa-cloud-upload-alt"></i> Sincronización GitHub</h4>
+                            <div class="settings-row">
+                                <div class="settings-info">
+                                    <h5>Token de GitHub</h5>
+                                    <p>Pega tu token personal para sincronizar el catálogo</p>
+                                </div>
+                                <div style="display:flex;gap:8px;flex-direction:column;align-items:flex-end;">
+                                    <input type="password" class="form-input" id="settingGithubToken" placeholder="ghp_xxxxxxxxxxxx" style="width:280px;text-align:center;letter-spacing:1px;">
+                                    <button class="btn btn-secondary btn-sm" onclick="saveGithubToken()" style="width:280px;"><i class="fas fa-save"></i> Guardar Token</button>
+                                </div>
+                            </div>
+                            <div class="settings-row">
+                                <div class="settings-info">
+                                    <h5>Estado de sincronización</h5>
+                                    <p id="githubSyncStatus">No configurado</p>
+                                </div>
+                                <button class="btn btn-primary" id="githubSyncBtn" onclick="syncToGithub()" disabled>
+                                    <i class="fas fa-sync"></i> Sincronizar Ahora
+                                </button>
+                            </div>
+                            <div class="settings-row">
+                                <div class="settings-info">
+                                    <h5>Última sincronización</h5>
+                                    <p id="githubLastSync">Nunca</p>
+                                </div>
+                                <button class="btn btn-ghost btn-sm" onclick="testGithubConnection()">
+                                    <i class="fas fa-plug"></i> Probar conexión
+                                </button>
+                            </div>
+                            <div style="margin-top:12px;padding:12px;background:var(--ink);border-radius:var(--r-md);border:1px solid var(--stone);">
+                                <p style="font-size:12px;color:var(--fog);margin:0;"><i class="fas fa-info-circle" style="color:var(--gold);margin-right:6px;"></i>Al sincronizar, el catálogo se actualizará automáticamente en todos los navegadores y dispositivos.</p>
+                            </div>
+                        </div>
+<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:24px;border-top:1px solid var(--stone);">
                             <button class="btn btn-secondary" onclick="resetSettings()">Restaurar</button>
                             <button class="btn btn-primary" onclick="saveSettings()"><i class="fas fa-save"></i> Guardar Cambios</button>
                         </div>
@@ -2124,6 +2159,7 @@ function init() {
     loadTheme();
     loadSidebarState();
     loadSettings();
+    updateGithubUI();
     loadOrientation();
     initAutoHideSidebar();
     createLoginParticles();
@@ -3778,6 +3814,151 @@ function initStorageListener() {
 }
 
 // ===== START =====
+
+
+/* ===== GITHUB SYNC MODULE ===== */
+const GITHUB_CONFIG = {
+    owner: 'khaosdeportivo',
+    repo: 'khaosdeportivo',
+    branch: 'principal',
+    path: 'productos.json',
+    apiBase: 'https://api.github.com'
+};
+
+function getGithubToken() {
+    try { return localStorage.getItem('khaos_github_token') || ''; } catch(e) { return ''; }
+}
+
+function saveGithubToken() {
+    const token = document.getElementById('settingGithubToken').value.trim();
+    if (!token) { showToast('Ingresa un token válido', 'warning'); return; }
+    if (!token.startsWith('ghp_') && !token.startsWith('github_pat_')) {
+        showToast('El token debe empezar con ghp_ o github_pat_', 'error'); return;
+    }
+    try { localStorage.setItem('khaos_github_token', token); } catch(e) {}
+    document.getElementById('settingGithubToken').value = '';
+    updateGithubUI();
+    showToast('Token guardado correctamente', 'success');
+}
+
+function updateGithubUI() {
+    const token = getGithubToken();
+    const btn = document.getElementById('githubSyncBtn');
+    const status = document.getElementById('githubSyncStatus');
+
+    if (token) {
+        btn.disabled = false;
+        status.innerHTML = '<span style="color:var(--success);"><i class="fas fa-check-circle"></i> Configurado</span>';
+    } else {
+        btn.disabled = true;
+        status.textContent = 'No configurado — ingresa tu token en Ajustes';
+    }
+
+    // Cargar última sync
+    try {
+        const last = localStorage.getItem('khaos_last_sync');
+        if (last) document.getElementById('githubLastSync').textContent = new Date(last).toLocaleString('es-CO');
+    } catch(e) {}
+}
+
+async function testGithubConnection() {
+    const token = getGithubToken();
+    if (!token) { showToast('Primero guarda tu token en Ajustes', 'warning'); return; }
+
+    showLoading('Probando conexión...');
+    try {
+        const res = await fetch(`${GITHUB_CONFIG.apiBase}/user`, {
+            headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        if (res.ok) {
+            const user = await res.json();
+            showToast(`✅ Conectado como ${user.login}`, 'success');
+        } else {
+            const err = await res.json();
+            showToast(`❌ Error: ${err.message || 'Token inválido'}`, 'error');
+        }
+    } catch(e) {
+        showToast('Error de red al conectar con GitHub', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function syncToGithub() {
+    const token = getGithubToken();
+    if (!token) { showToast('Token no configurado', 'error'); return; }
+    if (products.length === 0) { showToast('No hay productos para sincronizar', 'warning'); return; }
+
+    showLoading('Sincronizando con GitHub...');
+
+    try {
+        // 1. Obtener SHA del archivo actual (si existe)
+        let sha = null;
+        try {
+            const getRes = await fetch(
+                `${GITHUB_CONFIG.apiBase}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}?ref=${GITHUB_CONFIG.branch}`,
+                { headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' } }
+            );
+            if (getRes.ok) {
+                const data = await getRes.json();
+                sha = data.sha;
+            }
+        } catch(e) {}
+
+        // 2. Preparar contenido
+        const content = {
+            productos: products,
+            cupones: coupons,
+            fechaActualizacion: new Date().toISOString(),
+            version: 1
+        };
+        const base64Content = btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2))));
+
+        // 3. Subir archivo
+        const body = {
+            message: `Actualización catálogo — ${new Date().toLocaleString('es-CO')}`,
+            content: base64Content,
+            branch: GITHUB_CONFIG.branch
+        };
+        if (sha) body.sha = sha;
+
+        const putRes = await fetch(
+            `${GITHUB_CONFIG.apiBase}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`,
+            {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            }
+        );
+
+        if (putRes.ok || putRes.status === 201) {
+            const now = new Date().toISOString();
+            try { localStorage.setItem('khaos_last_sync', now); } catch(e) {}
+            document.getElementById('githubLastSync').textContent = new Date(now).toLocaleString('es-CO');
+            showToast('✅ Catálogo sincronizado con GitHub', 'success');
+            addNotification('system', 'Catálogo sincronizado exitosamente');
+        } else {
+            const err = await putRes.json();
+            showToast(`❌ Error GitHub: ${err.message || 'Desconocido'}`, 'error');
+        }
+    } catch(e) {
+        showToast('Error al sincronizar: ' + e.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Auto-sincronizar al guardar productos (opcional, desactivado por defecto)
+let autoSyncEnabled = false;
+function toggleAutoSync() {
+    autoSyncEnabled = !autoSyncEnabled;
+    showToast(autoSyncEnabled ? 'Auto-sync activado' : 'Auto-sync desactivado', 'info');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     loadTheme();
     if (!checkAuth()) return;
