@@ -2983,18 +2983,7 @@ let currentCouponFilter = 'all';
 let currentOrderCoupon = null;
 let selectedCouponProducts = []; // Product IDs selected for coupon
 
-const defaultCoupons = [
-    { id: 1, code: 'BIENVENIDO15', type: 'percentage', value: 15, minPurchase: 0, maxUses: 200, usedCount: 0, startDate: '', endDate: '', appliesTo: 'all', productIds: [], active: true },
-    { id: 2, code: 'KHAOS10', type: 'percentage', value: 10, minPurchase: 120000, maxUses: 0, usedCount: 0, startDate: '', endDate: '', appliesTo: 'all', productIds: [], active: true },
-    { id: 3, code: 'GUAYOS8', type: 'percentage', value: 8, minPurchase: 0, maxUses: 100, usedCount: 0, startDate: '', endDate: '', appliesTo: 'guayo', productIds: [], active: true },
-    { id: 4, code: 'SINTETICA12', type: 'percentage', value: 12, minPurchase: 0, maxUses: 80, usedCount: 0, startDate: '', endDate: '', appliesTo: 'sintetica', productIds: [], active: true },
-    { id: 5, code: 'FUTSAL10', type: 'percentage', value: 10, minPurchase: 0, maxUses: 80, usedCount: 0, startDate: '', endDate: '', appliesTo: 'futsal', productIds: [], active: true },
-    { id: 6, code: 'NINO15', type: 'percentage', value: 15, minPurchase: 0, maxUses: 150, usedCount: 0, startDate: '', endDate: '', appliesTo: 'nino', productIds: [], active: true },
-    { id: 7, code: 'FLASH25', type: 'percentage', value: 25, minPurchase: 200000, maxUses: 50, usedCount: 0, startDate: '', endDate: '', appliesTo: 'all', productIds: [], active: true },
-    { id: 8, code: 'VIP20', type: 'percentage', value: 20, minPurchase: 250000, maxUses: 0, usedCount: 0, startDate: '', endDate: '', appliesTo: 'all', productIds: [], active: true },
-    { id: 9, code: '15000OFF', type: 'fixed', value: 15000, minPurchase: 100000, maxUses: 100, usedCount: 0, startDate: '', endDate: '', appliesTo: 'all', productIds: [], active: true },
-    { id: 10, code: '25000OFF', type: 'fixed', value: 25000, minPurchase: 180000, maxUses: 60, usedCount: 0, startDate: '', endDate: '', appliesTo: 'all', productIds: [], active: true }
-];
+const defaultCoupons = [];
 
 function loadCoupons() {
     try {
