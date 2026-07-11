@@ -1812,16 +1812,7 @@ const badgeConfig = {
     preorder:    { label: 'Preventa',      icon: 'fa-calendar',  color: '#3b82f6', bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.2)', emoji: '📅' },
     webonly:     { label: 'Exclusivo web',  icon: 'fa-globe',    color: '#06b6d4', bg: 'rgba(6,182,212,0.1)', border: 'rgba(6,182,212,0.2)', emoji: '🌐' }
 };
-const defaultProducts = [
-    { id: 1, name: "Nike Mercurial Vapor 15 Elite", code: "NK-MV15-001", category: "guayo-corto", price: 149000, oldPrice: 220000, image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop", sizes: ["38","39","40","41","42","43","44"], outOfStock: ["38","44"], desc: "Guayo corto de alta gama. Material sintético premium con acabado texturizado para mejor control del balón. Suela con tacos cónicos para tracción explosiva en césped natural.", badge: "bestseller" },
-    { id: 2, name: "Adidas Predator Accuracy.1", code: "AD-PA1-002", category: "guayo-corto", price: 159000, oldPrice: 240000, image: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400&h=300&fit=crop", sizes: ["39","40","41","42","43","44","45"], outOfStock: ["45"], desc: "Diseño icónico con zonas de grip estratégicas. Perfecto para jugadores que buscan precisión en pases y tiros.", badge: null },
-    { id: 3, name: "Nike Phantom GX Elite DF", code: "NK-PGX-003", category: "guayo-bota", price: 169000, oldPrice: 260000, image: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=400&h=300&fit=crop", sizes: ["38","39","40","41","42","43"], outOfStock: [], desc: "Bota con caña alta y collarín elástico. Tecnología Gripknit para control total del balón.", badge: "new" },
-    { id: 4, name: "Adidas Copa Pure.1 FG", code: "AD-CP1-004", category: "guayo-bota", price: 155000, oldPrice: 230000, image: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400&h=300&fit=crop", sizes: ["39","40","41","42","43","44","45"], outOfStock: ["39"], desc: "Cuero sintético de primera calidad con acabado clásico. Bota tradicional que combina elegancia y rendimiento.", badge: null },
-    { id: 5, name: "Puma Future Ultimate", code: "PM-FU-005", category: "nino-futsal-corto", price: 139000, oldPrice: 200000, image: "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400&h=300&fit=crop", sizes: ["38","39","40","41","42","43","44"], outOfStock: [], desc: "Suela plana especial para futsal y canchas sintéticas. Upper adaptable con tecnología FUZIONFIT+.", badge: null },
-    { id: 6, name: "Nike Zoom Mercurial Vapor 15", code: "NK-ZMV-006", category: "nino-futsal-corto", price: 145000, oldPrice: 210000, image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=300&fit=crop", sizes: ["39","40","41","42","43"], outOfStock: ["43"], desc: "Versión futsal del Mercurial con unidad Zoom Air en el talón. Ligereza extrema con amortiguación reactiva.", badge: "bestseller" },
-    { id: 7, name: "Adidas X Speedportal.1 TF", code: "AD-XS1-007", category: "sintetica-corta", price: 149000, oldPrice: 220000, image: "https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=400&h=300&fit=crop", sizes: ["38","39","40","41","42","43","44","45"], outOfStock: ["38","45"], desc: "Diseñado para velocidad en canchas sintéticas. Suela TF con múltiples tacos pequeños para tracción óptima.", badge: null },
-    { id: 8, name: "Nike Tiempo Legend 10 Pro TF", code: "NK-TL10-008", category: "sintetica-corta", price: 135000, oldPrice: 195000, image: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400&h=300&fit=crop", sizes: ["39","40","41","42","43","44"], outOfStock: [], desc: "Clásico reinventado para sintética. Cuero sintético ultra suave que se adapta al pie.", badge: "new" }
-];
+// defaultProducts removed - admin starts with empty product list
 
 // ===== STATE =====
 let products = [];
@@ -2187,10 +2178,18 @@ function initScrollEffects() {
 function loadProducts() {
     try {
         const saved = localStorage.getItem('khaos_admin_products');
-        if (saved) { const parsed = JSON.parse(saved); if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; nextId = Math.max(...products.map(p => p.id), 0) + 1; return; }}
+        if (saved) { 
+            const parsed = JSON.parse(saved); 
+            if (Array.isArray(parsed) && parsed.length > 0) { 
+                products = parsed; 
+                nextId = Math.max(...products.map(p => p.id), 0) + 1; 
+                return; 
+            }
+        }
     } catch(e) {}
-    products = JSON.parse(JSON.stringify(defaultProducts));
-    nextId = 9;
+    // Sin productos por defecto - iniciar vacío
+    products = [];
+    nextId = 1;
     saveProducts();
 }
 function saveProducts() { try { localStorage.setItem('khaos_admin_products', JSON.stringify(products)); } catch(e) {} updateAllStats(); renderTable(); updateDashboard(); renderCategoriesView(); renderInventory(); updateCharts(); }
@@ -2499,33 +2498,6 @@ function filterByCategory(cat) {
     updateActiveFilterPill();
     renderSidebarCategories();
     renderTable();
-}
-
-function filterByFamily(filter) {
-    currentCategoryFilter = filter;
-    currentPage = 1;
-    currentTab = 'all';
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    const firstTab = document.querySelector('.tab');
-    if (firstTab) firstTab.classList.add('active');
-    updateActiveFilterPill();
-    renderSidebarCategories();
-    renderTable();
-    const productsView = document.getElementById('view-products');
-    if (productsView && productsView.style.display === 'none') {
-        switchView('products');
-    }
-}
-function filterByCategory(cat) { 
-    currentCategoryFilter = cat; 
-    currentPage = 1; 
-    currentTab = 'all';
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    const firstTab = document.querySelector('.tab');
-    if (firstTab) firstTab.classList.add('active');
-    renderSidebarCategories();
-    renderCategoryChips(); 
-    renderTable(); 
 }
 
 // ===== TABLE =====
@@ -2849,13 +2821,6 @@ function renderOrderItems() {
             <button class="action-btn delete" style="height:40px;" onclick="removeOrderItem(${i})" title="Eliminar"><i class="fas fa-trash"></i></button>
         </div>`;
     }).join('');
-}
-
-function updateOrderTotal() {
-    const total = orderItems.reduce((sum, item) => {
-        return sum + (item.price || 0) * (item.qty || 1);
-    }, 0);
-    document.getElementById('orderTotalDisplay').textContent = '$' + total.toLocaleString('es-CO');
 }
 
 function saveOrder() {
@@ -3240,10 +3205,10 @@ function filterCoupons(filter, btn) {
 function validateOrderCoupon() {
     const code = document.getElementById('orderCouponCode').value.trim().toUpperCase();
     const info = document.getElementById('orderCouponInfo');
-    if (!code) { info.style.display = 'none'; currentOrderCoupon = null; updateOrderTotalWithCoupon(); return; }
+    if (!code) { info.style.display = 'none'; currentOrderCoupon = null; updateOrderTotal(); return; }
     const coupon = coupons.find(c => c.code === code);
-    if (!coupon) { info.innerHTML = '<span style="color:var(--danger);"><i class="fas fa-times-circle"></i> Cupón no encontrado</span>'; info.style.display = 'block'; currentOrderCoupon = null; updateOrderTotalWithCoupon(); return; }
-    if (!isCouponActive(coupon)) { info.innerHTML = '<span style="color:var(--danger);"><i class="fas fa-times-circle"></i> Cupón inactivo o vencido</span>'; info.style.display = 'block'; currentOrderCoupon = null; updateOrderTotalWithCoupon(); return; }
+    if (!coupon) { info.innerHTML = '<span style="color:var(--danger);"><i class="fas fa-times-circle"></i> Cupón no encontrado</span>'; info.style.display = 'block'; currentOrderCoupon = null; updateOrderTotal(); return; }
+    if (!isCouponActive(coupon)) { info.innerHTML = '<span style="color:var(--danger);"><i class="fas fa-times-circle"></i> Cupón inactivo o vencido</span>'; info.style.display = 'block'; currentOrderCoupon = null; updateOrderTotal(); return; }
     // Check product-specific applicability
     if (coupon.productIds && coupon.productIds.length > 0) {
         const orderProductIds = orderItems.map(i => i.productId).filter(Boolean);
@@ -3252,7 +3217,7 @@ function validateOrderCoupon() {
             info.innerHTML = '<span style="color:var(--warning);"><i class="fas fa-exclamation-circle"></i> Cupón solo aplica a productos específicos</span>';
             info.style.display = 'block';
             currentOrderCoupon = null;
-            updateOrderTotalWithCoupon();
+            updateOrderTotal();
             return;
         }
     }
@@ -3276,11 +3241,11 @@ function applyOrderCoupon() {
         }
     }
     currentOrderCoupon = coupon;
-    updateOrderTotalWithCoupon();
+    updateOrderTotal();
     showToast(`Cupón ${coupon.code} aplicado`, 'success');
 }
 
-function updateOrderTotalWithCoupon() {
+function updateOrderTotal() {
     let subtotal = orderItems.reduce((sum, item) => sum + (item.price || 0) * (item.qty || 1), 0);
     let eligibleSubtotal = subtotal;
     let discount = 0;
@@ -3319,10 +3284,7 @@ function updateOrderTotalWithCoupon() {
     document.getElementById('orderTotalDisplay').textContent = '$' + total.toLocaleString('es-CO');
 }
 
-// updateOrderTotal ahora delega a updateOrderTotalWithCoupon
-function updateOrderTotal() { updateOrderTotalWithCoupon(); }
-
-
+// updateOrderTotal ahora delega a updateOrderTotal
 // ===== PRODUCT SELECTOR FOR COUPONS =====
 function toggleCouponScope() {
     const scopeType = document.querySelector('input[name="couponScope"]:checked').value;
@@ -3430,7 +3392,7 @@ function closeConfirmModal() { closeModal('confirmModalOverlay'); confirmCallbac
 function exportJSON() { const data = JSON.stringify(products, null, 2); const blob = new Blob([data], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'khaos-productos.json'; a.click(); URL.revokeObjectURL(url); showToast('JSON exportado', 'success'); }
 function exportCSV() { const headers = ['ID','Nombre','Código','Categoría','Precio','Precio Anterior','Tallas','Agotadas','Badge','Descripción','Imagen']; const rows = products.map(p => [p.id, '"' + p.name + '"', p.code, p.category, p.price, p.oldPrice || '', (p.sizes || []).join(';'), (p.outOfStock || []).join(';'), p.badge || '', '"' + (p.desc || '').replace(/"/g, '""') + '"', p.image || '']); const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\\n'); const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'khaos-productos.csv'; a.click(); URL.revokeObjectURL(url); showToast('CSV exportado', 'success'); }
 function doImport() { const text = document.getElementById('importText').value.trim(); if (!text) { showToast('Pega los datos primero', 'warning'); return; } try { const parsed = JSON.parse(text); if (!Array.isArray(parsed)) throw new Error('No es array'); if (parsed.length > 0 && (!parsed[0].id || !parsed[0].name)) throw new Error('Formato inválido'); products = parsed; nextId = Math.max(...products.map(p => p.id), 0) + 1; saveProducts(); renderCategoryChips(); closeModal('importModalOverlay'); showToast(`Importados ${products.length} productos`, 'success'); } catch(e) { showToast('Error: formato inválido', 'error'); } }
-function confirmReset() { showConfirm('Restaurar productos', '¿Se perderán todos los cambios. Continuar?', () => { products = JSON.parse(JSON.stringify(defaultProducts)); nextId = 9; selectedIds.clear(); saveProducts(); renderCategoryChips(); showToast('Restaurado a valores por defecto', 'success'); }); }
+function confirmReset() { showConfirm('Eliminar todos los productos', '¿Eliminar todos los productos? No se puede deshacer.', () => { products = []; nextId = 1; selectedIds.clear(); saveProducts(); renderCategoryChips(); showToast('Todos los productos eliminados', 'success'); }); }
 
 // ===== SIDEBAR =====
 function toggleSidebar(save = true) { const sidebar = document.getElementById('sidebar'); const main = document.getElementById('mainContent'); const icon = document.getElementById('sidebarToggleIcon'); const isCollapsed = sidebar.classList.toggle('collapsed'); main.classList.toggle('expanded'); icon.className = isCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left'; if (save) { try { localStorage.setItem('khaos_sidebar_collapsed', isCollapsed); } catch(e) {} } }
