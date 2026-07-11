@@ -828,21 +828,13 @@ body.cart-open{overflow:hidden;position:fixed;width:100%;height:100%}
     <h2>Nuestro Catálogo</h2>
     <p>Selecciona tu estilo de juego y encuentra el guayo perfecto para ti</p>
   </div>
-  <div class="catalog-toolbar">
+  <div class="catalog-toolbar" style="justify-content:space-between">
     <div class="search-box">
       <span class="search-icon">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       </span>
       <input type="text" id="searchInput" placeholder="Buscar por nombre, categoría o referencia..." autocomplete="off" aria-label="Buscar productos">
       <button class="search-clear" id="searchClear">✕</button>
-    </div>
-    <div class="filter-chips" id="filterChips">
-      <button class="filter-chip active" data-filter="todos">Todos</button>
-      <button class="filter-chip" data-filter="guayo-corto">Guayo Corto</button>
-      <button class="filter-chip" data-filter="guayo-bota">Guayo Bota</button>
-      <button class="filter-chip" data-filter="sintetica-corta">Sintética</button>
-      <button class="filter-chip" data-filter="futsal-corto">Futsal</button>
-      <button class="filter-chip" data-filter="nino">Línea Niño</button>
     </div>
     <div class="sort-dropdown" id="sortDropdown">
       <button class="sort-btn" onclick="toggleSortMenu()">
@@ -1675,6 +1667,9 @@ function updateCartUI() {
 
   // Actualizar botón de WhatsApp
   updateWhatsAppButton();
+
+  // Actualizar visibilidad de la sección de cupones
+  updateCouponSectionVisibility();
 }
 
 function updateCartQty(index, delta) {
@@ -1917,6 +1912,7 @@ function init() {
   loadFavorites();
   loadTheme();
   loadCouponsFromAdmin();
+  updateCouponSectionVisibility();
   loadAppliedCoupon();
   createParticles();
   updateHeroStats();
@@ -1963,10 +1959,6 @@ function initEventListeners() {
     searchClear.classList.remove('show');
     renderProducts();
     searchInput.focus();
-  });
-
-  document.querySelectorAll('.filter-chip').forEach(chip => {
-    chip.addEventListener('click', function() { filterProducts(this.dataset.filter); });
   });
 
   document.addEventListener('click', function(e) {
@@ -2125,14 +2117,44 @@ function toggleCouponSection() {
   }
 }
 
-function updateCouponHint() {
-  const hint = document.getElementById('couponHint');
-  if (!hint) return;
+function updateCouponSectionVisibility() {
+  const section = document.getElementById('couponSection');
+  if (!section) return;
 
   // Cargar cupones del admin
   loadCouponsFromAdmin();
 
+  // Si no hay cupones activos en el admin, ocultar toda la sección
   if (availableCoupons.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+
+  // Filtrar solo cupones válidos (activos, no vencidos, con usos disponibles)
+  const validCoupons = availableCoupons.filter(c => {
+    const validation = isCouponValid(c);
+    return validation.valid;
+  });
+
+  if (validCoupons.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+
+  // Hay cupones válidos: mostrar la sección
+  section.style.display = '';
+}
+
+function updateCouponHint() {
+  const hint = document.getElementById('couponHint');
+  if (!hint) return;
+
+  // Asegurar visibilidad de la sección primero
+  updateCouponSectionVisibility();
+
+  // Si la sección está oculta, no mostrar hint
+  const section = document.getElementById('couponSection');
+  if (section && section.style.display === 'none') {
     hint.style.display = 'none';
     return;
   }
