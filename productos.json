@@ -7,7 +7,14 @@
       "oldPrice": 220000,
       "category": "guayo-corto",
       "code": "GC-001",
-      "sizes": ["38", "39", "40", "41", "42", "43"],
+      "sizes": [
+        "38",
+        "39",
+        "40",
+        "41",
+        "42",
+        "43"
+      ],
       "outOfStock": [],
       "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop",
       "desc": "Guayo corto profesional con upper sintético de alta gama. Suela con taches cónicos para control óptimo en césped natural.",
@@ -20,8 +27,17 @@
       "oldPrice": 240000,
       "category": "guayo-bota",
       "code": "GB-002",
-      "sizes": ["39", "40", "41", "42", "43", "44"],
-      "outOfStock": ["44"],
+      "sizes": [
+        "39",
+        "40",
+        "41",
+        "42",
+        "43",
+        "44"
+      ],
+      "outOfStock": [
+        "44"
+      ],
       "image": "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400&h=300&fit=crop",
       "desc": "Bota con tecnología Demonskin para un control superior del balón. Diseño ergonómico de caña alta.",
       "badge": "new"
@@ -33,7 +49,13 @@
       "oldPrice": 170000,
       "category": "sintetica-corta",
       "code": "SC-003",
-      "sizes": ["38", "39", "40", "41", "42"],
+      "sizes": [
+        "38",
+        "39",
+        "40",
+        "41",
+        "42"
+      ],
       "outOfStock": [],
       "image": "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400&h=300&fit=crop",
       "desc": "Ultra ligera para canchas sintéticas. Suela de goma antideslizante con amortiguación reactiva.",
@@ -46,8 +68,17 @@
       "oldPrice": 0,
       "category": "futsal-corto",
       "code": "FC-004",
-      "sizes": ["38", "39", "40", "41", "42", "43"],
-      "outOfStock": ["38"],
+      "sizes": [
+        "38",
+        "39",
+        "40",
+        "41",
+        "42",
+        "43"
+      ],
+      "outOfStock": [
+        "38"
+      ],
       "image": "https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=400&h=300&fit=crop",
       "desc": "Diseñada específicamente para futsal. Suela plana de goma flexible con gran agarre en parque.",
       "badge": "recommended"
@@ -59,7 +90,15 @@
       "oldPrice": 115000,
       "category": "nino-guayo-corto",
       "code": "NGC-005",
-      "sizes": ["28", "29", "30", "31", "32", "33", "34"],
+      "sizes": [
+        "28",
+        "29",
+        "30",
+        "31",
+        "32",
+        "33",
+        "34"
+      ],
       "outOfStock": [],
       "image": "https://images.unsplash.com/photo-1515955656352-a1fa3ffcd111?w=400&h=300&fit=crop",
       "desc": "Versión juvenil con las mismas tecnologías del modelo profesional. Ideal para academias.",
@@ -72,8 +111,16 @@
       "oldPrice": 210000,
       "category": "sintetica-bota",
       "code": "SB-006",
-      "sizes": ["40", "41", "42", "43", "44"],
-      "outOfStock": ["40"],
+      "sizes": [
+        "40",
+        "41",
+        "42",
+        "43",
+        "44"
+      ],
+      "outOfStock": [
+        "40"
+      ],
       "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=300&fit=crop",
       "desc": "Cuero sintético premium con acabado hidrófugo. Bota clásica renovada para sintética moderna.",
       "badge": "bestseller"
@@ -85,7 +132,13 @@
       "oldPrice": 0,
       "category": "futsal-bota",
       "code": "FB-007",
-      "sizes": ["39", "40", "41", "42", "43"],
+      "sizes": [
+        "39",
+        "40",
+        "41",
+        "42",
+        "43"
+      ],
       "outOfStock": [],
       "image": "https://images.unsplash.com/photo-1539185441755-769473a23570?w=400&h=300&fit=crop",
       "desc": "Construcción japonesa con piel de canguro sintética. Toque excepcional y durabilidad extrema.",
@@ -98,14 +151,64 @@
       "oldPrice": 250000,
       "category": "gc-tache-aluminio",
       "code": "GCA-008",
-      "sizes": ["40", "41", "42", "43", "44", "45"],
-      "outOfStock": ["45"],
+      "sizes": [
+        "40",
+        "41",
+        "42",
+        "43",
+        "44",
+        "45"
+      ],
+      "outOfStock": [
+        "45"
+      ],
       "image": "https://images.unsplash.com/photo-1511556532299-8f662fc26c06?w=400&h=300&fit=crop",
       "desc": "Taches de aluminio profesionales para máxima tracción. Placa ligera con tecnología anti-torsión.",
       "badge": "lastunits"
+    },
+    {
+      "id": 9,
+      "name": "hfksjhjg",
+      "code": "234646724",
+      "category": "sintetica-corta",
+      "price": 300000,
+      "oldPrice": 500000,
+      "image": "",
+      "sizes": [
+        "30",
+        "31",
+        "32",
+        "33",
+        "34",
+        "35",
+        "40",
+        "41"
+      ],
+      "outOfStock": [
+        "33",
+        "34"
+      ],
+      "desc": "brandon dayan castroñosñslihg{oish[Oighfjw{pshruedt",
+      "badge": "preorder"
     }
   ],
-  "cupones": [],
-  "fechaActualizacion": "2026-07-27T23:40:00.000Z",
+  "cupones": [
+    {
+      "id": 11,
+      "code": "SANTI",
+      "type": "fixed",
+      "value": 1000,
+      "minPurchase": 0,
+      "maxUses": 3,
+      "usedCount": 0,
+      "totalSaved": 0,
+      "startDate": "2026-07-27",
+      "endDate": "2026-07-28",
+      "appliesTo": "nino",
+      "productIds": [],
+      "active": true
+    }
+  ],
+  "fechaActualizacion": "2026-07-28T00:16:27.896Z",
   "version": 1
 }
