@@ -229,6 +229,20 @@
                     </div>
                     <div class="stat-card" style="padding:18px;">
                         <div class="stat-card-header">
+                            <div class="stat-card-icon" style="background:rgba(6,182,212,0.1);color:#06b6d4;border:1px solid rgba(6,182,212,0.15);"><i class="fas fa-shoe-prints"></i></div>
+                        </div>
+                        <div class="stat-card-value" style="font-size:26px;" id="dashZapatillas">0</div>
+                        <div class="stat-card-label">Zapatillas</div>
+                    </div>
+                    <div class="stat-card" style="padding:18px;">
+                        <div class="stat-card-header">
+                            <div class="stat-card-icon" style="background:rgba(139,92,246,0.1);color:#8b5cf6;border:1px solid rgba(139,92,246,0.15);"><i class="fas fa-shopping-bag"></i></div>
+                        </div>
+                        <div class="stat-card-value" style="font-size:26px;" id="dashAccesorios">0</div>
+                        <div class="stat-card-label">Accesorios</div>
+                    </div>
+                    <div class="stat-card" style="padding:18px;">
+                        <div class="stat-card-header">
                             <div class="stat-card-icon" style="background:rgba(212,175,55,0.1);color:#D4AF37;border:1px solid rgba(212,175,55,0.15);"><i class="fas fa-fire"></i></div>
                         </div>
                         <div class="stat-card-value" style="font-size:26px;" id="dashBestsellers">0</div>
@@ -270,6 +284,8 @@
                     <div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;" id="statGuayo">0</div><div class="stat-card-label" style="font-size:11px;">Guayos</div></div>
                     <div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;" id="statSintetica">0</div><div class="stat-card-label" style="font-size:11px;">Sintética</div></div>
                     <div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;" id="statFutsal">0</div><div class="stat-card-label" style="font-size:11px;">Futsal</div></div>
+                    <div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;" id="statZapatillas">0</div><div class="stat-card-label" style="font-size:11px;">Zapatillas</div></div>
+                    <div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;" id="statAccesorios">0</div><div class="stat-card-label" style="font-size:11px;">Accesorios</div></div>
                     <div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;" id="statNino">0</div><div class="stat-card-label" style="font-size:11px;">Línea Niño</div></div>
                     <div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;" id="statAgotados">0</div><div class="stat-card-label" style="font-size:11px;">Agotados</div></div>
                 </div>
@@ -604,6 +620,16 @@
                             <option value="futsal-corto">Futsal Corto</option>
                             <option value="futsal-bota">Futsal Bota</option>
                         </optgroup>
+                        <optgroup label="👟 Adulto — Zapatillas">
+                            <option value="zapatillas-urbanas">Zapatillas Urbanas</option>
+                            <option value="zapatillas-running">Zapatillas Running</option>
+                            <option value="zapatillas-casual">Zapatillas Casual</option>
+                        </optgroup>
+                        <optgroup label="🛡️ Adulto — Accesorios">
+                            <option value="canilleras">Canilleras</option>
+                            <option value="medias">Medias</option>
+                            <option value="bolsos">Bolsos</option>
+                        </optgroup>
                         <optgroup label="👶 Niño — Sintética">
                             <option value="nino-sintetica-corta">Niño Sintética Corta</option>
                             <option value="nino-sintetica-bota">Niño Sintética Bota</option>
@@ -654,7 +680,7 @@
 </div>
 
 <div class="modal-overlay" id="importModalOverlay">
-    <div class="modal">
+    <div class="modal" style="max-width:520px;">
         <div class="modal-header"><h2><i class="fas fa-file-import"></i> Importar Datos</h2><button class="modal-close" onclick="closeImportModal()"><i class="fas fa-times"></i></button></div>
         <div class="modal-body">
             <div class="form-group"><label>Pega aquí JSON</label><textarea class="form-textarea" id="importText" placeholder="[{...}]" style="min-height:200px;font-family:var(--font-mono);font-size:12px;"></textarea></div>
@@ -795,6 +821,8 @@
                     <option value="guayo">Solo Guayos</option>
                     <option value="sintetica">Solo Sintética</option>
                     <option value="futsal">Solo Futsal</option>
+                    <option value="zapatillas">Solo Zapatillas</option>
+                    <option value="accesorios">Solo Accesorios</option>
                     <option value="nino">Solo Línea Niño</option>
                 </select>
             </div>
