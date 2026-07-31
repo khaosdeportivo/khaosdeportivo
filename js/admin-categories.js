@@ -66,4 +66,12 @@
   }
 
   console.log('✅ Categorías Zapatillas y Accesorios cargadas en admin');
+
+  // Cargar módulo de operaciones (costo / margen) si aún no está
+  if (!document.querySelector('script[src*="admin-operations"]')) {
+    var s = document.createElement('script');
+    s.src = 'js/admin-operations.js';
+    s.async = false;
+    document.body.appendChild(s);
+  }
 })();
