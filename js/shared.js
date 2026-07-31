@@ -19,7 +19,13 @@ const categoryNames = {
   "nino-guayo-corto":"Niño Guayo Corto","guayo-corto":"Guayo Corto",
   "nino-guayo-bota":"Niño Guayo Bota","guayo-bota":"Guayo Bota",
   "nino-futsal-corto":"Niño Futsal Corto","nino-futsal-bota":"Niño Futsal Bota",
-  "futsal-corto":"Futsal Corto","futsal-bota":"Futsal Bota"
+  "futsal-corto":"Futsal Corto","futsal-bota":"Futsal Bota",
+  "zapatillas-urbanas":"Zapatillas Urbanas",
+  "zapatillas-running":"Zapatillas Running",
+  "zapatillas-casual":"Zapatillas Casual",
+  "canilleras":"Canilleras",
+  "medias":"Medias",
+  "bolsos":"Bolsos"
 };
 
 const categoryHierarchy = {
@@ -28,7 +34,9 @@ const categoryHierarchy = {
     families: {
       sintetica: { label: 'Sintética', categories: ['sintetica-corta', 'sintetica-bota'] },
       guayo: { label: 'Guayo', categories: ['guayo-corto', 'guayo-bota', 'gc-tache-aluminio', 'gb-tache-aluminio'] },
-      futsal: { label: 'Futsal', categories: ['futsal-corto', 'futsal-bota'] }
+      futsal: { label: 'Futsal', categories: ['futsal-corto', 'futsal-bota'] },
+      zapatillas: { label: 'Zapatillas', categories: ['zapatillas-urbanas', 'zapatillas-running', 'zapatillas-casual'] },
+      accesorios: { label: 'Accesorios', categories: ['canilleras', 'medias', 'bolsos'] }
     }
   },
   nino: {
@@ -124,7 +132,13 @@ function getProductImage(p) {
     'sintetica-corta': 'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400&h=300&fit=crop',
     'sintetica-bota': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=300&fit=crop',
     'futsal-corto': 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=400&h=300&fit=crop',
-    'futsal-bota': 'https://images.unsplash.com/photo-1539185441755-769473a23570?w=400&h=300&fit=crop'
+    'futsal-bota': 'https://images.unsplash.com/photo-1539185441755-769473a23570?w=400&h=300&fit=crop',
+    'zapatillas-urbanas': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop',
+    'zapatillas-running': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop',
+    'zapatillas-casual': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop',
+    'canilleras': 'https://images.unsplash.com/photo-1511556532299-8f662fc26c06?w=400&h=300&fit=crop',
+    'medias': 'https://images.unsplash.com/photo-1511556532299-8f662fc26c06?w=400&h=300&fit=crop',
+    'bolsos': 'https://images.unsplash.com/photo-1511556532299-8f662fc26c06?w=400&h=300&fit=crop'
   };
   return fallbacks[p.category] || 'https://images.unsplash.com/photo-1511556532299-8f662fc26c06?w=400&h=300&fit=crop';
 }
@@ -443,6 +457,10 @@ function renderProducts() {
       filtered = filtered.filter(p => p.category.startsWith('nino-'));
     } else if (state.currentFilter === 'adulto') {
       filtered = filtered.filter(p => !p.category.startsWith('nino-'));
+    } else if (state.currentFilter === 'zapatillas') {
+      filtered = filtered.filter(p => p.category.startsWith('zapatillas-'));
+    } else if (state.currentFilter === 'accesorios') {
+      filtered = filtered.filter(p => ['canilleras','medias','bolsos'].includes(p.category));
     } else {
       filtered = filtered.filter(p => p.category === state.currentFilter || p.category.includes(state.currentFilter));
     }
@@ -478,11 +496,11 @@ function renderProducts() {
 
   grid.innerHTML = filtered.map((p, i) => {
     const discount = getDiscountPercent(p.price, p.oldPrice);
-    const sizesHtml = p.sizes.slice(0, 6).map(s => {
+    const sizesHtml = (p.sizes || []).slice(0, 6).map(s => {
       const isOut = p.outOfStock && p.outOfStock.includes(s);
       return '<span class="size-pill ' + (isOut ? 'out' : 'available') + '">' + s + '</span>';
     }).join('');
-    const moreSizes = p.sizes.length > 6 ? '<span class="size-pill available">+' + (p.sizes.length - 6) + '</span>' : '';
+    const moreSizes = (p.sizes || []).length > 6 ? '<span class="size-pill available">+' + (p.sizes.length - 6) + '</span>' : '';
     const isFav = favorites.some(f => f.id === p.id);
 
     return '<div class="product-card" style="animation-delay:' + (i * 0.05) + 's">' +
@@ -556,7 +574,7 @@ function openModal(productId) {
   }
 
   // Stock counter
-  const availableCount = p.sizes.filter(s => !p.outOfStock || !p.outOfStock.includes(s)).length;
+  const availableCount = (p.sizes || []).filter(s => !p.outOfStock || !p.outOfStock.includes(s)).length;
   const stockEl = document.getElementById('stockCounter');
   if (availableCount <= 3 && availableCount > 0) {
     stockEl.style.display = 'flex';
@@ -567,7 +585,7 @@ function openModal(productId) {
 
   // Render sizes - BLOQUEAR LAS AGOTADAS
   const sizeSelector = document.getElementById('sizeSelector');
-  sizeSelector.innerHTML = p.sizes.map(s => {
+  sizeSelector.innerHTML = (p.sizes || []).map(s => {
     const isOut = p.outOfStock && p.outOfStock.includes(s);
     return '<div class="size-option ' + (isOut ? 'out-of-stock' : '') + '" ' + 
            (isOut ? '' : 'onclick="selectSize(\'' + s + '\')"') + '>' +
@@ -1119,6 +1137,8 @@ function isCouponApplicable(coupon, cartItems) {
           coupon.appliesTo === 'guayo' && meta.family === 'guayo' ||
           coupon.appliesTo === 'sintetica' && meta.family === 'sintetica' ||
           coupon.appliesTo === 'futsal' && meta.family === 'futsal' ||
+          coupon.appliesTo === 'zapatillas' && meta.family === 'zapatillas' ||
+          coupon.appliesTo === 'accesorios' && meta.family === 'accesorios' ||
           coupon.appliesTo === 'nino' && meta.group === 'nino';
 
         if (isEligible) {
