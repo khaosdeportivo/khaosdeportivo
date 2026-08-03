@@ -16,14 +16,17 @@
         /src=["']js\/admin\.js["']/, 
         'src="' + BASE + 'js/admin.js"'
       );
+      // Inyectar auto-carga de productos tras el admin.js
+      var inject = '<script>(function(){function fill(){try{var s=localStorage.getItem("khaos_admin_products");if(s){var p=JSON.parse(s);if(Array.isArray(p)&&p.length>0)return;}}catch(e){}fetch("https://raw.githubusercontent.com/khaosdeportivo/khaosdeportivo/main/productos.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():Promise.reject()}).then(function(data){var list=Array.isArray(data)?data:(data.productos||[]);if(!list.length||typeof products==="undefined")return;products=list;if(typeof nextId!=="undefined")nextId=Math.max.apply(null,list.map(function(x){return x.id||0}).concat([0]))+1;if(typeof saveProducts==="function")saveProducts();if(typeof renderTable==="function")renderTable();if(typeof updateAllStats==="function")updateAllStats();if(typeof showToast==="function")showToast(list.length+" productos cargados","success");}).catch(function(){});}setTimeout(fill,800);})();<\/script>';
+      html = html.replace('</body>', inject + '</body>');
       document.open();
       document.write(html);
       document.close();
     })
     .catch(function (err) {
       document.body.innerHTML = '<div style="font-family:sans-serif;padding:40px;background:#111;color:#fff;min-height:100vh">' +
-        '<h1>Error cargando el panel</h1><p>' + err + '</p>' +
-        '<p>Recarga con Ctrl+F5. Si persiste, revisa la consola (F12).</p></div>';
+        '<h1>Error cargando el panel</h1><p>' + String(err) + '</p>' +
+        '<p>Recarga con Ctrl+F5.</p></div>';
     });
 })();
 </script>
