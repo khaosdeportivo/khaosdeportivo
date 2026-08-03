@@ -1,13 +1,14 @@
-/* Bootstrap admin desde commit estable + productos desde GitHub si localStorage vacío */
+/* Bootstrap: carga admin.js estable y productos desde GitHub si hace falta */
 (function () {
-  var SRC = 'https://cdn.jsdelivr.net/gh/khaosdeportivo/khaosdeportivo@dde421859de9c54cfeb42f26f634553933238f62/js/admin.js';
+  var SRC = 'https://raw.githubusercontent.com/khaosdeportivo/khaosdeportivo/0d99daebe6a2/js/admin.js';
   var s = document.createElement('script');
-  s.src = SRC;
+  s.src = SRC + '?t=' + Date.now();
   s.onload = function () {
     try {
       if (typeof loadTheme === 'function') loadTheme();
       if (typeof checkAuth === 'function') {
-        if (checkAuth()) {
+        checkAuth(); // muestra login o app
+        if (typeof Security !== 'undefined' && Security.validateSession && Security.validateSession()) {
           if (typeof init === 'function') init();
         }
       }
@@ -38,10 +39,12 @@
         })
         .catch(function (err) { console.warn('productos.json', err); });
     }
-    setTimeout(fillFromGithub, 300);
+    setTimeout(fillFromGithub, 400);
   };
   s.onerror = function () {
-    console.error('No se pudo cargar admin.js desde jsDelivr');
+    console.error('No se pudo cargar admin.js');
+    var el = document.getElementById('loginError');
+    if (el) { el.textContent = 'Error cargando el panel. Revisa la consola (F12).'; el.classList.add('show'); }
   };
   document.head.appendChild(s);
 })();
