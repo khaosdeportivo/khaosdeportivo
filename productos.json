@@ -1337,9 +1337,29 @@
       ],
       "desc": "oyi6tertdfgñhnjk",
       "badge": null
+    },
+    {
+      "id": 72,
+      "name": "Adidas Predator Elite Negro/Blanco",
+      "code": "8422",
+      "category": "futsal-corto",
+      "price": 120000,
+      "oldPrice": 0,
+      "image": "",
+      "sizes": [
+        "40",
+        "41",
+        "42",
+        "43"
+      ],
+      "outOfStock": [
+        "42"
+      ],
+      "desc": "qawsedrftyuiuytrsasdfghnjm,.",
+      "badge": null
     }
   ],
   "cupones": [],
-  "fechaActualizacion": "2026-08-03T23:14:25.281Z",
+  "fechaActualizacion": "2026-08-03T23:22:23.516Z",
   "version": 1
 }
