@@ -1,4 +1,1 @@
-{
-  "productos": [],
-  "cupones": []
-}
+{"productos":[{"id":1,"name":"Nike Phantom GX Elite Celeste - Bota","price":215000,"oldPrice":0,"category":"guayo-bota","code":"GB-GX-CEL","sizes":["40","41","42","43","44"],"outOfStock":[],"image":"https://drive.google.com/thumbnail?id=1tFceuG15kPvMvbUg-75lZFpk9lVMqHcv&sz=w800","desc":"Guayo bota Phantom GX Elite. Upper Gripknit celeste/blanco, caña alta y taches FG.","badge":"new"}],"cupones":[]}
