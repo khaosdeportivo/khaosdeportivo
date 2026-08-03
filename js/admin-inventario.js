@@ -1,9 +1,9 @@
-/* ===== INVENTARIO MAESTRO =====
+/* ===== PRODUCTOS = INVENTARIO MAESTRO =====
    Flujo:
-   1. Nuevo producto → se guarda en inventario maestro (no en catálogo)
-   2. En inventario maestro se puede editar todo
-   3. Desde inventario maestro se agrega al catálogo
-   4. Al agregar al catálogo, el producto SALE del inventario maestro y pasa al stock del catálogo
+   1. Nuevo producto → se guarda en inventario maestro (vista Productos)
+   2. En Productos se puede editar todo
+   3. Desde Productos se agrega al catálogo (tienda)
+   4. Al agregar al catálogo, el producto SALE del maestro y pasa al stock del catálogo
 */
 (function () {
   const INV_URL = 'https://raw.githubusercontent.com/khaosdeportivo/khaosdeportivo/main/inventario.json?t=';
@@ -16,7 +16,7 @@
   let invPage = 1;
   const invPerPage = 25;
   let invLoaded = false;
-  let invEditCode = null; // código del producto del maestro que se está editando
+  let invEditCode = null;
 
   if (typeof categoryNames !== 'undefined') {
     categoryNames['bolsos'] = categoryNames['bolsos'] || 'Bolsos / Maletas';
@@ -48,18 +48,17 @@
   async function loadMasterInventory(force) {
     if (invLoaded && !force) return masterInventory;
 
-    // 1) Prefer local edits
     if (!force) {
       const local = loadMasterFromLS();
       if (local) {
         masterInventory = local;
         invLoaded = true;
         updateStatus();
+        updateMasterStats();
         return masterInventory;
       }
     }
 
-    // 2) Fetch from GitHub
     try {
       const res = await fetch(INV_URL + Date.now(), { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -68,6 +67,7 @@
       invLoaded = true;
       persistMaster();
       updateStatus();
+      updateMasterStats();
       return masterInventory;
     } catch (e) {
       console.warn('No se pudo cargar inventario.json:', e.message);
@@ -75,6 +75,7 @@
       masterInventory = local || [];
       invLoaded = true;
       updateStatus(true);
+      updateMasterStats();
       return masterInventory;
     }
   }
@@ -85,8 +86,20 @@
     if (err && masterInventory.length === 0) {
       statusEl.textContent = 'No se pudo cargar inventario.json';
     } else {
-      statusEl.textContent = masterInventory.length + ' productos en inventario maestro';
+      statusEl.textContent = masterInventory.length + ' en maestro';
     }
+  }
+
+  function updateMasterStats() {
+    const set = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = n; };
+    set('statTotal', masterInventory.length);
+    set('statGuayo', masterInventory.filter(p => /guayo|gc-|gb-/.test(p.category || '')).length);
+    set('statSintetica', masterInventory.filter(p => (p.category || '').includes('sintetica')).length);
+    set('statFutsal', masterInventory.filter(p => (p.category || '').includes('futsal')).length);
+    set('statZapatillas', masterInventory.filter(p => (p.category || '').includes('zapatillas')).length);
+    set('statAccesorios', masterInventory.filter(p => /canilleras|medias|bolsos/.test(p.category || '')).length);
+    set('statNino', masterInventory.filter(p => (p.category || '').startsWith('nino')).length);
+    set('statAgotados', typeof products !== 'undefined' ? products.length : 0);
   }
 
   function invIsInCatalog(code) {
@@ -124,7 +137,7 @@
 
   function escapeInv(s) {
     if (s == null) return '';
-    return String(s).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/"/g,'"');
+    return String(s).replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
   }
 
   function renderMasterInventory() {
@@ -141,10 +154,11 @@
 
     if (selectedInfo) selectedInfo.textContent = invSelected.size + ' seleccionados';
     if (pageInfo) pageInfo.textContent = filtered.length
-      ? `${start + 1}–${Math.min(start + invPerPage, filtered.length)} de ${filtered.length}`
+      ? (start + 1) + '–' + Math.min(start + invPerPage, filtered.length) + ' de ' + filtered.length
       : '0 productos';
 
     updateStatus();
+    updateMasterStats();
 
     if (pageItems.length === 0) {
       tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--fog);">Sin resultados. Crea un producto nuevo o recarga el inventario.</td></tr>';
@@ -159,20 +173,17 @@
       const sizes = (p.sizes || []).slice(0, 8).join(', ') + ((p.sizes || []).length > 8 ? '…' : '');
       const price = p.price > 0 ? '$' + Number(p.price).toLocaleString('es-CO') : 'Sin precio';
       const safeCode = code.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-      return `<tr class="${checked ? 'selected' : ''} ${inCat ? 'inv-in-catalog' : ''}">
-        <td><div class="checkbox ${checked ? 'checked' : ''}" onclick="invToggleSelect('${safeCode}')">${checked ? '<i class="fas fa-check"></i>' : ''}</div></td>
-        <td><div class="product-cell-info"><div class="product-cell-name">${escapeInv(p.name)}</div><div class="product-cell-code">#${escapeInv(code)}</div></div></td>
-        <td style="font-size:12px;">${escapeInv(catLabel)}</td>
-        <td style="font-size:12px;color:var(--fog);">${escapeInv(sizes)}</td>
-        <td style="font-weight:700;color:var(--gold-light);font-size:13px;">${price}</td>
-        <td>${inCat ? '<span class="badge badge-green">En catálogo</span>' : '<span class="badge badge-gray">En maestro</span>'}</td>
-        <td>
-          <div class="action-btns">
-            <button class="action-btn edit" onclick="invEditProduct('${safeCode}')" title="Editar"><i class="fas fa-pen"></i></button>
-            <button class="action-btn delete" onclick="invDeleteProduct('${safeCode}')" title="Eliminar del maestro"><i class="fas fa-trash"></i></button>
-          </div>
-        </td>
-      </tr>`;
+      return '<tr class="' + (checked ? 'selected' : '') + (inCat ? ' inv-in-catalog' : '') + '">' +
+        '<td><div class="checkbox ' + (checked ? 'checked' : '') + '" onclick="invToggleSelect(\'' + safeCode + '\')">' + (checked ? '<i class="fas fa-check"></i>' : '') + '</div></td>' +
+        '<td><div class="product-cell-info"><div class="product-cell-name">' + escapeInv(p.name) + '</div><div class="product-cell-code">#' + escapeInv(code) + '</div></div></td>' +
+        '<td style="font-size:12px;">' + escapeInv(catLabel) + '</td>' +
+        '<td style="font-size:12px;color:var(--fog);">' + escapeInv(sizes) + '</td>' +
+        '<td style="font-weight:700;color:var(--gold-light);font-size:13px;">' + price + '</td>' +
+        '<td>' + (inCat ? '<span class="badge badge-green">En catálogo</span>' : '<span class="badge badge-gray">En maestro</span>') + '</td>' +
+        '<td><div class="action-btns">' +
+        '<button class="action-btn edit" onclick="invEditProduct(\'' + safeCode + '\')" title="Editar"><i class="fas fa-pen"></i></button>' +
+        '<button class="action-btn delete" onclick="invDeleteProduct(\'' + safeCode + '\')" title="Eliminar del maestro"><i class="fas fa-trash"></i></button>' +
+        '</div></td></tr>';
     }).join('');
   }
 
@@ -213,14 +224,13 @@
     renderMasterInventory();
   };
 
-  /** Editar producto del inventario maestro (reutiliza el modal de producto) */
   window.invEditProduct = function (code) {
     const p = masterInventory.find(x => String(x.code) === String(code));
     if (!p) return;
     invEditCode = String(code);
 
-    document.getElementById('productModalTitle').innerHTML = '<i class="fas fa-warehouse"></i> Editar (Inventario maestro)';
-    document.getElementById('editId').value = ''; // no es del catálogo
+    document.getElementById('productModalTitle').innerHTML = '<i class="fas fa-box"></i> Editar Producto';
+    document.getElementById('editId').value = '';
     document.getElementById('prodName').value = p.name || '';
     document.getElementById('prodCode').value = p.code || '';
     document.getElementById('prodCategory').value = p.category || 'guayo-corto';
@@ -232,46 +242,40 @@
     if (typeof initSizesEditor === 'function') {
       initSizesEditor(p.sizes || [], p.outOfStock || []);
     }
-    // flag para que saveProduct sepa que es del maestro
     window._savingToMaster = true;
     window._masterEditCode = invEditCode;
     if (typeof openModal === 'function') openModal('productModalOverlay');
   };
 
   window.invDeleteProduct = function (code) {
-    if (typeof showConfirm !== 'function') {
-      if (!confirm('¿Eliminar del inventario maestro?')) return;
+    const doDelete = function () {
       masterInventory = masterInventory.filter(p => String(p.code) !== String(code));
       invSelected.delete(String(code));
       persistMaster();
+      renderInvCategoryOptions();
       renderMasterInventory();
       if (typeof showToast === 'function') showToast('Eliminado del inventario maestro', 'success');
+    };
+    if (typeof showConfirm !== 'function') {
+      if (!confirm('¿Eliminar del inventario maestro?')) return;
+      doDelete();
       return;
     }
-    showConfirm('Eliminar del inventario maestro', '¿Quitar este producto del inventario maestro? No afecta el catálogo.', () => {
-      masterInventory = masterInventory.filter(p => String(p.code) !== String(code));
-      invSelected.delete(String(code));
-      persistMaster();
-      renderMasterInventory();
-      showToast('Eliminado del inventario maestro', 'success');
-    });
+    showConfirm('Eliminar del inventario maestro', '¿Quitar este producto del inventario maestro? No afecta el catálogo si ya estaba publicado.', doDelete);
   };
 
-  /** Guardar producto NUEVO o editado en el inventario maestro */
   window.saveProductToMaster = function (productData, editCode) {
     if (editCode) {
       const idx = masterInventory.findIndex(p => String(p.code) === String(editCode));
       if (idx >= 0) {
-        // si cambió el código, actualizar
-        masterInventory[idx] = { ...masterInventory[idx], ...productData };
+        masterInventory[idx] = Object.assign({}, masterInventory[idx], productData);
       } else {
         masterInventory.unshift(productData);
       }
     } else {
-      // evitar duplicados por código
       const exists = masterInventory.findIndex(p => String(p.code) === String(productData.code));
       if (exists >= 0) {
-        masterInventory[exists] = { ...masterInventory[exists], ...productData };
+        masterInventory[exists] = Object.assign({}, masterInventory[exists], productData);
       } else {
         masterInventory.unshift(productData);
       }
@@ -282,7 +286,6 @@
     renderMasterInventory();
   };
 
-  /** Agregar seleccionados al catálogo y SACARLOS del inventario maestro */
   window.invAddSelectedToCatalog = function () {
     if (typeof products === 'undefined') {
       showToast('Catálogo no disponible', 'error');
@@ -296,7 +299,7 @@
     let skipped = 0;
     const codesToRemove = [];
 
-    invSelected.forEach(code => {
+    invSelected.forEach(function (code) {
       if (invIsInCatalog(code)) { skipped++; return; }
       const src = masterInventory.find(p => String(p.code) === String(code));
       if (!src) return;
@@ -308,8 +311,8 @@
         category: src.category || 'guayo-corto',
         price: src.price || 0,
         oldPrice: src.oldPrice || 0,
-        sizes: src.sizes && src.sizes.length ? [...src.sizes] : ['única'],
-        outOfStock: src.outOfStock ? [...src.outOfStock] : [],
+        sizes: src.sizes && src.sizes.length ? src.sizes.slice() : ['única'],
+        outOfStock: src.outOfStock ? src.outOfStock.slice() : [],
         image: src.image || '',
         desc: src.desc || '',
         badge: src.badge || null
@@ -318,97 +321,59 @@
       added++;
     });
 
-    // Mover: quitar del inventario maestro
     if (codesToRemove.length) {
-      masterInventory = masterInventory.filter(p => !codesToRemove.includes(String(p.code)));
+      masterInventory = masterInventory.filter(p => codesToRemove.indexOf(String(p.code)) === -1);
       persistMaster();
     }
 
     invSelected.clear();
     if (typeof saveProducts === 'function') saveProducts();
     if (typeof renderCategoryChips === 'function') renderCategoryChips();
-    if (typeof renderTable === 'function') renderTable();
     if (typeof renderInventory === 'function') renderInventory();
     renderInvCategoryOptions();
     renderMasterInventory();
 
     showToast(
       added
-        ? `✅ ${added} producto(s) pasaron al catálogo` + (skipped ? ` (${skipped} ya estaban)` : '') + '. Recuerda sincronizar con GitHub.'
+        ? ('✅ ' + added + ' producto(s) pasaron al catálogo' + (skipped ? ' (' + skipped + ' ya estaban)' : '') + '. Recuerda sincronizar con GitHub.')
         : 'No se agregó ninguno (ya estaban en el catálogo)',
       added ? 'success' : 'info'
     );
   };
 
-  window.invSwitchTab = function (tab) {
-    const stock = document.getElementById('invTabStock');
-    const master = document.getElementById('invTabMaster');
-    const btnStock = document.getElementById('invBtnStock');
-    const btnMaster = document.getElementById('invBtnMaster');
-    if (!stock || !master) return;
-    if (tab === 'master') {
-      stock.style.display = 'none';
-      master.style.display = 'block';
-      if (btnStock) btnStock.classList.remove('active');
-      if (btnMaster) btnMaster.classList.add('active');
-      loadMasterInventory().then(() => {
+  window.reloadMasterInventory = function () {
+    const doReload = function () {
+      try { localStorage.removeItem(LS_KEY); } catch (e) {}
+      invLoaded = false;
+      loadMasterInventory(true).then(function () {
         renderInvCategoryOptions();
         renderMasterInventory();
+        if (typeof showToast === 'function') showToast('Inventario recargado desde GitHub', 'success');
       });
+    };
+    if (typeof showConfirm === 'function') {
+      showConfirm('Recargar inventario', 'Se perderán cambios locales del inventario maestro no sincronizados. ¿Continuar?', doReload);
     } else {
-      master.style.display = 'none';
-      stock.style.display = 'block';
-      if (btnMaster) btnMaster.classList.remove('active');
-      if (btnStock) btnStock.classList.add('active');
-      if (typeof renderInventory === 'function') renderInventory();
+      doReload();
     }
   };
+
+  window.getMasterInventory = function () { return masterInventory; };
+  window.ensureMasterLoaded = loadMasterInventory;
 
   const _origSwitch = window.switchView;
   if (typeof _origSwitch === 'function') {
     window.switchView = function (view, el) {
       _origSwitch(view, el);
-      if (view === 'inventory') {
-        const master = document.getElementById('invTabMaster');
-        if (master && master.style.display !== 'none') {
-          loadMasterInventory().then(() => {
-            renderInvCategoryOptions();
-            renderMasterInventory();
-          });
-        }
+      if (view === 'products') {
+        loadMasterInventory().then(function () {
+          renderInvCategoryOptions();
+          renderMasterInventory();
+        });
       }
     };
   }
 
-  window.reloadMasterInventory = function () {
-    // fuerza recarga desde GitHub (descarta cambios locales no sincronizados)
-    if (typeof showConfirm === 'function') {
-      showConfirm('Recargar inventario', 'Se perderán cambios locales del inventario maestro no sincronizados. ¿Continuar?', () => {
-        try { localStorage.removeItem(LS_KEY); } catch (e) {}
-        invLoaded = false;
-        loadMasterInventory(true).then(() => {
-          renderInvCategoryOptions();
-          renderMasterInventory();
-          showToast('Inventario recargado desde GitHub', 'success');
-        });
-      });
-    } else {
-      try { localStorage.removeItem(LS_KEY); } catch (e) {}
-      invLoaded = false;
-      loadMasterInventory(true).then(() => {
-        renderInvCategoryOptions();
-        renderMasterInventory();
-      });
-    }
-  };
-
-  // Exponer para que saveProduct pueda usarlo
-  window.getMasterInventory = function () { return masterInventory; };
-  window.ensureMasterLoaded = loadMasterInventory;
-
-
-  // ===== Override: Nuevo producto → inventario maestro =====
-  // Se ejecuta al cargar para no depender de parches en admin.js
   function installProductFlowOverrides() {
     if (window._masterFlowInstalled) return;
     window._masterFlowInstalled = true;
@@ -419,7 +384,7 @@
       window._masterEditCode = null;
       if (typeof _origOpen === 'function') _origOpen();
       const title = document.getElementById('productModalTitle');
-      if (title) title.innerHTML = '<i class="fas fa-warehouse"></i> Nuevo Producto (Inventario maestro)';
+      if (title) title.innerHTML = '<i class="fas fa-plus"></i> Nuevo Producto';
       const editId = document.getElementById('editId');
       if (editId) editId.value = '';
     };
@@ -435,7 +400,6 @@
 
     const _origSave = window.saveProduct;
     window.saveProduct = function () {
-      const editId = document.getElementById('editId').value;
       const name = document.getElementById('prodName').value.trim();
       const code = document.getElementById('prodCode').value.trim();
       const category = document.getElementById('prodCategory').value;
@@ -449,16 +413,15 @@
 
       const sizes = []; const outOfStock = [];
       if (typeof allSizes !== 'undefined' && typeof currentSizes !== 'undefined') {
-        allSizes.forEach(s => {
+        allSizes.forEach(function (s) {
           if (currentSizes[s] && currentSizes[s].active) sizes.push(s);
           if (currentSizes[s] && currentSizes[s].out) outOfStock.push(s);
         });
       }
       if (sizes.length === 0) { showToast('Selecciona al menos una talla', 'error'); return; }
 
-      const productData = { name, code, category, price, oldPrice, image, sizes, outOfStock, desc, badge: badge || null };
+      const productData = { name: name, code: code, category: category, price: price, oldPrice: oldPrice, image: image, sizes: sizes, outOfStock: outOfStock, desc: desc, badge: badge || null };
 
-      // Inventario maestro
       if (window._savingToMaster) {
         if (typeof saveProductToMaster === 'function') {
           saveProductToMaster(productData, window._masterEditCode || null);
@@ -469,27 +432,37 @@
         showToast(wasEdit ? 'Actualizado en inventario maestro' : 'Guardado en inventario maestro', 'success');
         if (typeof closeModal === 'function') closeModal('productModalOverlay');
         if (typeof switchView === 'function') {
-          switchView('inventory');
-          setTimeout(function () {
-            if (typeof invSwitchTab === 'function') invSwitchTab('master');
-          }, 80);
+          switchView('products');
+        } else {
+          renderInvCategoryOptions();
+          renderMasterInventory();
         }
         return;
       }
 
-      // Catálogo (edición normal)
       if (typeof _origSave === 'function') {
         _origSave();
       }
     };
   }
 
+  function boot() {
+    installProductFlowOverrides();
+    const productsView = document.getElementById('view-products');
+    if (productsView && productsView.style.display !== 'none') {
+      loadMasterInventory().then(function () {
+        renderInvCategoryOptions();
+        renderMasterInventory();
+      });
+    }
+  }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
-      setTimeout(installProductFlowOverrides, 100);
+      setTimeout(boot, 100);
     });
   } else {
-    setTimeout(installProductFlowOverrides, 100);
+    setTimeout(boot, 100);
   }
 
 })();
