@@ -11,32 +11,6 @@
   var BASE = 'https://cdn.jsdelivr.net/gh/khaosdeportivo/khaosdeportivo@0c971526acc7/';
   var PROD_URL = 'https://cdn.jsdelivr.net/gh/khaosdeportivo/khaosdeportivo@main/productos.json';
 
-  function fillProducts() {
-    try {
-      if (typeof products !== 'undefined' && Array.isArray(products) && products.length > 0) return;
-    } catch (e) {}
-    fetch(PROD_URL + '?t=' + Date.now(), { cache: 'no-store' })
-      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)); })
-      .then(function (data) {
-        var list = Array.isArray(data) ? data : (data.productos || data.products || []);
-        if (!list.length) return;
-        try {
-          products = list;
-          if (typeof nextId !== 'undefined') {
-            nextId = Math.max.apply(null, list.map(function (x) { return x.id || 0; }).concat([0])) + 1;
-          }
-          try { localStorage.setItem('khaos_admin_products', JSON.stringify(list)); } catch (e) {}
-          if (typeof renderTable === 'function') renderTable();
-          if (typeof renderCategoryChips === 'function') renderCategoryChips();
-          if (typeof updateAllStats === 'function') updateAllStats();
-          if (typeof updateDashboard === 'function') updateDashboard();
-          if (typeof renderInventory === 'function') renderInventory();
-          if (typeof showToast === 'function') showToast(list.length + ' productos cargados', 'success');
-        } catch (e) { console.warn('fillProducts apply', e); }
-      })
-      .catch(function (err) { console.warn('No se pudieron cargar productos', err); });
-  }
-
   fetch(BASE + 'admin.html?t=' + Date.now())
     .then(function (r) { return r.ok ? r.text() : Promise.reject(new Error('HTTP ' + r.status)); })
     .then(function (html) {
@@ -44,23 +18,59 @@
         /src=["']js\/admin\.js["']/, 
         'src="' + BASE + 'js/admin.js"'
       );
-      // Tras cargar admin.js, forzar productos si están vacíos
-      var inject = '<script>(function(){' +
-        'function tryFill(){try{if(typeof products!=="undefined"&&products.length>0)return false;}catch(e){}' +
-        'fetch("' + PROD_URL + '?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():Promise.reject()}).then(function(data){' +
-        'var list=Array.isArray(data)?data:(data.productos||[]);if(!list.length)return;' +
-        'products=list;if(typeof nextId!=="undefined")nextId=Math.max.apply(null,list.map(function(x){return x.id||0}).concat([0]))+1;' +
-        'try{localStorage.setItem("khaos_admin_products",JSON.stringify(list))}catch(e){}' +
-        'if(typeof renderTable==="function")renderTable();' +
-        'if(typeof updateAllStats==="function")updateAllStats();' +
-        'if(typeof updateDashboard==="function")updateDashboard();' +
-        'if(typeof renderInventory==="function")renderInventory();' +
-        'if(typeof showToast==="function")showToast(list.length+" productos cargados","success");' +
-        '}).catch(function(e){console.warn(e)});return true}' +
-        'setTimeout(tryFill,600);setTimeout(tryFill,1500);setTimeout(tryFill,3000);' +
-        // Si el usuario hace login después, reintentar
-        'var _dl=window.doLogin;if(typeof _dl==="function"){window.doLogin=function(){var r=_dl.apply(this,arguments);setTimeout(tryFill,500);setTimeout(tryFill,1200);return r;}}' +
-        '})();<\/script>';
+
+      var inject = [
+        '<script>',
+        '(function(){',
+        'function applyList(list){',
+        '  if(!list||!list.length) return;',
+        '  window.products = list;',
+        '  try { window.nextId = Math.max.apply(null, list.map(function(x){return x.id||0}).concat([0]))+1; } catch(e){}',
+        '  try { localStorage.setItem("khaos_admin_products", JSON.stringify(list)); } catch(e){}',
+        '  try { if(typeof renderTable==="function") renderTable(); } catch(e){ console.error(e); }',
+        '  try { if(typeof updateAllStats==="function") updateAllStats(); } catch(e){}',
+        '  try { if(typeof updateDashboard==="function") updateDashboard(); } catch(e){}',
+        '  try { if(typeof renderInventory==="function") renderInventory(); } catch(e){}',
+        '  try { if(typeof renderCategoryChips==="function") renderCategoryChips(); } catch(e){}',
+        '  try { if(typeof renderSidebarCategories==="function") renderSidebarCategories(); } catch(e){}',
+        '  var el=document.getElementById("sidebarProductCount"); if(el) el.textContent=list.length;',
+        '  var t=document.getElementById("tabAll"); if(t) t.textContent=list.length;',
+        '  var s=document.getElementById("statTotal"); if(s) s.textContent=list.length;',
+        '  console.log("[Khaos] Productos aplicados:", list.length);',
+        '}',
+        'function fetchProducts(force){',
+        '  try { if(!force && window.products && window.products.length>0) return Promise.resolve(window.products); } catch(e){}',
+        '  return fetch("' + PROD_URL + '?t="+Date.now(),{cache:"no-store"})',
+        '    .then(function(r){ return r.ok?r.json():Promise.reject(new Error("HTTP "+r.status)); })',
+        '    .then(function(data){',
+        '      var list=Array.isArray(data)?data:(data.productos||data.products||[]);',
+        '      applyList(list);',
+        '      return list;',
+        '    })',
+        '    .catch(function(err){ console.warn("[Khaos] fetch productos", err); });',
+        '}',
+        // Sobrescribir loadProducts del admin original
+        'var _tries=0;',
+        'function patchLoad(){',
+        '  if(typeof window.loadProducts!=="function"){ if(++_tries<40) return setTimeout(patchLoad,200); return; }',
+        '  window.loadProducts=function(){',
+        '    try {',
+        '      var saved=localStorage.getItem("khaos_admin_products");',
+        '      if(saved){ var parsed=JSON.parse(saved); if(Array.isArray(parsed)&&parsed.length>0){ applyList(parsed); return; } }',
+        '    } catch(e){}',
+        '    fetchProducts(true);',
+        '  };',
+        '  console.log("[Khaos] loadProducts parcheado");',
+        '  // Cargar ya
+        '  window.loadProducts();',
+        '}',
+        'patchLoad();',
+        'setTimeout(function(){ fetchProducts(false); }, 1000);',
+        'setTimeout(function(){ if(!window.products||!window.products.length) fetchProducts(true); }, 2500);',
+        '})();',
+        '<\/script>'
+      ].join('\n');
+
       html = html.replace('</body>', inject + '</body>');
       document.open();
       document.write(html);
@@ -68,8 +78,7 @@
     })
     .catch(function (err) {
       document.body.innerHTML = '<div style="font-family:sans-serif;padding:40px;background:#111;color:#fff;min-height:100vh">' +
-        '<h1>Error cargando el panel</h1><p>' + String(err) + '</p>' +
-        '<p>Recarga con Ctrl+F5.</p></div>';
+        '<h1>Error cargando el panel</h1><p>' + String(err) + '</p></div>';
     });
 })();
 </script>
