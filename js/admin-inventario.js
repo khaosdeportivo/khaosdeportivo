@@ -16,7 +16,7 @@
   let invPage = 1;
   const invPerPage = 25;
   let invLoaded = false;
-  let invEditCode = null;
+  let invEditCode = null; // código del producto del maestro que se está editando
 
   if (typeof categoryNames !== 'undefined') {
     categoryNames['bolsos'] = categoryNames['bolsos'] || 'Bolsos / Maletas';
@@ -48,6 +48,7 @@
   async function loadMasterInventory(force) {
     if (invLoaded && !force) return masterInventory;
 
+    // 1) Prefer local edits
     if (!force) {
       const local = loadMasterFromLS();
       if (local) {
@@ -58,6 +59,7 @@
       }
     }
 
+    // 2) Fetch from GitHub
     try {
       const res = await fetch(INV_URL + Date.now(), { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -211,13 +213,14 @@
     renderMasterInventory();
   };
 
+  /** Editar producto del inventario maestro (reutiliza el modal de producto) */
   window.invEditProduct = function (code) {
     const p = masterInventory.find(x => String(x.code) === String(code));
     if (!p) return;
     invEditCode = String(code);
 
     document.getElementById('productModalTitle').innerHTML = '<i class="fas fa-warehouse"></i> Editar (Inventario maestro)';
-    document.getElementById('editId').value = '';
+    document.getElementById('editId').value = ''; // no es del catálogo
     document.getElementById('prodName').value = p.name || '';
     document.getElementById('prodCode').value = p.code || '';
     document.getElementById('prodCategory').value = p.category || 'guayo-corto';
@@ -229,6 +232,7 @@
     if (typeof initSizesEditor === 'function') {
       initSizesEditor(p.sizes || [], p.outOfStock || []);
     }
+    // flag para que saveProduct sepa que es del maestro
     window._savingToMaster = true;
     window._masterEditCode = invEditCode;
     if (typeof openModal === 'function') openModal('productModalOverlay');
@@ -253,15 +257,18 @@
     });
   };
 
+  /** Guardar producto NUEVO o editado en el inventario maestro */
   window.saveProductToMaster = function (productData, editCode) {
     if (editCode) {
       const idx = masterInventory.findIndex(p => String(p.code) === String(editCode));
       if (idx >= 0) {
+        // si cambió el código, actualizar
         masterInventory[idx] = { ...masterInventory[idx], ...productData };
       } else {
         masterInventory.unshift(productData);
       }
     } else {
+      // evitar duplicados por código
       const exists = masterInventory.findIndex(p => String(p.code) === String(productData.code));
       if (exists >= 0) {
         masterInventory[exists] = { ...masterInventory[exists], ...productData };
@@ -275,6 +282,7 @@
     renderMasterInventory();
   };
 
+  /** Agregar seleccionados al catálogo y SACARLOS del inventario maestro */
   window.invAddSelectedToCatalog = function () {
     if (typeof products === 'undefined') {
       showToast('Catálogo no disponible', 'error');
@@ -310,6 +318,7 @@
       added++;
     });
 
+    // Mover: quitar del inventario maestro
     if (codesToRemove.length) {
       masterInventory = masterInventory.filter(p => !codesToRemove.includes(String(p.code)));
       persistMaster();
@@ -372,6 +381,7 @@
   }
 
   window.reloadMasterInventory = function () {
+    // fuerza recarga desde GitHub (descarta cambios locales no sincronizados)
     if (typeof showConfirm === 'function') {
       showConfirm('Recargar inventario', 'Se perderán cambios locales del inventario maestro no sincronizados. ¿Continuar?', () => {
         try { localStorage.removeItem(LS_KEY); } catch (e) {}
@@ -392,6 +402,94 @@
     }
   };
 
+  // Exponer para que saveProduct pueda usarlo
   window.getMasterInventory = function () { return masterInventory; };
   window.ensureMasterLoaded = loadMasterInventory;
+
+
+  // ===== Override: Nuevo producto → inventario maestro =====
+  // Se ejecuta al cargar para no depender de parches en admin.js
+  function installProductFlowOverrides() {
+    if (window._masterFlowInstalled) return;
+    window._masterFlowInstalled = true;
+
+    const _origOpen = window.openProductModal;
+    window.openProductModal = function () {
+      window._savingToMaster = true;
+      window._masterEditCode = null;
+      if (typeof _origOpen === 'function') _origOpen();
+      const title = document.getElementById('productModalTitle');
+      if (title) title.innerHTML = '<i class="fas fa-warehouse"></i> Nuevo Producto (Inventario maestro)';
+      const editId = document.getElementById('editId');
+      if (editId) editId.value = '';
+    };
+
+    const _origEdit = window.editProduct;
+    window.editProduct = function (id) {
+      window._savingToMaster = false;
+      window._masterEditCode = null;
+      if (typeof _origEdit === 'function') _origEdit(id);
+      const title = document.getElementById('productModalTitle');
+      if (title) title.innerHTML = '<i class="fas fa-edit"></i> Editar Producto (Catálogo)';
+    };
+
+    const _origSave = window.saveProduct;
+    window.saveProduct = function () {
+      const editId = document.getElementById('editId').value;
+      const name = document.getElementById('prodName').value.trim();
+      const code = document.getElementById('prodCode').value.trim();
+      const category = document.getElementById('prodCategory').value;
+      const price = parseInt(document.getElementById('prodPrice').value) || 0;
+      const oldPrice = parseInt(document.getElementById('prodOldPrice').value) || 0;
+      const image = document.getElementById('prodImage').value.trim();
+      const desc = document.getElementById('prodDesc').value.trim();
+      const badge = document.getElementById('prodBadge').value;
+      if (!name) { showToast('El nombre es obligatorio', 'error'); return; }
+      if (!code) { showToast('El código es obligatorio', 'error'); return; }
+
+      const sizes = []; const outOfStock = [];
+      if (typeof allSizes !== 'undefined' && typeof currentSizes !== 'undefined') {
+        allSizes.forEach(s => {
+          if (currentSizes[s] && currentSizes[s].active) sizes.push(s);
+          if (currentSizes[s] && currentSizes[s].out) outOfStock.push(s);
+        });
+      }
+      if (sizes.length === 0) { showToast('Selecciona al menos una talla', 'error'); return; }
+
+      const productData = { name, code, category, price, oldPrice, image, sizes, outOfStock, desc, badge: badge || null };
+
+      // Inventario maestro
+      if (window._savingToMaster) {
+        if (typeof saveProductToMaster === 'function') {
+          saveProductToMaster(productData, window._masterEditCode || null);
+        }
+        const wasEdit = !!window._masterEditCode;
+        window._savingToMaster = false;
+        window._masterEditCode = null;
+        showToast(wasEdit ? 'Actualizado en inventario maestro' : 'Guardado en inventario maestro', 'success');
+        if (typeof closeModal === 'function') closeModal('productModalOverlay');
+        if (typeof switchView === 'function') {
+          switchView('inventory');
+          setTimeout(function () {
+            if (typeof invSwitchTab === 'function') invSwitchTab('master');
+          }, 80);
+        }
+        return;
+      }
+
+      // Catálogo (edición normal)
+      if (typeof _origSave === 'function') {
+        _origSave();
+      }
+    };
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(installProductFlowOverrides, 100);
+    });
+  } else {
+    setTimeout(installProductFlowOverrides, 100);
+  }
+
 })();
