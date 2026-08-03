@@ -39,16 +39,21 @@
       var list = Array.prototype.slice.call(document.body.querySelectorAll('script'));
       function runNext(i){
         if(i>=list.length){
-          // UI productos estilo maestro
-          var ui = document.createElement('script');
-          ui.src = 'js/admin-products-ui.js?t=' + Date.now();
-          document.body.appendChild(ui);
+          // Parches de estabilidad (renderTable, cupones, contadores)
+          var fix = document.createElement('script');
+          fix.src = 'js/admin-fix.js?t=' + Date.now();
+          fix.onload = function(){
+            // UI productos estilo maestro
+            var ui = document.createElement('script');
+            ui.src = 'js/admin-products-ui.js?t=' + Date.now();
+            document.body.appendChild(ui);
+          };
+          document.body.appendChild(fix);
 
-          // ===== Parches de estabilidad =====
-          (function installPatches(){
+          // ===== AUTO-SYNC =====
+          (function installAutoSync(){
             var tries = 0;
             function tryPatch(){
-              // 1) Auto-sync al guardar
               if (typeof window.saveProducts === 'function' && !window.__khaosAutoSyncInstalled) {
                 window.__khaosAutoSyncInstalled = true;
                 var _origSave = window.saveProducts;
@@ -76,42 +81,14 @@
                   return r;
                 };
                 console.log('[Khaos] Auto-sync instalado');
+                return;
               }
-
-              // 2) updateCouponStats null-safe (evita error textContent de null)
-              if (typeof window.updateCouponStats === 'function' && !window.__khaosCouponPatch) {
-                window.__khaosCouponPatch = true;
-                var _origCoupon = window.updateCouponStats;
-                window.updateCouponStats = function(){
-                  try {
-                    var ids = ['couponTotal','couponActive','couponUsed','couponSaved',
-                               'sidebarCouponCount','tabCouponAll','tabCouponActive',
-                               'tabCouponExpired','tabCouponPct','tabCouponFixed'];
-                    var missing = ids.some(function(id){ return !document.getElementById(id); });
-                    if (missing) return; // vista de cupones aún no montada
-                    return _origCoupon.apply(this, arguments);
-                  } catch(e) {
-                    console.warn('[Khaos] updateCouponStats seguro:', e.message);
-                  }
-                };
-              }
-
-              // 3) formatPrice seguro
-              if (typeof window.formatPrice !== 'function') {
-                window.formatPrice = function(n){
-                  n = Number(n);
-                  if (isNaN(n)) n = 0;
-                  return '$' + n.toLocaleString('es-CO');
-                };
-              }
-
-              if (window.__khaosAutoSyncInstalled && window.__khaosCouponPatch) return;
               if (++tries < 50) setTimeout(tryPatch, 200);
             }
             tryPatch();
           })();
 
-          // ===== PRODUCTOS: siempre prioritizar GitHub =====
+          // ===== PRODUCTOS desde GitHub =====
           setTimeout(function(){
             function normalize(list){
               return (list || []).map(function(p){
@@ -188,7 +165,7 @@
                 } catch(e) {}
                 console.warn('[Khaos] Sin productos disponibles');
               });
-          }, 900);
+          }, 1100);
           return;
         }
         var old=list[i];
