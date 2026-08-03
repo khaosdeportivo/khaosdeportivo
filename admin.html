@@ -30,17 +30,19 @@
         });
         var title = tmp.querySelector('title');
         if(title) document.title = title.textContent;
-        // chart.js
         var chart = document.createElement('script');
         chart.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
         document.head.appendChild(chart);
       }
       var bodyHtml = bodyMatch[1].replace(/src=["']js\/admin\.js["']/g, 'src="'+BASE+'js/admin.js"');
       document.body.innerHTML = bodyHtml;
-      // Ejecutar scripts del body en orden
       var list = Array.prototype.slice.call(document.body.querySelectorAll('script'));
       function runNext(i){
         if(i>=list.length){
+          // UI productos estilo maestro
+          var ui = document.createElement('script');
+          ui.src = 'js/admin-products-ui.js?t=' + Date.now();
+          document.body.appendChild(ui);
           // productos
           setTimeout(function(){
             function apply(list){
