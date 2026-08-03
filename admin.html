@@ -2,13 +2,30 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Khaos Admin</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<link rel="stylesheet" href="css/admin.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khaos Deportivo — Panel de Administración</title>
 </head>
 <body>
-<!-- PLACEHOLDER - will replace with full content -->
+<script>
+(function () {
+  var BASE = 'https://cdn.jsdelivr.net/gh/khaosdeportivo/khaosdeportivo@0c971526acc7/';
+  fetch(BASE + 'admin.html?t=' + Date.now())
+    .then(function (r) { return r.ok ? r.text() : Promise.reject(new Error('HTTP ' + r.status)); })
+    .then(function (html) {
+      html = html.replace(
+        /src=["']js\/admin\.js["']/, 
+        'src="' + BASE + 'js/admin.js"'
+      );
+      document.open();
+      document.write(html);
+      document.close();
+    })
+    .catch(function (err) {
+      document.body.innerHTML = '<div style="font-family:sans-serif;padding:40px;background:#111;color:#fff;min-height:100vh">' +
+        '<h1>Error cargando el panel</h1><p>' + err + '</p>' +
+        '<p>Recarga con Ctrl+F5. Si persiste, revisa la consola (F12).</p></div>';
+    });
+})();
+</script>
 </body>
 </html>
