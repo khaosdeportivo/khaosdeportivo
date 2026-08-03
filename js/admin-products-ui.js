@@ -39,7 +39,7 @@
       var hint = document.createElement('p');
       hint.id = 'prodMaestroHint';
       hint.style.cssText = 'font-size:13px;color:var(--fog);margin:0 16px 12px;';
-      hint.innerHTML = 'Busca por <strong>nombre</strong> o <strong>código</strong> y filtra por categoría. Edita cualquier producto y sincroniza con GitHub cuando termines.';
+      hint.innerHTML = 'Busca por <strong>nombre</strong> o <strong>código</strong> y filtra por categoría. Al guardar, el catálogo se actualiza automáticamente en GitHub.';
       var filterRow = document.getElementById('prodMaestroFilterRow');
       if (filterRow) filterRow.parentNode.insertBefore(hint, filterRow);
     }
@@ -126,11 +126,56 @@
     return true;
   }
 
+  /* ===== AUTO-SYNC A GITHUB AL GUARDAR ===== */
+  var _autoSyncTimer = null;
+  var AUTO_SYNC_DELAY_MS = 2500; // espera 2.5s por si hay varios guardados seguidos
+
+  function hasGithubToken() {
+    try {
+      var t = localStorage.getItem('khaos_github_token');
+      return !!(t && (t.startsWith('ghp_') || t.startsWith('github_pat_')));
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function scheduleAutoSync() {
+    if (!hasGithubToken()) {
+      if (typeof showToast === 'function') {
+        showToast('Guardado local. Configura el token de GitHub en Ajustes para actualizar el catálogo automáticamente.', 'warning');
+      }
+      return;
+    }
+    if (_autoSyncTimer) clearTimeout(_autoSyncTimer);
+    _autoSyncTimer = setTimeout(function () {
+      _autoSyncTimer = null;
+      if (typeof syncToGithub === 'function') {
+        syncToGithub();
+      } else if (typeof showToast === 'function') {
+        showToast('Función de sincronización no disponible. Usa el botón manual.', 'warning');
+      }
+    }, AUTO_SYNC_DELAY_MS);
+  }
+
+  function patchSaveProducts() {
+    if (typeof saveProducts !== 'function' || window.__prodAutoSyncPatched) return false;
+    window.__prodAutoSyncPatched = true;
+    var _origSave = saveProducts;
+    window.saveProducts = function () {
+      var result = _origSave.apply(this, arguments);
+      try { scheduleAutoSync(); } catch (e) {}
+      return result;
+    };
+    return true;
+  }
+
   function boot() {
     ensureUI();
     var tries = 0;
     (function wait() {
-      if (patchFilters() || ++tries > 40) {
+      var filtersOk = patchFilters();
+      var saveOk = patchSaveProducts();
+      if ((filtersOk && saveOk) || ++tries > 40) {
         ensureUI();
         refreshCategoryOptions();
         updateFilterStatus();
