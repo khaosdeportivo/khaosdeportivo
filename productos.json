@@ -1307,9 +1307,32 @@
       "image": "https://drive.google.com/thumbnail?id=1hld-AJG3a7f-ZFIhD75FI7yL59f7d2SY&sz=w800",
       "desc": "Adidas Sala azul con franjas blancas y cordones volt. Suela goma.",
       "badge": "new"
+    },
+    {
+      "id": 71,
+      "name": "Nike Phantom GX Elite Celeste - Bota",
+      "code": "GB-GX-CEL",
+      "category": "guayo-bota",
+      "price": 160000,
+      "oldPrice": 0,
+      "image": "",
+      "sizes": [
+        "39",
+        "40",
+        "41",
+        "42",
+        "43",
+        "44",
+        "45"
+      ],
+      "outOfStock": [
+        "41"
+      ],
+      "desc": "lo mejor del mercado",
+      "badge": null
     }
   ],
   "cupones": [],
-  "fechaActualizacion": "2026-08-03T21:45:23.029Z",
+  "fechaActualizacion": "2026-08-03T22:59:18.877Z",
   "version": 1
 }
