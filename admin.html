@@ -82,27 +82,77 @@
             tryPatch();
           })();
 
-          // productos
+          // ===== PRODUCTOS: siempre prioritizar GitHub (fuente de verdad) =====
           setTimeout(function(){
-            function apply(list){
-              if(!list||!list.length) return;
-              window.products=list;
-              try{nextId=Math.max.apply(null,list.map(function(x){return x.id||0}).concat([0]))+1;}catch(e){}
-              try{localStorage.setItem('khaos_admin_products',JSON.stringify(list));}catch(e){}
-              try{if(typeof renderTable==='function')renderTable();}catch(e){}
-              try{if(typeof updateAllStats==='function')updateAllStats();}catch(e){}
-              try{if(typeof updateDashboard==='function')updateDashboard();}catch(e){}
-              console.log('[Khaos] productos', list.length);
+            function normalize(list){
+              return (list || []).map(function(p){
+                if (!p || typeof p !== 'object') return null;
+                if (!Array.isArray(p.sizes)) p.sizes = [];
+                if (!Array.isArray(p.outOfStock)) p.outOfStock = [];
+                if (typeof p.price !== 'number') p.price = parseInt(p.price, 10) || 0;
+                if (p.oldPrice != null && typeof p.oldPrice !== 'number') p.oldPrice = parseInt(p.oldPrice, 10) || 0;
+                return p;
+              }).filter(Boolean);
             }
-            try{
-              var s=localStorage.getItem('khaos_admin_products');
-              if(s){var p=JSON.parse(s);if(Array.isArray(p)&&p.length>0){apply(p);return;}}
-            }catch(e){}
-            fetch('https://cdn.jsdelivr.net/gh/khaosdeportivo/khaosdeportivo@main/productos.json?t='+Date.now(),{cache:'no-store'})
-              .then(function(r){return r.json()})
-              .then(function(d){apply(Array.isArray(d)?d:(d.productos||[]));})
-              .catch(function(e){console.warn(e);});
-          }, 800);
+
+            function apply(list, source){
+              list = normalize(list);
+              if (!list.length) {
+                console.warn('[Khaos] lista vacía desde', source);
+                return false;
+              }
+              window.products = list;
+              try {
+                nextId = Math.max.apply(null, list.map(function(x){ return x.id || 0; }).concat([0])) + 1;
+              } catch(e) {}
+              try {
+                localStorage.setItem('khaos_admin_products', JSON.stringify(list));
+              } catch(e) {}
+
+              // Reset filtros para que se vean todos
+              try { if (typeof currentTab !== 'undefined') currentTab = 'all'; } catch(e) {}
+              try { if (typeof currentCategoryFilter !== 'undefined') currentCategoryFilter = 'all'; } catch(e) {}
+              try { if (typeof currentPage !== 'undefined') currentPage = 1; } catch(e) {}
+              try { if (typeof selectedIds !== 'undefined' && selectedIds.clear) selectedIds.clear(); } catch(e) {}
+
+              try { if (typeof renderTable === 'function') renderTable(); } catch(e) { console.warn(e); }
+              try { if (typeof updateAllStats === 'function') updateAllStats(); } catch(e) { console.warn(e); }
+              try { if (typeof updateDashboard === 'function') updateDashboard(); } catch(e) { console.warn(e); }
+              try { if (typeof renderSidebarCategories === 'function') renderSidebarCategories(); } catch(e) {}
+              try { if (typeof renderCategoryChips === 'function') renderCategoryChips(); } catch(e) {}
+              try { if (typeof renderInventory === 'function') renderInventory(); } catch(e) {}
+              try { if (typeof updateCharts === 'function') updateCharts(); } catch(e) {}
+
+              console.log('[Khaos] productos cargados (' + source + '):', list.length);
+              if (typeof showToast === 'function') {
+                showToast('Catálogo cargado: ' + list.length + ' productos', 'success');
+              }
+              return true;
+            }
+
+            // 1) Siempre intentar GitHub primero
+            fetch('https://cdn.jsdelivr.net/gh/khaosdeportivo/khaosdeportivo@main/productos.json?t=' + Date.now(), { cache: 'no-store' })
+              .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+              .then(function(d){
+                var list = Array.isArray(d) ? d : (d.productos || []);
+                if (!apply(list, 'github')) throw new Error('GitHub sin productos');
+              })
+              .catch(function(err){
+                console.warn('[Khaos] GitHub falló, usando localStorage:', err);
+                // 2) Fallback localStorage
+                try {
+                  var s = localStorage.getItem('khaos_admin_products');
+                  if (s) {
+                    var p = JSON.parse(s);
+                    if (Array.isArray(p) && p.length > 0) {
+                      apply(p, 'localStorage');
+                      return;
+                    }
+                  }
+                } catch(e) {}
+                console.warn('[Khaos] Sin productos disponibles');
+              });
+          }, 900);
           return;
         }
         var old=list[i];
