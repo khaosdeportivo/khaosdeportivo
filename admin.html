@@ -43,6 +43,45 @@
           var ui = document.createElement('script');
           ui.src = 'js/admin-products-ui.js?t=' + Date.now();
           document.body.appendChild(ui);
+
+          // ===== AUTO-SYNC: parche garantizado tras cargar admin estable =====
+          (function installAutoSync(){
+            var tries = 0;
+            function tryPatch(){
+              if (typeof window.saveProducts === 'function' && !window.__khaosAutoSyncInstalled) {
+                window.__khaosAutoSyncInstalled = true;
+                var _orig = window.saveProducts;
+                var timer = null;
+                window.saveProducts = function(){
+                  var r = _orig.apply(this, arguments);
+                  try {
+                    var token = '';
+                    try { token = localStorage.getItem('khaos_github_token') || ''; } catch(e){}
+                    if (!token || (!token.startsWith('ghp_') && !token.startsWith('github_pat_'))) {
+                      if (typeof showToast === 'function') {
+                        showToast('Guardado local. Configura el token de GitHub en Ajustes para actualizar el catálogo.', 'warning');
+                      }
+                      return r;
+                    }
+                    if (timer) clearTimeout(timer);
+                    timer = setTimeout(function(){
+                      timer = null;
+                      if (typeof syncToGithub === 'function') {
+                        console.log('[Khaos] Auto-sync a GitHub…');
+                        syncToGithub();
+                      }
+                    }, 1500);
+                  } catch(e) { console.warn('[Khaos] auto-sync error', e); }
+                  return r;
+                };
+                console.log('[Khaos] Auto-sync instalado');
+                return;
+              }
+              if (++tries < 50) setTimeout(tryPatch, 200);
+            }
+            tryPatch();
+          })();
+
           // productos
           setTimeout(function(){
             function apply(list){
