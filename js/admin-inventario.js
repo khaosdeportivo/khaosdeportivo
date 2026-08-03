@@ -1,9 +1,14 @@
 /* ===== INVENTARIO MAESTRO =====
-   Carga inventario.json (781 productos del Excel) y permite seleccionar
-   cuáles agregar al catálogo público (productos).
+   Flujo:
+   1. Nuevo producto → se guarda en inventario maestro (no en catálogo)
+   2. En inventario maestro se puede editar todo
+   3. Desde inventario maestro se agrega al catálogo
+   4. Al agregar al catálogo, el producto SALE del inventario maestro y pasa al stock del catálogo
 */
 (function () {
   const INV_URL = 'https://raw.githubusercontent.com/khaosdeportivo/khaosdeportivo/main/inventario.json?t=';
+  const LS_KEY = 'khaos_master_inventory';
+
   let masterInventory = [];
   let invSelected = new Set();
   let invFilter = 'all';
@@ -11,6 +16,7 @@
   let invPage = 1;
   const invPerPage = 25;
   let invLoaded = false;
+  let invEditCode = null;
 
   if (typeof categoryNames !== 'undefined') {
     categoryNames['bolsos'] = categoryNames['bolsos'] || 'Bolsos / Maletas';
@@ -19,23 +25,65 @@
     categoryColors['bolsos'] = categoryColors['bolsos'] || '#64748b';
   }
 
+  function persistMaster() {
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify({
+        inventario: masterInventory,
+        updatedAt: new Date().toISOString()
+      }));
+    } catch (e) {}
+  }
+
+  function loadMasterFromLS() {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return null;
+      const data = JSON.parse(raw);
+      const list = data.inventario || data;
+      if (Array.isArray(list) && list.length > 0) return list;
+    } catch (e) {}
+    return null;
+  }
+
   async function loadMasterInventory(force) {
     if (invLoaded && !force) return masterInventory;
+
+    if (!force) {
+      const local = loadMasterFromLS();
+      if (local) {
+        masterInventory = local;
+        invLoaded = true;
+        updateStatus();
+        return masterInventory;
+      }
+    }
+
     try {
       const res = await fetch(INV_URL + Date.now(), { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       masterInventory = data.inventario || data.productos || (Array.isArray(data) ? data : []);
       invLoaded = true;
-      const statusEl = document.getElementById('invMasterStatus');
-      if (statusEl) statusEl.textContent = masterInventory.length + ' productos en inventario';
+      persistMaster();
+      updateStatus();
       return masterInventory;
     } catch (e) {
       console.warn('No se pudo cargar inventario.json:', e.message);
-      const statusEl = document.getElementById('invMasterStatus');
-      if (statusEl) statusEl.textContent = 'No se pudo cargar inventario.json (¿está en GitHub?)';
-      masterInventory = [];
-      return [];
+      const local = loadMasterFromLS();
+      masterInventory = local || [];
+      invLoaded = true;
+      updateStatus(true);
+      return masterInventory;
+    }
+  }
+
+  function updateStatus(err) {
+    const statusEl = document.getElementById('invMasterStatus');
+    if (!statusEl) return;
+    if (err && masterInventory.length === 0) {
+      statusEl.textContent = 'No se pudo cargar inventario.json';
+    } else {
+      statusEl.textContent = masterInventory.length + ' productos en inventario maestro';
     }
   }
 
@@ -72,6 +120,11 @@
     sel.value = current;
   }
 
+  function escapeInv(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/"/g,'"');
+  }
+
   function renderMasterInventory() {
     const tbody = document.getElementById('invMasterTableBody');
     const pageInfo = document.getElementById('invPageInfo');
@@ -89,8 +142,10 @@
       ? `${start + 1}–${Math.min(start + invPerPage, filtered.length)} de ${filtered.length}`
       : '0 productos';
 
+    updateStatus();
+
     if (pageItems.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--fog);">Sin resultados. Prueba otro filtro o carga inventario.json en el repo.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--fog);">Sin resultados. Crea un producto nuevo o recarga el inventario.</td></tr>';
       return;
     }
 
@@ -108,14 +163,15 @@
         <td style="font-size:12px;">${escapeInv(catLabel)}</td>
         <td style="font-size:12px;color:var(--fog);">${escapeInv(sizes)}</td>
         <td style="font-weight:700;color:var(--gold-light);font-size:13px;">${price}</td>
-        <td>${inCat ? '<span class="badge badge-green">En catálogo</span>' : '<span class="badge badge-gray">Disponible</span>'}</td>
+        <td>${inCat ? '<span class="badge badge-green">En catálogo</span>' : '<span class="badge badge-gray">En maestro</span>'}</td>
+        <td>
+          <div class="action-btns">
+            <button class="action-btn edit" onclick="invEditProduct('${safeCode}')" title="Editar"><i class="fas fa-pen"></i></button>
+            <button class="action-btn delete" onclick="invDeleteProduct('${safeCode}')" title="Eliminar del maestro"><i class="fas fa-trash"></i></button>
+          </div>
+        </td>
       </tr>`;
     }).join('');
-  }
-
-  function escapeInv(s) {
-    if (s == null) return '';
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
   window.invToggleSelect = function (code) {
@@ -155,6 +211,70 @@
     renderMasterInventory();
   };
 
+  window.invEditProduct = function (code) {
+    const p = masterInventory.find(x => String(x.code) === String(code));
+    if (!p) return;
+    invEditCode = String(code);
+
+    document.getElementById('productModalTitle').innerHTML = '<i class="fas fa-warehouse"></i> Editar (Inventario maestro)';
+    document.getElementById('editId').value = '';
+    document.getElementById('prodName').value = p.name || '';
+    document.getElementById('prodCode').value = p.code || '';
+    document.getElementById('prodCategory').value = p.category || 'guayo-corto';
+    document.getElementById('prodPrice').value = p.price || '';
+    document.getElementById('prodOldPrice').value = p.oldPrice || '';
+    document.getElementById('prodImage').value = p.image || '';
+    document.getElementById('prodDesc').value = p.desc || '';
+    document.getElementById('prodBadge').value = p.badge || '';
+    if (typeof initSizesEditor === 'function') {
+      initSizesEditor(p.sizes || [], p.outOfStock || []);
+    }
+    window._savingToMaster = true;
+    window._masterEditCode = invEditCode;
+    if (typeof openModal === 'function') openModal('productModalOverlay');
+  };
+
+  window.invDeleteProduct = function (code) {
+    if (typeof showConfirm !== 'function') {
+      if (!confirm('¿Eliminar del inventario maestro?')) return;
+      masterInventory = masterInventory.filter(p => String(p.code) !== String(code));
+      invSelected.delete(String(code));
+      persistMaster();
+      renderMasterInventory();
+      if (typeof showToast === 'function') showToast('Eliminado del inventario maestro', 'success');
+      return;
+    }
+    showConfirm('Eliminar del inventario maestro', '¿Quitar este producto del inventario maestro? No afecta el catálogo.', () => {
+      masterInventory = masterInventory.filter(p => String(p.code) !== String(code));
+      invSelected.delete(String(code));
+      persistMaster();
+      renderMasterInventory();
+      showToast('Eliminado del inventario maestro', 'success');
+    });
+  };
+
+  window.saveProductToMaster = function (productData, editCode) {
+    if (editCode) {
+      const idx = masterInventory.findIndex(p => String(p.code) === String(editCode));
+      if (idx >= 0) {
+        masterInventory[idx] = { ...masterInventory[idx], ...productData };
+      } else {
+        masterInventory.unshift(productData);
+      }
+    } else {
+      const exists = masterInventory.findIndex(p => String(p.code) === String(productData.code));
+      if (exists >= 0) {
+        masterInventory[exists] = { ...masterInventory[exists], ...productData };
+      } else {
+        masterInventory.unshift(productData);
+      }
+    }
+    persistMaster();
+    invLoaded = true;
+    renderInvCategoryOptions();
+    renderMasterInventory();
+  };
+
   window.invAddSelectedToCatalog = function () {
     if (typeof products === 'undefined') {
       showToast('Catálogo no disponible', 'error');
@@ -166,6 +286,8 @@
     }
     let added = 0;
     let skipped = 0;
+    const codesToRemove = [];
+
     invSelected.forEach(code => {
       if (invIsInCatalog(code)) { skipped++; return; }
       const src = masterInventory.find(p => String(p.code) === String(code));
@@ -178,23 +300,32 @@
         category: src.category || 'guayo-corto',
         price: src.price || 0,
         oldPrice: src.oldPrice || 0,
-        sizes: src.sizes && src.sizes.length ? src.sizes : ['única'],
-        outOfStock: src.outOfStock || [],
+        sizes: src.sizes && src.sizes.length ? [...src.sizes] : ['única'],
+        outOfStock: src.outOfStock ? [...src.outOfStock] : [],
         image: src.image || '',
         desc: src.desc || '',
         badge: src.badge || null
       });
+      codesToRemove.push(String(code));
       added++;
     });
+
+    if (codesToRemove.length) {
+      masterInventory = masterInventory.filter(p => !codesToRemove.includes(String(p.code)));
+      persistMaster();
+    }
+
     invSelected.clear();
     if (typeof saveProducts === 'function') saveProducts();
     if (typeof renderCategoryChips === 'function') renderCategoryChips();
     if (typeof renderTable === 'function') renderTable();
     if (typeof renderInventory === 'function') renderInventory();
+    renderInvCategoryOptions();
     renderMasterInventory();
+
     showToast(
       added
-        ? `✅ ${added} producto(s) agregados al catálogo` + (skipped ? ` (${skipped} ya estaban)` : '') + '. Recuerda sincronizar con GitHub.'
+        ? `✅ ${added} producto(s) pasaron al catálogo` + (skipped ? ` (${skipped} ya estaban)` : '') + '. Recuerda sincronizar con GitHub.'
         : 'No se agregó ninguno (ya estaban en el catálogo)',
       added ? 'success' : 'info'
     );
@@ -241,11 +372,26 @@
   }
 
   window.reloadMasterInventory = function () {
-    invLoaded = false;
-    loadMasterInventory(true).then(() => {
-      renderInvCategoryOptions();
-      renderMasterInventory();
-      showToast('Inventario recargado', 'success');
-    });
+    if (typeof showConfirm === 'function') {
+      showConfirm('Recargar inventario', 'Se perderán cambios locales del inventario maestro no sincronizados. ¿Continuar?', () => {
+        try { localStorage.removeItem(LS_KEY); } catch (e) {}
+        invLoaded = false;
+        loadMasterInventory(true).then(() => {
+          renderInvCategoryOptions();
+          renderMasterInventory();
+          showToast('Inventario recargado desde GitHub', 'success');
+        });
+      });
+    } else {
+      try { localStorage.removeItem(LS_KEY); } catch (e) {}
+      invLoaded = false;
+      loadMasterInventory(true).then(() => {
+        renderInvCategoryOptions();
+        renderMasterInventory();
+      });
+    }
   };
+
+  window.getMasterInventory = function () { return masterInventory; };
+  window.ensureMasterLoaded = loadMasterInventory;
 })();
