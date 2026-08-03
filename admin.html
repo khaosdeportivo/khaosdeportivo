@@ -44,16 +44,17 @@
           ui.src = 'js/admin-products-ui.js?t=' + Date.now();
           document.body.appendChild(ui);
 
-          // ===== AUTO-SYNC: parche garantizado tras cargar admin estable =====
-          (function installAutoSync(){
+          // ===== Parches de estabilidad =====
+          (function installPatches(){
             var tries = 0;
             function tryPatch(){
+              // 1) Auto-sync al guardar
               if (typeof window.saveProducts === 'function' && !window.__khaosAutoSyncInstalled) {
                 window.__khaosAutoSyncInstalled = true;
-                var _orig = window.saveProducts;
+                var _origSave = window.saveProducts;
                 var timer = null;
                 window.saveProducts = function(){
-                  var r = _orig.apply(this, arguments);
+                  var r = _origSave.apply(this, arguments);
                   try {
                     var token = '';
                     try { token = localStorage.getItem('khaos_github_token') || ''; } catch(e){}
@@ -75,22 +76,60 @@
                   return r;
                 };
                 console.log('[Khaos] Auto-sync instalado');
-                return;
               }
+
+              // 2) updateCouponStats null-safe (evita error textContent de null)
+              if (typeof window.updateCouponStats === 'function' && !window.__khaosCouponPatch) {
+                window.__khaosCouponPatch = true;
+                var _origCoupon = window.updateCouponStats;
+                window.updateCouponStats = function(){
+                  try {
+                    var ids = ['couponTotal','couponActive','couponUsed','couponSaved',
+                               'sidebarCouponCount','tabCouponAll','tabCouponActive',
+                               'tabCouponExpired','tabCouponPct','tabCouponFixed'];
+                    var missing = ids.some(function(id){ return !document.getElementById(id); });
+                    if (missing) return; // vista de cupones aún no montada
+                    return _origCoupon.apply(this, arguments);
+                  } catch(e) {
+                    console.warn('[Khaos] updateCouponStats seguro:', e.message);
+                  }
+                };
+              }
+
+              // 3) formatPrice seguro
+              if (typeof window.formatPrice !== 'function') {
+                window.formatPrice = function(n){
+                  n = Number(n);
+                  if (isNaN(n)) n = 0;
+                  return '$' + n.toLocaleString('es-CO');
+                };
+              }
+
+              if (window.__khaosAutoSyncInstalled && window.__khaosCouponPatch) return;
               if (++tries < 50) setTimeout(tryPatch, 200);
             }
             tryPatch();
           })();
 
-          // ===== PRODUCTOS: siempre prioritizar GitHub (fuente de verdad) =====
+          // ===== PRODUCTOS: siempre prioritizar GitHub =====
           setTimeout(function(){
             function normalize(list){
               return (list || []).map(function(p){
                 if (!p || typeof p !== 'object') return null;
                 if (!Array.isArray(p.sizes)) p.sizes = [];
                 if (!Array.isArray(p.outOfStock)) p.outOfStock = [];
-                if (typeof p.price !== 'number') p.price = parseInt(p.price, 10) || 0;
-                if (p.oldPrice != null && typeof p.oldPrice !== 'number') p.oldPrice = parseInt(p.oldPrice, 10) || 0;
+                p.price = Number(p.price);
+                if (isNaN(p.price)) p.price = 0;
+                if (p.oldPrice != null) {
+                  p.oldPrice = Number(p.oldPrice);
+                  if (isNaN(p.oldPrice) || p.oldPrice <= 0) p.oldPrice = null;
+                } else {
+                  p.oldPrice = null;
+                }
+                if (typeof p.name !== 'string') p.name = String(p.name || 'Sin nombre');
+                if (typeof p.code !== 'string') p.code = String(p.code || '');
+                if (typeof p.category !== 'string') p.category = 'guayo-corto';
+                if (typeof p.image !== 'string') p.image = '';
                 return p;
               }).filter(Boolean);
             }
@@ -109,7 +148,6 @@
                 localStorage.setItem('khaos_admin_products', JSON.stringify(list));
               } catch(e) {}
 
-              // Reset filtros para que se vean todos
               try { if (typeof currentTab !== 'undefined') currentTab = 'all'; } catch(e) {}
               try { if (typeof currentCategoryFilter !== 'undefined') currentCategoryFilter = 'all'; } catch(e) {}
               try { if (typeof currentPage !== 'undefined') currentPage = 1; } catch(e) {}
@@ -130,7 +168,6 @@
               return true;
             }
 
-            // 1) Siempre intentar GitHub primero
             fetch('https://cdn.jsdelivr.net/gh/khaosdeportivo/khaosdeportivo@main/productos.json?t=' + Date.now(), { cache: 'no-store' })
               .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
               .then(function(d){
@@ -139,7 +176,6 @@
               })
               .catch(function(err){
                 console.warn('[Khaos] GitHub falló, usando localStorage:', err);
-                // 2) Fallback localStorage
                 try {
                   var s = localStorage.getItem('khaos_admin_products');
                   if (s) {
