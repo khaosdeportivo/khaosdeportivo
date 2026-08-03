@@ -1,1 +1,1 @@
-PLACEHOLDER
+{"inventario":[{"id":1,"name":"Adidas Predator Elite Negro/Verde Neón","price":0,"category":"futsal-bota","code":"8422","sizes":["40","44","45"],"outOfStock":[],"desc":"Adidas. Negro con suela roja y 3 rayas verde limón","badge":"promo"},{"id":2,"name":"Adidas Predator Elite Negro/Blanco","price":0,"category":"futsal-bota","code":"8421","sizes":["39","40","43","44","45"],"outOfStock":[],"desc":"Adidas. Negro con detalles tricolor (rojo/azul/blanco)","badge":"promo"}],"version":4,"fuente":"INVENTARIO_COMPLETO_TODOS.xlsx","total":781}
