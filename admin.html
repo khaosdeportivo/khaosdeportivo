@@ -9,6 +9,34 @@
 <script>
 (function () {
   var BASE = 'https://cdn.jsdelivr.net/gh/khaosdeportivo/khaosdeportivo@0c971526acc7/';
+  var PROD_URL = 'https://cdn.jsdelivr.net/gh/khaosdeportivo/khaosdeportivo@main/productos.json';
+
+  function fillProducts() {
+    try {
+      if (typeof products !== 'undefined' && Array.isArray(products) && products.length > 0) return;
+    } catch (e) {}
+    fetch(PROD_URL + '?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)); })
+      .then(function (data) {
+        var list = Array.isArray(data) ? data : (data.productos || data.products || []);
+        if (!list.length) return;
+        try {
+          products = list;
+          if (typeof nextId !== 'undefined') {
+            nextId = Math.max.apply(null, list.map(function (x) { return x.id || 0; }).concat([0])) + 1;
+          }
+          try { localStorage.setItem('khaos_admin_products', JSON.stringify(list)); } catch (e) {}
+          if (typeof renderTable === 'function') renderTable();
+          if (typeof renderCategoryChips === 'function') renderCategoryChips();
+          if (typeof updateAllStats === 'function') updateAllStats();
+          if (typeof updateDashboard === 'function') updateDashboard();
+          if (typeof renderInventory === 'function') renderInventory();
+          if (typeof showToast === 'function') showToast(list.length + ' productos cargados', 'success');
+        } catch (e) { console.warn('fillProducts apply', e); }
+      })
+      .catch(function (err) { console.warn('No se pudieron cargar productos', err); });
+  }
+
   fetch(BASE + 'admin.html?t=' + Date.now())
     .then(function (r) { return r.ok ? r.text() : Promise.reject(new Error('HTTP ' + r.status)); })
     .then(function (html) {
@@ -16,8 +44,23 @@
         /src=["']js\/admin\.js["']/, 
         'src="' + BASE + 'js/admin.js"'
       );
-      // Inyectar auto-carga de productos tras el admin.js
-      var inject = '<script>(function(){function fill(){try{var s=localStorage.getItem("khaos_admin_products");if(s){var p=JSON.parse(s);if(Array.isArray(p)&&p.length>0)return;}}catch(e){}fetch("https://raw.githubusercontent.com/khaosdeportivo/khaosdeportivo/main/productos.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():Promise.reject()}).then(function(data){var list=Array.isArray(data)?data:(data.productos||[]);if(!list.length||typeof products==="undefined")return;products=list;if(typeof nextId!=="undefined")nextId=Math.max.apply(null,list.map(function(x){return x.id||0}).concat([0]))+1;if(typeof saveProducts==="function")saveProducts();if(typeof renderTable==="function")renderTable();if(typeof updateAllStats==="function")updateAllStats();if(typeof showToast==="function")showToast(list.length+" productos cargados","success");}).catch(function(){});}setTimeout(fill,800);})();<\/script>';
+      // Tras cargar admin.js, forzar productos si están vacíos
+      var inject = '<script>(function(){' +
+        'function tryFill(){try{if(typeof products!=="undefined"&&products.length>0)return false;}catch(e){}' +
+        'fetch("' + PROD_URL + '?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():Promise.reject()}).then(function(data){' +
+        'var list=Array.isArray(data)?data:(data.productos||[]);if(!list.length)return;' +
+        'products=list;if(typeof nextId!=="undefined")nextId=Math.max.apply(null,list.map(function(x){return x.id||0}).concat([0]))+1;' +
+        'try{localStorage.setItem("khaos_admin_products",JSON.stringify(list))}catch(e){}' +
+        'if(typeof renderTable==="function")renderTable();' +
+        'if(typeof updateAllStats==="function")updateAllStats();' +
+        'if(typeof updateDashboard==="function")updateDashboard();' +
+        'if(typeof renderInventory==="function")renderInventory();' +
+        'if(typeof showToast==="function")showToast(list.length+" productos cargados","success");' +
+        '}).catch(function(e){console.warn(e)});return true}' +
+        'setTimeout(tryFill,600);setTimeout(tryFill,1500);setTimeout(tryFill,3000);' +
+        // Si el usuario hace login después, reintentar
+        'var _dl=window.doLogin;if(typeof _dl==="function"){window.doLogin=function(){var r=_dl.apply(this,arguments);setTimeout(tryFill,500);setTimeout(tryFill,1200);return r;}}' +
+        '})();<\/script>';
       html = html.replace('</body>', inject + '</body>');
       document.open();
       document.write(html);
