@@ -1,1 +1,89 @@
-LOADING_FROM_FILE
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khaos Deportivo — Panel de Administración</title>
+<style>
+  body{margin:0;background:#0f0f14;color:#eee;font-family:system-ui,sans-serif}
+  #boot{padding:40px;text-align:center}
+  .spin{width:40px;height:40px;border:3px solid #333;border-top-color:#f5c518;border-radius:50%;margin:20px auto;animation:s .8s linear infinite}
+  @keyframes s{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="boot"><div class="spin"></div><p>Cargando panel…</p></div>
+<script>
+(function(){
+  var BASE = 'https://cdn.jsdelivr.net/gh/khaosdeportivo/khaosdeportivo@0c971526acc7/';
+  fetch(BASE + 'admin.html?t=' + Date.now())
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+    .then(function(html){
+      var headMatch = html.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
+      var bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+      if(!bodyMatch) throw new Error('No body');
+      if(headMatch){
+        var tmp = document.createElement('div');
+        tmp.innerHTML = headMatch[1];
+        Array.prototype.slice.call(tmp.querySelectorAll('link,style,meta')).forEach(function(el){
+          document.head.appendChild(el.cloneNode(true));
+        });
+        var title = tmp.querySelector('title');
+        if(title) document.title = title.textContent;
+        // chart.js
+        var chart = document.createElement('script');
+        chart.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
+        document.head.appendChild(chart);
+      }
+      var bodyHtml = bodyMatch[1].replace(/src=["']js\/admin\.js["']/g, 'src="'+BASE+'js/admin.js"');
+      document.body.innerHTML = bodyHtml;
+      // Ejecutar scripts del body en orden
+      var list = Array.prototype.slice.call(document.body.querySelectorAll('script'));
+      function runNext(i){
+        if(i>=list.length){
+          // productos
+          setTimeout(function(){
+            function apply(list){
+              if(!list||!list.length) return;
+              window.products=list;
+              try{nextId=Math.max.apply(null,list.map(function(x){return x.id||0}).concat([0]))+1;}catch(e){}
+              try{localStorage.setItem('khaos_admin_products',JSON.stringify(list));}catch(e){}
+              try{if(typeof renderTable==='function')renderTable();}catch(e){}
+              try{if(typeof updateAllStats==='function')updateAllStats();}catch(e){}
+              try{if(typeof updateDashboard==='function')updateDashboard();}catch(e){}
+              console.log('[Khaos] productos', list.length);
+            }
+            try{
+              var s=localStorage.getItem('khaos_admin_products');
+              if(s){var p=JSON.parse(s);if(Array.isArray(p)&&p.length>0){apply(p);return;}}
+            }catch(e){}
+            fetch('https://cdn.jsdelivr.net/gh/khaosdeportivo/khaosdeportivo@main/productos.json?t='+Date.now(),{cache:'no-store'})
+              .then(function(r){return r.json()})
+              .then(function(d){apply(Array.isArray(d)?d:(d.productos||[]));})
+              .catch(function(e){console.warn(e);});
+          }, 800);
+          return;
+        }
+        var old=list[i];
+        var s=document.createElement('script');
+        if(old.src){
+          s.src=old.src;
+          s.onload=function(){ runNext(i+1); };
+          s.onerror=function(){ console.warn('script fail', old.src); runNext(i+1); };
+          old.parentNode.replaceChild(s, old);
+        } else {
+          s.textContent=old.textContent;
+          old.parentNode.replaceChild(s, old);
+          runNext(i+1);
+        }
+      }
+      runNext(0);
+    })
+    .catch(function(err){
+      var el=document.getElementById('boot');
+      if(el) el.innerHTML='<h1>Error cargando el panel</h1><p>'+err+'</p><p>Ctrl+F5 para reintentar</p>';
+    });
+})();
+</script>
+</body>
+</html>
