@@ -45,9 +45,8 @@
       var list = Array.prototype.slice.call(document.body.querySelectorAll('script'));
       function runNext(i) {
         if (i >= list.length) {
-          // UNICO modulo de persistencia
           var core = document.createElement('script');
-          core.src = 'js/khaos-admin-core.js?v=2';
+          core.src = 'js/khaos-admin-core.js?v=3';
           document.body.appendChild(core);
           return;
         }
