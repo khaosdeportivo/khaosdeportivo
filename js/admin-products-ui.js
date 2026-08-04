@@ -1,13 +1,13 @@
-/* ===== Productos UI: estética y buscadores del inventario maestro ===== */
+/* ===== Productos UI: estética, buscadores y botón Guardar ===== */
 (function () {
   'use strict';
 
   var catFilter = 'all';
+  var _saving = false;
 
   function ensureUI() {
     var view = document.getElementById('view-products');
-    if (!view || view.dataset.maestroUi === '1') return;
-    view.dataset.maestroUi = '1';
+    if (!view) return;
 
     var search = document.getElementById('searchBox');
     if (search) {
@@ -20,6 +20,26 @@
     if (!card) return;
 
     var toolbar = card.querySelector('.toolbar');
+
+    // ===== Botón GUARDAR CAMBIOS =====
+    if (toolbar && !document.getElementById('btnGuardarCambios')) {
+      var btn = document.createElement('button');
+      btn.id = 'btnGuardarCambios';
+      btn.type = 'button';
+      btn.className = 'btn btn-primary';
+      btn.style.cssText = 'background:linear-gradient(135deg,#22c55e,#16a34a);border:none;color:#fff;font-weight:700;padding:10px 18px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 2px 10px rgba(34,197,94,0.35);';
+      btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> <span>Guardar cambios</span>';
+      btn.title = 'Guarda los productos en GitHub y actualiza el catálogo público';
+      btn.onclick = function () { window.__khaosGuardarCambios(); };
+
+      // Insertar al inicio de la toolbar (muy visible)
+      if (toolbar.firstChild) {
+        toolbar.insertBefore(btn, toolbar.firstChild);
+      } else {
+        toolbar.appendChild(btn);
+      }
+    }
+
     if (toolbar && !document.getElementById('prodMaestroFilterRow')) {
       var row = document.createElement('div');
       row.id = 'prodMaestroFilterRow';
@@ -39,19 +59,121 @@
       var hint = document.createElement('p');
       hint.id = 'prodMaestroHint';
       hint.style.cssText = 'font-size:13px;color:var(--fog);margin:0 16px 12px;';
-      hint.innerHTML = 'Busca por <strong>nombre</strong> o <strong>código</strong> y filtra por categoría. Al guardar, el catálogo se actualiza automáticamente en GitHub.';
+      hint.innerHTML = 'Busca por <strong>nombre</strong> o <strong>código</strong>. Usa <strong style="color:#22c55e;">Guardar cambios</strong> para publicar el catálogo en GitHub.';
       var filterRow = document.getElementById('prodMaestroFilterRow');
       if (filterRow) filterRow.parentNode.insertBefore(hint, filterRow);
     }
 
-    var totalLabel = view.querySelector('#statTotal');
-    if (totalLabel) {
-      var lab = totalLabel.parentElement && totalLabel.parentElement.querySelector('.stat-card-label');
-      if (lab) lab.textContent = 'Total';
-    }
-
+    view.dataset.maestroUi = '1';
     refreshCategoryOptions();
   }
+
+  function setSaveButtonState(state) {
+    var btn = document.getElementById('btnGuardarCambios');
+    if (!btn) return;
+    if (state === 'saving') {
+      btn.disabled = true;
+      btn.style.opacity = '0.75';
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Guardando…</span>';
+    } else if (state === 'ok') {
+      btn.disabled = true;
+      btn.style.opacity = '1';
+      btn.style.background = 'linear-gradient(135deg,#22c55e,#15803d)';
+      btn.innerHTML = '<i class="fas fa-check"></i> <span>¡Guardado!</span>';
+      setTimeout(function () { setSaveButtonState('idle'); }, 2200);
+    } else if (state === 'error') {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)';
+      btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <span>Error al guardar</span>';
+      setTimeout(function () { setSaveButtonState('idle'); }, 2800);
+    } else {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.background = 'linear-gradient(135deg,#22c55e,#16a34a)';
+      btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> <span>Guardar cambios</span>';
+    }
+  }
+
+  function hasGithubToken() {
+    try {
+      var t = localStorage.getItem('khaos_github_token');
+      return !!(t && (t.startsWith('ghp_') || t.startsWith('github_pat_')));
+    } catch (e) {
+      return false;
+    }
+  }
+
+  window.__khaosGuardarCambios = function () {
+    if (_saving) return;
+    _saving = true;
+    setSaveButtonState('saving');
+
+    // 1) Guardar en localStorage
+    try {
+      if (typeof saveProducts === 'function') saveProducts();
+      else if (Array.isArray(window.products)) {
+        localStorage.setItem('khaos_admin_products', JSON.stringify(window.products));
+      }
+    } catch (e) {
+      console.warn(e);
+    }
+
+    // 2) Sincronizar con GitHub
+    if (!hasGithubToken()) {
+      _saving = false;
+      setSaveButtonState('error');
+      if (typeof showToast === 'function') {
+        showToast('Configura el token de GitHub en Ajustes para poder guardar en el catálogo.', 'warning');
+      }
+      return;
+    }
+
+    if (typeof syncToGithub !== 'function') {
+      _saving = false;
+      setSaveButtonState('error');
+      if (typeof showToast === 'function') {
+        showToast('Función de sincronización no disponible.', 'error');
+      }
+      return;
+    }
+
+    // syncToGithub suele ser async o devolver promesa
+    var result;
+    try {
+      result = syncToGithub();
+    } catch (e) {
+      _saving = false;
+      setSaveButtonState('error');
+      if (typeof showToast === 'function') showToast('Error: ' + e.message, 'error');
+      return;
+    }
+
+    if (result && typeof result.then === 'function') {
+      result.then(function () {
+        _saving = false;
+        setSaveButtonState('ok');
+        if (typeof showToast === 'function') {
+          showToast('Cambios guardados en GitHub. El catálogo se actualizó.', 'success');
+        }
+      }).catch(function (err) {
+        _saving = false;
+        setSaveButtonState('error');
+        if (typeof showToast === 'function') {
+          showToast('No se pudo guardar: ' + (err && err.message ? err.message : err), 'error');
+        }
+      });
+    } else {
+      // Si no devuelve promesa, asumir éxito tras un breve delay
+      setTimeout(function () {
+        _saving = false;
+        setSaveButtonState('ok');
+        if (typeof showToast === 'function') {
+          showToast('Cambios enviados a GitHub.', 'success');
+        }
+      }, 1500);
+    }
+  };
 
   function refreshCategoryOptions() {
     var sel = document.getElementById('prodCategoryFilter');
@@ -126,34 +248,16 @@
     return true;
   }
 
-  /* ===== AUTO-SYNC A GITHUB AL GUARDAR ===== */
+  /* AUTO-SYNC (sigue activo al guardar desde modales) */
   var _autoSyncTimer = null;
-  var AUTO_SYNC_DELAY_MS = 2500; // espera 2.5s por si hay varios guardados seguidos
-
-  function hasGithubToken() {
-    try {
-      var t = localStorage.getItem('khaos_github_token');
-      return !!(t && (t.startsWith('ghp_') || t.startsWith('github_pat_')));
-    } catch (e) {
-      return false;
-    }
-  }
+  var AUTO_SYNC_DELAY_MS = 2500;
 
   function scheduleAutoSync() {
-    if (!hasGithubToken()) {
-      if (typeof showToast === 'function') {
-        showToast('Guardado local. Configura el token de GitHub en Ajustes para actualizar el catálogo automáticamente.', 'warning');
-      }
-      return;
-    }
+    if (!hasGithubToken()) return;
     if (_autoSyncTimer) clearTimeout(_autoSyncTimer);
     _autoSyncTimer = setTimeout(function () {
       _autoSyncTimer = null;
-      if (typeof syncToGithub === 'function') {
-        syncToGithub();
-      } else if (typeof showToast === 'function') {
-        showToast('Función de sincronización no disponible. Usa el botón manual.', 'warning');
-      }
+      if (typeof syncToGithub === 'function') syncToGithub();
     }, AUTO_SYNC_DELAY_MS);
   }
 
