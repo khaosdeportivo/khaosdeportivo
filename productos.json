@@ -1377,59 +1377,9 @@
       "desc": "Adidas Sala azul con franjas blancas y cordones volt. Suela goma.",
       "badge": "new",
       "oldPrice": null
-    },
-    {
-      "id": 71,
-      "name": "Nike Phantom GX Elite Celeste - Bota",
-      "code": "GB-GX-CEL",
-      "category": "nino-sintetica-corta",
-      "price": 150000,
-      "oldPrice": null,
-      "image": "",
-      "sizes": [
-        "32",
-        "33",
-        "34",
-        "35",
-        "36",
-        "37",
-        "38",
-        "39",
-        "40",
-        "41",
-        "42",
-        "43"
-      ],
-      "outOfStock": [
-        "34",
-        "37",
-        "40"
-      ],
-      "desc": "oyi6tertdfgñhnjk",
-      "badge": null
-    },
-    {
-      "id": 72,
-      "name": "Adidas Predator Elite Negro/Blanco",
-      "code": "8422",
-      "category": "futsal-corto",
-      "price": 120000,
-      "oldPrice": null,
-      "image": "",
-      "sizes": [
-        "40",
-        "41",
-        "42",
-        "43"
-      ],
-      "outOfStock": [
-        "42"
-      ],
-      "desc": "qawsedrftyuiuytrsasdfghnjm,.",
-      "badge": null
     }
   ],
   "cupones": [],
-  "fechaActualizacion": "2026-08-04T00:02:58.421Z",
+  "fechaActualizacion": "2026-08-04T00:04:14.434Z",
   "version": 1
 }
