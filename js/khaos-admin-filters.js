@@ -1,13 +1,11 @@
 /**
- * khaos-admin-filters.js — Busqueda y filtros en Productos e Inventario
+ * khaos-admin-filters.js — Busqueda y filtro por categoria (compacto)
  */
 (function () {
   'use strict';
 
-  var prodStockFilter = 'all';
   var prodCatFilter = 'all';
   var invSearch = '';
-  var invStockFilter = 'all';
   var invCatFilter = 'all';
   var origGetFiltered = null;
 
@@ -48,13 +46,15 @@
   function fillCategorySelect(sel, current) {
     if (!sel) return;
     var names = catNames();
-    var html = '<option value="all">Todas las categorias</option>';
+    var html = '<option value="all">Categoria</option>';
     uniqueCategories().forEach(function (c) {
       html += '<option value="' + c + '">' + (names[c] || c) + '</option>';
     });
     sel.innerHTML = html;
     try { sel.value = current || 'all'; } catch (e) {}
   }
+
+  var CAT_SELECT_STYLE = 'max-width:150px;min-width:120px;font-size:12px;padding:6px 8px;height:34px;';
 
   // ---------- PRODUCTOS ----------
   function ensureProductFilters() {
@@ -63,8 +63,8 @@
 
     var search = document.getElementById('searchBox');
     if (search) {
-      search.placeholder = 'Buscar nombre, codigo o categoria...';
-      search.style.width = '280px';
+      search.placeholder = 'Buscar nombre o codigo...';
+      search.style.width = '240px';
       search.oninput = function () {
         try { if (typeof currentPage !== 'undefined') currentPage = 1; } catch (e) {}
         if (typeof renderTable === 'function') renderTable();
@@ -72,8 +72,14 @@
       };
     }
 
+    // Quitar filtro de stock si quedo de una version anterior
+    var oldStock = document.getElementById('khaosProdStock');
+    if (oldStock && oldStock.parentNode) oldStock.parentNode.removeChild(oldStock);
+
     if (document.getElementById('khaosProdFilters')) {
-      fillCategorySelect(document.getElementById('khaosProdCat'), prodCatFilter);
+      var cat = document.getElementById('khaosProdCat');
+      if (cat) cat.style.cssText = CAT_SELECT_STYLE;
+      fillCategorySelect(cat, prodCatFilter);
       return;
     }
 
@@ -81,15 +87,9 @@
     var host = toolbar ? toolbar.parentNode : view;
     var row = document.createElement('div');
     row.id = 'khaosProdFilters';
-    row.style.cssText = 'display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:0 16px 12px;';
+    row.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:0 16px 10px;';
     row.innerHTML =
-      '<select id="khaosProdCat" class="form-select" style="max-width:220px;"></select>' +
-      '<select id="khaosProdStock" class="form-select" style="max-width:180px;">' +
-      '<option value="all">Todo el stock</option>' +
-      '<option value="ok">Con stock</option>' +
-      '<option value="low">Stock bajo</option>' +
-      '<option value="out">Sin stock</option>' +
-      '</select>' +
+      '<select id="khaosProdCat" class="form-select" style="' + CAT_SELECT_STYLE + '"></select>' +
       '<span id="khaosProdFilterStatus" style="font-size:12px;color:var(--fog);margin-left:auto;"></span>';
 
     if (toolbar && toolbar.nextSibling) host.insertBefore(row, toolbar.nextSibling);
@@ -100,12 +100,6 @@
 
     document.getElementById('khaosProdCat').onchange = function () {
       prodCatFilter = this.value || 'all';
-      try { if (typeof currentPage !== 'undefined') currentPage = 1; } catch (e) {}
-      if (typeof renderTable === 'function') renderTable();
-      updateProdFilterStatus();
-    };
-    document.getElementById('khaosProdStock').onchange = function () {
-      prodStockFilter = this.value || 'all';
       try { if (typeof currentPage !== 'undefined') currentPage = 1; } catch (e) {}
       if (typeof renderTable === 'function') renderTable();
       updateProdFilterStatus();
@@ -131,12 +125,8 @@
     window.getFilteredProducts = function () {
       var result = origGetFiltered.apply(this, arguments);
       if (!Array.isArray(result)) result = [];
-
       if (prodCatFilter && prodCatFilter !== 'all') {
         result = result.filter(function (p) { return p.category === prodCatFilter; });
-      }
-      if (prodStockFilter && prodStockFilter !== 'all') {
-        result = result.filter(function (p) { return stockState(p) === prodStockFilter; });
       }
       return result;
     };
@@ -148,8 +138,13 @@
     var view = document.getElementById('view-inventory');
     if (!view) return;
 
+    var oldStock = document.getElementById('khaosInvStock');
+    if (oldStock && oldStock.parentNode) oldStock.parentNode.removeChild(oldStock);
+
     if (document.getElementById('khaosInvFilters')) {
-      fillCategorySelect(document.getElementById('khaosInvCat'), invCatFilter);
+      var cat = document.getElementById('khaosInvCat');
+      if (cat) cat.style.cssText = CAT_SELECT_STYLE;
+      fillCategorySelect(cat, invCatFilter);
       return;
     }
 
@@ -157,19 +152,13 @@
     var header = card ? card.querySelector('.card-header') : null;
     var row = document.createElement('div');
     row.id = 'khaosInvFilters';
-    row.style.cssText = 'display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);';
+    row.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.06);';
     row.innerHTML =
       '<div class="input-group" style="display:flex;align-items:center;gap:8px;">' +
       '<i class="fas fa-search" style="opacity:0.6;"></i>' +
-      '<input type="text" class="form-input" id="khaosInvSearch" placeholder="Buscar nombre o codigo..." style="width:240px;">' +
+      '<input type="text" class="form-input" id="khaosInvSearch" placeholder="Buscar nombre o codigo..." style="width:200px;font-size:12px;height:34px;">' +
       '</div>' +
-      '<select id="khaosInvCat" class="form-select" style="max-width:220px;"></select>' +
-      '<select id="khaosInvStock" class="form-select" style="max-width:180px;">' +
-      '<option value="all">Todo el stock</option>' +
-      '<option value="ok">OK</option>' +
-      '<option value="low">Stock bajo</option>' +
-      '<option value="out">Sin stock</option>' +
-      '</select>' +
+      '<select id="khaosInvCat" class="form-select" style="' + CAT_SELECT_STYLE + '"></select>' +
       '<span id="khaosInvFilterStatus" style="font-size:12px;color:var(--fog);margin-left:auto;"></span>';
 
     if (header && header.nextSibling) {
@@ -190,16 +179,11 @@
       invCatFilter = this.value || 'all';
       if (typeof renderInventory === 'function') renderInventory();
     };
-    document.getElementById('khaosInvStock').onchange = function () {
-      invStockFilter = this.value || 'all';
-      if (typeof renderInventory === 'function') renderInventory();
-    };
   }
 
   function patchRenderInventory() {
     if (typeof window.renderInventory !== 'function' || window.__khaosInvPatched) return false;
     window.__khaosInvPatched = true;
-    var orig = window.renderInventory;
 
     window.renderInventory = function () {
       ensureInventoryFilters();
@@ -212,7 +196,6 @@
 
       var filtered = list.filter(function (p) {
         if (invCatFilter && invCatFilter !== 'all' && p.category !== invCatFilter) return false;
-        if (invStockFilter && invStockFilter !== 'all' && stockState(p) !== invStockFilter) return false;
         if (invSearch) {
           var name = String(p.name || '').toLowerCase();
           var code = String(p.code || '').toLowerCase();
@@ -248,7 +231,7 @@
       if (!tbody) return;
 
       if (!filtered.length) {
-        tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><h3>Sin resultados</h3><p>Prueba otro filtro o busqueda</p></div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><h3>Sin resultados</h3><p>Prueba otra busqueda</p></div></td></tr>';
         return;
       }
 
@@ -292,15 +275,10 @@
     ensureInventoryFilters();
     patchRenderInventory();
     updateProdFilterStatus();
-    try {
-      if (typeof renderTable === 'function') renderTable();
-    } catch (e) {}
-    try {
-      if (typeof renderInventory === 'function') renderInventory();
-    } catch (e) {}
+    try { if (typeof renderTable === 'function') renderTable(); } catch (e) {}
+    try { if (typeof renderInventory === 'function') renderInventory(); } catch (e) {}
   }
 
-  // Reaplicar al cambiar de vista
   if (typeof window.switchView === 'function' && !window.__khaosFilterSwitchPatched) {
     window.__khaosFilterSwitchPatched = true;
     var _sv = window.switchView;
@@ -338,5 +316,5 @@
     setTimeout(wait, 250);
   })();
 
-  console.log('[Khaos] filtros productos/inventario listos');
+  console.log('[Khaos] filtros compactos listos');
 })();
