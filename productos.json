@@ -1384,7 +1384,7 @@
       "code": "GB-GX-CEL",
       "category": "nino-sintetica-corta",
       "price": 500000,
-      "oldPrice": 0,
+      "oldPrice": null,
       "image": "",
       "sizes": [
         "31",
@@ -1403,7 +1403,7 @@
       "code": "GB-GX-CE",
       "category": "nino-sintetica-corta",
       "price": 200000,
-      "oldPrice": 0,
+      "oldPrice": null,
       "image": "",
       "sizes": [
         "30",
@@ -1416,9 +1416,28 @@
       "desc": "kkyu75sdfñjfutflf  tc u j lhg kih igth l lg l",
       "badge": null,
       "costPrice": 0
+    },
+    {
+      "id": 73,
+      "name": "hfksjhjg",
+      "code": "GB-GX-CET",
+      "category": "nino-sintetica-corta",
+      "price": 210000,
+      "oldPrice": 0,
+      "image": "",
+      "sizes": [
+        "31",
+        "32",
+        "40",
+        "41"
+      ],
+      "outOfStock": [],
+      "desc": "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+      "badge": null,
+      "costPrice": 0
     }
   ],
   "cupones": [],
-  "fechaActualizacion": "2026-08-04T02:37:31.609Z",
+  "fechaActualizacion": "2026-08-04T02:38:40.838Z",
   "version": 1
 }
