@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Khaos Deportivo — Panel de Administración</title>
+<title>Khaos Deportivo — Panel de Administracion</title>
 <style>
   body{margin:0;background:#0f0f14;color:#eee;font-family:system-ui,sans-serif}
   #boot{padding:40px;text-align:center}
@@ -14,228 +14,61 @@
 <body>
 <div id="boot"><div class="spin"></div><p>Cargando panel…</p></div>
 <script>
-(function(){
+(function () {
   var BASE = 'https://cdn.jsdelivr.net/gh/khaosdeportivo/khaosdeportivo@0c971526acc7/';
   fetch(BASE + 'admin.html?t=' + Date.now())
-    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
-    .then(function(html){
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    })
+    .then(function (html) {
       var headMatch = html.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
       var bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-      if(!bodyMatch) throw new Error('No body');
-      if(headMatch){
+      if (!bodyMatch) throw new Error('No body');
+      if (headMatch) {
         var tmp = document.createElement('div');
         tmp.innerHTML = headMatch[1];
-        Array.prototype.slice.call(tmp.querySelectorAll('link,style,meta')).forEach(function(el){
+        Array.prototype.slice.call(tmp.querySelectorAll('link,style,meta')).forEach(function (el) {
           document.head.appendChild(el.cloneNode(true));
         });
         var title = tmp.querySelector('title');
-        if(title) document.title = title.textContent;
+        if (title) document.title = title.textContent;
         var chart = document.createElement('script');
         chart.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
         document.head.appendChild(chart);
       }
-      var bodyHtml = bodyMatch[1].replace(/src=["']js\/admin\.js["']/g, 'src="'+BASE+'js/admin.js"');
+      var bodyHtml = bodyMatch[1]
+        .replace(/src=["']js\/admin\.js["']/g, 'src="' + BASE + 'js/admin.js"')
+        .replace(/src=["']js\/admin-categories\.js["']/g, 'src="js/admin-categories.js?v=2"')
+        .replace(/src=["']js\/admin-promo-gift\.js["']/g, 'src="js/admin-promo-gift.js?v=2"');
       document.body.innerHTML = bodyHtml;
       var list = Array.prototype.slice.call(document.body.querySelectorAll('script'));
-      function runNext(i){
-        if(i>=list.length){
-          var fix = document.createElement('script');
-          fix.src = 'js/admin-fix.js?t=' + Date.now();
-          fix.onload = function(){
-            var ui = document.createElement('script');
-            ui.src = 'js/admin-products-ui.js?t=' + Date.now();
-            document.body.appendChild(ui);
-          };
-          document.body.appendChild(fix);
-
-          (function installAutoSync(){
-            var tries = 0;
-            function tryPatch(){
-              if (typeof window.saveProducts === 'function' && !window.__khaosAutoSyncInstalled) {
-                window.__khaosAutoSyncInstalled = true;
-                var _origSave = window.saveProducts;
-                window.saveProducts = function(){
-                  var r = _origSave.apply(this, arguments);
-                  try {
-                    // Marcar que hay cambios locales pendientes de publicar
-                    localStorage.setItem('khaos_local_revision', String(Date.now()));
-                    localStorage.setItem('khaos_pending_sync', '1');
-                  } catch(e) {}
-                  try {
-                    var token = '';
-                    try { token = localStorage.getItem('khaos_github_token') || ''; } catch(e){}
-                    if (!token || (!token.startsWith('ghp_') && !token.startsWith('github_pat_'))) return r;
-                    clearTimeout(window.__khaosSaveTimer);
-                    window.__khaosSaveTimer = setTimeout(function(){
-                      if (typeof syncToGithub === 'function') {
-                        syncToGithub().then(function(){
-                          try {
-                            localStorage.setItem('khaos_pending_sync', '0');
-                            localStorage.setItem('khaos_last_sync', new Date().toISOString());
-                          } catch(e) {}
-                        }).catch(function(){});
-                      }
-                    }, 1200);
-                  } catch(e) {}
-                  return r;
-                };
-                console.log('[Khaos] Auto-sync instalado');
-                return;
-              }
-              if (++tries < 50) setTimeout(tryPatch, 200);
-            }
-            tryPatch();
-          })();
-
-          setTimeout(function(){
-            function isTestProduct(p){
-              if (!p) return true;
-              var id = Number(p.id);
-              var price = Number(p.price);
-              var cat = String(p.category || '');
-              var code = String(p.code || '');
-              var desc = String(p.desc || '');
-              var name = String(p.name || '');
-              if (id === 71 || id === 72) return true;
-              if (desc.indexOf('oyi6tertdfg') >= 0) return true;
-              if (desc.indexOf('qawsedrftyuiuytrsasdfghnjm') >= 0) return true;
-              if (name.indexOf('Nike Phantom GX Elite Celeste') >= 0 && price === 150000 && cat.indexOf('nino') >= 0) return true;
-              if (name.indexOf('Adidas Predator Elite Negro/Blanco') >= 0 && price === 120000) return true;
-              if (code === '8422' && price === 120000) return true;
-              return false;
-            }
-
-            function normalize(list){
-              return (list || []).map(function(p){
-                if (!p || typeof p !== 'object') return null;
-                if (isTestProduct(p)) return null;
-                if (!Array.isArray(p.sizes)) p.sizes = [];
-                if (!Array.isArray(p.outOfStock)) p.outOfStock = [];
-                p.price = Number(p.price);
-                if (isNaN(p.price)) p.price = 0;
-                if (p.oldPrice != null) {
-                  p.oldPrice = Number(p.oldPrice);
-                  if (isNaN(p.oldPrice) || p.oldPrice <= 0) p.oldPrice = null;
-                } else {
-                  p.oldPrice = null;
-                }
-                if (typeof p.name !== 'string') p.name = String(p.name || 'Sin nombre');
-                if (typeof p.code !== 'string') p.code = String(p.code || '');
-                if (typeof p.category !== 'string') p.category = 'guayo-corto';
-                if (typeof p.image !== 'string') p.image = '';
-                return p;
-              }).filter(Boolean);
-            }
-
-            function apply(list, source){
-              list = normalize(list);
-              if (!list.length) {
-                console.warn('[Khaos] lista vacía desde', source);
-                return false;
-              }
-              window.products = list;
-              try {
-                nextId = Math.max.apply(null, list.map(function(x){ return x.id || 0; }).concat([0])) + 1;
-              } catch(e) {}
-              try {
-                localStorage.setItem('khaos_admin_products', JSON.stringify(list));
-              } catch(e) {}
-
-              try { if (typeof currentTab !== 'undefined') currentTab = 'all'; } catch(e) {}
-              try { if (typeof currentCategoryFilter !== 'undefined') currentCategoryFilter = 'all'; } catch(e) {}
-              try { if (typeof currentPage !== 'undefined') currentPage = 1; } catch(e) {}
-              try { if (typeof selectedIds !== 'undefined' && selectedIds.clear) selectedIds.clear(); } catch(e) {}
-
-              try { if (typeof renderTable === 'function') renderTable(); } catch(e) {}
-              try { if (typeof updateAllStats === 'function') updateAllStats(); } catch(e) {}
-              try { if (typeof updateDashboard === 'function') updateDashboard(); } catch(e) {}
-              try { if (typeof renderSidebarCategories === 'function') renderSidebarCategories(); } catch(e) {}
-              try { if (typeof renderCategoryChips === 'function') renderCategoryChips(); } catch(e) {}
-              try { if (typeof renderInventory === 'function') renderInventory(); } catch(e) {}
-              try { if (typeof updateCharts === 'function') updateCharts(); } catch(e) {}
-
-              console.log('[Khaos] productos cargados (' + source + '):', list.length);
-              if (typeof showToast === 'function') {
-                showToast('Catálogo cargado: ' + list.length + ' productos (' + source + ')', 'success');
-              }
-              return true;
-            }
-
-            function readLocal(){
-              try {
-                var s = localStorage.getItem('khaos_admin_products');
-                if (!s) return null;
-                var p = JSON.parse(s);
-                if (!Array.isArray(p) || !p.length) return null;
-                return p;
-              } catch(e) { return null; }
-            }
-
-            function hasPendingLocal(){
-              try {
-                return localStorage.getItem('khaos_pending_sync') === '1';
-              } catch(e) { return false; }
-            }
-
-            // 1) Si hay cambios locales pendientes, usarlos YA (no pisar con GitHub)
-            var localList = readLocal();
-            if (localList && hasPendingLocal()) {
-              apply(localList, 'local-pendiente');
-              console.log('[Khaos] Usando cambios locales pendientes; publicando a GitHub…');
-              setTimeout(function(){
-                if (typeof syncToGithub === 'function') {
-                  syncToGithub().then(function(){
-                    try {
-                      localStorage.setItem('khaos_pending_sync', '0');
-                      localStorage.setItem('khaos_last_sync', new Date().toISOString());
-                    } catch(e) {}
-                  }).catch(function(){});
-                }
-              }, 1500);
-              return;
-            }
-
-            // 2) Cargar desde GitHub (fuente publicada)
-            var url = 'https://raw.githubusercontent.com/khaosdeportivo/khaosdeportivo/main/productos.json?t=' + Date.now();
-            fetch(url, { cache: 'no-store' })
-              .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-              .then(function(d){
-                var list = Array.isArray(d) ? d : (d.productos || []);
-                // Si local tiene la misma cantidad o más reciente sin pending, igual preferimos GitHub limpio
-                // salvo que local sea más largo (cambios recientes no publicados detectados por count)
-                var local = readLocal();
-                if (local && hasPendingLocal()) {
-                  apply(local, 'local-pendiente');
-                  return;
-                }
-                if (!apply(list, 'github')) throw new Error('GitHub sin productos');
-                try { localStorage.setItem('khaos_pending_sync', '0'); } catch(e) {}
-              })
-              .catch(function(err){
-                console.warn('[Khaos] GitHub falló:', err);
-                if (localList) apply(localList, 'localStorage');
-              });
-          }, 1100);
+      function runNext(i) {
+        if (i >= list.length) {
+          // UNICO modulo de persistencia
+          var core = document.createElement('script');
+          core.src = 'js/khaos-admin-core.js?v=2';
+          document.body.appendChild(core);
           return;
         }
-        var old=list[i];
-        var s=document.createElement('script');
-        if(old.src){
-          s.src=old.src;
-          s.onload=function(){ runNext(i+1); };
-          s.onerror=function(){ console.warn('script fail', old.src); runNext(i+1); };
+        var old = list[i];
+        var s = document.createElement('script');
+        if (old.src) {
+          s.src = old.src;
+          s.onload = function () { runNext(i + 1); };
+          s.onerror = function () { console.warn('script fail', old.src); runNext(i + 1); };
           old.parentNode.replaceChild(s, old);
         } else {
-          s.textContent=old.textContent;
+          s.textContent = old.textContent;
           old.parentNode.replaceChild(s, old);
-          runNext(i+1);
+          runNext(i + 1);
         }
       }
       runNext(0);
     })
-    .catch(function(err){
-      var el=document.getElementById('boot');
-      if(el) el.innerHTML='<h1>Error cargando el panel</h1><p>'+err+'</p><p>Ctrl+F5 para reintentar</p>';
+    .catch(function (err) {
+      var el = document.getElementById('boot');
+      if (el) el.innerHTML = '<h1>Error cargando el panel</h1><p>' + err + '</p><p>Ctrl+F5 para reintentar</p>';
     });
 })();
 </script>
