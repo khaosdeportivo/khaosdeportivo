@@ -47,6 +47,11 @@
         if (i >= list.length) {
           var core = document.createElement('script');
           core.src = 'js/khaos-admin-core.js?v=4';
+          core.onload = function () {
+            var filters = document.createElement('script');
+            filters.src = 'js/khaos-admin-filters.js?v=1';
+            document.body.appendChild(filters);
+          };
           document.body.appendChild(core);
           return;
         }
