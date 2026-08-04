@@ -1,13 +1,28 @@
 /**
- * khaos-admin-filters.js — Busqueda y filtro por categoria (compacto)
+ * khaos-admin-filters.js — Busqueda + menus de categoria y estado (organizados)
  */
 (function () {
   'use strict';
 
   var prodCatFilter = 'all';
+  var prodStatusFilter = 'all';
   var invSearch = '';
   var invCatFilter = 'all';
   var origGetFiltered = null;
+
+  var STATUS_OPTIONS = [
+    { value: 'all', label: 'Todos los estados' },
+    { value: 'bestseller', label: 'Mas vendido' },
+    { value: 'new', label: 'Nuevo' },
+    { value: 'promo', label: 'Promocion' },
+    { value: 'lastunits', label: 'Ultimas unidades' },
+    { value: 'limited', label: 'Edicion limitada' },
+    { value: 'recommended', label: 'Recomendado' },
+    { value: 'clearance', label: 'Liquidacion' },
+    { value: 'preorder', label: 'Preventa' },
+    { value: 'webonly', label: 'Solo web' },
+    { value: 'outofstock', label: 'Agotados' }
+  ];
 
   function productsList() {
     try {
@@ -54,17 +69,37 @@
     try { sel.value = current || 'all'; } catch (e) {}
   }
 
-  var CAT_SELECT_STYLE = 'max-width:150px;min-width:120px;font-size:12px;padding:6px 8px;height:34px;';
+  function fillStatusSelect(sel, current) {
+    if (!sel) return;
+    sel.innerHTML = STATUS_OPTIONS.map(function (o) {
+      return '<option value="' + o.value + '">' + o.label + '</option>';
+    }).join('');
+    try { sel.value = current || 'all'; } catch (e) {}
+  }
+
+  var SELECT_STYLE = 'max-width:160px;min-width:130px;font-size:12px;padding:6px 8px;height:34px;';
+
+  function hideLooseStatusTabs() {
+    try {
+      var view = document.getElementById('view-products');
+      if (!view) return;
+      view.querySelectorAll('.tabs').forEach(function (el) {
+        el.style.display = 'none';
+      });
+    } catch (e) {}
+  }
 
   // ---------- PRODUCTOS ----------
   function ensureProductFilters() {
     var view = document.getElementById('view-products');
     if (!view) return;
 
+    hideLooseStatusTabs();
+
     var search = document.getElementById('searchBox');
     if (search) {
       search.placeholder = 'Buscar nombre o codigo...';
-      search.style.width = '240px';
+      search.style.width = '220px';
       search.oninput = function () {
         try { if (typeof currentPage !== 'undefined') currentPage = 1; } catch (e) {}
         if (typeof renderTable === 'function') renderTable();
@@ -72,14 +107,32 @@
       };
     }
 
-    // Quitar filtro de stock si quedo de una version anterior
+    // Limpiar filtro stock antiguo
     var oldStock = document.getElementById('khaosProdStock');
     if (oldStock && oldStock.parentNode) oldStock.parentNode.removeChild(oldStock);
 
     if (document.getElementById('khaosProdFilters')) {
       var cat = document.getElementById('khaosProdCat');
-      if (cat) cat.style.cssText = CAT_SELECT_STYLE;
-      fillCategorySelect(cat, prodCatFilter);
+      var st = document.getElementById('khaosProdStatus');
+      if (cat) {
+        cat.style.cssText = SELECT_STYLE;
+        fillCategorySelect(cat, prodCatFilter);
+      }
+      if (st) {
+        st.style.cssText = SELECT_STYLE;
+        fillStatusSelect(st, prodStatusFilter);
+      } else if (document.getElementById('khaosProdFilters')) {
+        // Anadir estado si la fila existe sin el
+        var row = document.getElementById('khaosProdFilters');
+        var statusSel = document.createElement('select');
+        statusSel.id = 'khaosProdStatus';
+        statusSel.className = 'form-select';
+        statusSel.style.cssText = SELECT_STYLE;
+        if (cat && cat.nextSibling) row.insertBefore(statusSel, cat.nextSibling);
+        else row.insertBefore(statusSel, row.firstChild);
+        fillStatusSelect(statusSel, prodStatusFilter);
+        statusSel.onchange = onStatusChange;
+      }
       return;
     }
 
@@ -89,7 +142,8 @@
     row.id = 'khaosProdFilters';
     row.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:0 16px 10px;';
     row.innerHTML =
-      '<select id="khaosProdCat" class="form-select" style="' + CAT_SELECT_STYLE + '"></select>' +
+      '<select id="khaosProdCat" class="form-select" style="' + SELECT_STYLE + '" title="Categoria"></select>' +
+      '<select id="khaosProdStatus" class="form-select" style="' + SELECT_STYLE + '" title="Estado"></select>' +
       '<span id="khaosProdFilterStatus" style="font-size:12px;color:var(--fog);margin-left:auto;"></span>';
 
     if (toolbar && toolbar.nextSibling) host.insertBefore(row, toolbar.nextSibling);
@@ -97,6 +151,7 @@
     else host.insertBefore(row, host.firstChild);
 
     fillCategorySelect(document.getElementById('khaosProdCat'), prodCatFilter);
+    fillStatusSelect(document.getElementById('khaosProdStatus'), prodStatusFilter);
 
     document.getElementById('khaosProdCat').onchange = function () {
       prodCatFilter = this.value || 'all';
@@ -104,6 +159,29 @@
       if (typeof renderTable === 'function') renderTable();
       updateProdFilterStatus();
     };
+    document.getElementById('khaosProdStatus').onchange = onStatusChange;
+  }
+
+  function onStatusChange() {
+    var sel = document.getElementById('khaosProdStatus');
+    prodStatusFilter = (sel && sel.value) || 'all';
+    try {
+      currentTab = prodStatusFilter;
+    } catch (e) {
+      try { window.currentTab = prodStatusFilter; } catch (e2) {}
+    }
+    try { if (typeof currentPage !== 'undefined') currentPage = 1; } catch (e) {}
+    // Sincronizar tabs ocultos (por si otro codigo los lee)
+    try {
+      var view = document.getElementById('view-products');
+      if (view) {
+        view.querySelectorAll('.tab').forEach(function (t) {
+          t.classList.remove('active');
+        });
+      }
+    } catch (e) {}
+    if (typeof renderTable === 'function') renderTable();
+    updateProdFilterStatus();
   }
 
   function updateProdFilterStatus() {
@@ -123,8 +201,14 @@
     window.__khaosFilterPatched = true;
     origGetFiltered = getFilteredProducts;
     window.getFilteredProducts = function () {
+      // Alinear currentTab con el menu de estado
+      try {
+        if (prodStatusFilter) currentTab = prodStatusFilter;
+      } catch (e) {}
+
       var result = origGetFiltered.apply(this, arguments);
       if (!Array.isArray(result)) result = [];
+
       if (prodCatFilter && prodCatFilter !== 'all') {
         result = result.filter(function (p) { return p.category === prodCatFilter; });
       }
@@ -143,7 +227,7 @@
 
     if (document.getElementById('khaosInvFilters')) {
       var cat = document.getElementById('khaosInvCat');
-      if (cat) cat.style.cssText = CAT_SELECT_STYLE;
+      if (cat) cat.style.cssText = SELECT_STYLE;
       fillCategorySelect(cat, invCatFilter);
       return;
     }
@@ -158,7 +242,7 @@
       '<i class="fas fa-search" style="opacity:0.6;"></i>' +
       '<input type="text" class="form-input" id="khaosInvSearch" placeholder="Buscar nombre o codigo..." style="width:200px;font-size:12px;height:34px;">' +
       '</div>' +
-      '<select id="khaosInvCat" class="form-select" style="' + CAT_SELECT_STYLE + '"></select>' +
+      '<select id="khaosInvCat" class="form-select" style="' + SELECT_STYLE + '"></select>' +
       '<span id="khaosInvFilterStatus" style="font-size:12px;color:var(--fog);margin-left:auto;"></span>';
 
     if (header && header.nextSibling) {
@@ -316,5 +400,5 @@
     setTimeout(wait, 250);
   })();
 
-  console.log('[Khaos] filtros compactos listos');
+  console.log('[Khaos] filtros organizados (categoria + estado)');
 })();
