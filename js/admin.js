@@ -1,4 +1,2 @@
-/* admin.js — el núcleo estable se carga desde CDN en admin.html.
- * Los parches de estabilidad están en js/admin-fix.js
- */
-console.info('[Khaos] admin.js stub — parches en admin-fix.js');
+/* admin.js — el núcleo está en admin-a.js + admin-b.js (cargados por admin.html) */
+console.info('[Khaos] admin núcleo en admin-a.js + admin-b.js');
