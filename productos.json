@@ -1377,26 +1377,9 @@
       "desc": "Adidas Sala azul con franjas blancas y cordones volt. Suela goma.",
       "badge": "new",
       "oldPrice": null
-    },
-    {
-      "id": 71,
-      "name": "hfksjhjg",
-      "code": "8421",
-      "category": "guayo-bota",
-      "price": 400000,
-      "oldPrice": 0,
-      "image": "",
-      "sizes": [
-        "40",
-        "41"
-      ],
-      "outOfStock": [],
-      "desc": "",
-      "badge": null,
-      "costPrice": 0
     }
   ],
   "cupones": [],
-  "fechaActualizacion": "2026-08-04T01:42:04.848Z",
+  "fechaActualizacion": "2026-08-04T01:43:43.082Z",
   "version": 1
 }
