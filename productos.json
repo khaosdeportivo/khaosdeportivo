@@ -1377,30 +1377,9 @@
       "desc": "Adidas Sala azul con franjas blancas y cordones volt. Suela goma.",
       "badge": "new",
       "oldPrice": null
-    },
-    {
-      "id": 71,
-      "name": "Adidas Predator Elite Negro/Blanco",
-      "code": "GB-GX-CEL",
-      "category": "nino-sintetica-corta",
-      "price": 150000,
-      "oldPrice": null,
-      "image": "",
-      "sizes": [
-        "39",
-        "40",
-        "41",
-        "42",
-        "43",
-        "44"
-      ],
-      "outOfStock": [],
-      "desc": "los mejores del multiverso y punto lol",
-      "badge": null,
-      "costPrice": 0
     }
   ],
   "cupones": [],
-  "fechaActualizacion": "2026-08-04T01:38:48.625Z",
+  "fechaActualizacion": "2026-08-04T01:41:10.276Z",
   "version": 1
 }
