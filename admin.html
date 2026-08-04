@@ -54,18 +54,28 @@
               if (typeof window.saveProducts === 'function' && !window.__khaosAutoSyncInstalled) {
                 window.__khaosAutoSyncInstalled = true;
                 var _origSave = window.saveProducts;
-                var timer = null;
                 window.saveProducts = function(){
                   var r = _origSave.apply(this, arguments);
+                  try {
+                    // Marcar que hay cambios locales pendientes de publicar
+                    localStorage.setItem('khaos_local_revision', String(Date.now()));
+                    localStorage.setItem('khaos_pending_sync', '1');
+                  } catch(e) {}
                   try {
                     var token = '';
                     try { token = localStorage.getItem('khaos_github_token') || ''; } catch(e){}
                     if (!token || (!token.startsWith('ghp_') && !token.startsWith('github_pat_'))) return r;
-                    if (timer) clearTimeout(timer);
-                    timer = setTimeout(function(){
-                      timer = null;
-                      if (typeof syncToGithub === 'function') syncToGithub();
-                    }, 1500);
+                    clearTimeout(window.__khaosSaveTimer);
+                    window.__khaosSaveTimer = setTimeout(function(){
+                      if (typeof syncToGithub === 'function') {
+                        syncToGithub().then(function(){
+                          try {
+                            localStorage.setItem('khaos_pending_sync', '0');
+                            localStorage.setItem('khaos_last_sync', new Date().toISOString());
+                          } catch(e) {}
+                        }).catch(function(){});
+                      }
+                    }, 1200);
                   } catch(e) {}
                   return r;
                 };
@@ -146,42 +156,64 @@
 
               console.log('[Khaos] productos cargados (' + source + '):', list.length);
               if (typeof showToast === 'function') {
-                showToast('Catálogo cargado: ' + list.length + ' productos', 'success');
+                showToast('Catálogo cargado: ' + list.length + ' productos (' + source + ')', 'success');
               }
               return true;
             }
 
-            // raw.githubusercontent evita caché vieja de jsDelivr
+            function readLocal(){
+              try {
+                var s = localStorage.getItem('khaos_admin_products');
+                if (!s) return null;
+                var p = JSON.parse(s);
+                if (!Array.isArray(p) || !p.length) return null;
+                return p;
+              } catch(e) { return null; }
+            }
+
+            function hasPendingLocal(){
+              try {
+                return localStorage.getItem('khaos_pending_sync') === '1';
+              } catch(e) { return false; }
+            }
+
+            // 1) Si hay cambios locales pendientes, usarlos YA (no pisar con GitHub)
+            var localList = readLocal();
+            if (localList && hasPendingLocal()) {
+              apply(localList, 'local-pendiente');
+              console.log('[Khaos] Usando cambios locales pendientes; publicando a GitHub…');
+              setTimeout(function(){
+                if (typeof syncToGithub === 'function') {
+                  syncToGithub().then(function(){
+                    try {
+                      localStorage.setItem('khaos_pending_sync', '0');
+                      localStorage.setItem('khaos_last_sync', new Date().toISOString());
+                    } catch(e) {}
+                  }).catch(function(){});
+                }
+              }, 1500);
+              return;
+            }
+
+            // 2) Cargar desde GitHub (fuente publicada)
             var url = 'https://raw.githubusercontent.com/khaosdeportivo/khaosdeportivo/main/productos.json?t=' + Date.now();
             fetch(url, { cache: 'no-store' })
               .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
               .then(function(d){
                 var list = Array.isArray(d) ? d : (d.productos || []);
-                if (!apply(list, 'github-raw')) throw new Error('GitHub sin productos');
+                // Si local tiene la misma cantidad o más reciente sin pending, igual preferimos GitHub limpio
+                // salvo que local sea más largo (cambios recientes no publicados detectados por count)
+                var local = readLocal();
+                if (local && hasPendingLocal()) {
+                  apply(local, 'local-pendiente');
+                  return;
+                }
+                if (!apply(list, 'github')) throw new Error('GitHub sin productos');
+                try { localStorage.setItem('khaos_pending_sync', '0'); } catch(e) {}
               })
               .catch(function(err){
-                console.warn('[Khaos] raw falló, intentando API:', err);
-                return fetch('https://api.github.com/repos/khaosdeportivo/khaosdeportivo/contents/productos.json?ref=main', {
-                  headers: { 'Accept': 'application/vnd.github.v3+json' },
-                  cache: 'no-store'
-                }).then(function(r){ return r.json(); }).then(function(file){
-                  var decoded = JSON.parse(decodeURIComponent(escape(atob(file.content.replace(/\n/g, '')))));
-                  var list = Array.isArray(decoded) ? decoded : (decoded.productos || []);
-                  if (!apply(list, 'github-api')) throw new Error('API sin productos');
-                });
-              })
-              .catch(function(err){
-                console.warn('[Khaos] GitHub falló, localStorage filtrado:', err);
-                try {
-                  var s = localStorage.getItem('khaos_admin_products');
-                  if (s) {
-                    var p = JSON.parse(s);
-                    if (Array.isArray(p) && p.length > 0) {
-                      apply(p, 'localStorage');
-                      return;
-                    }
-                  }
-                } catch(e) {}
+                console.warn('[Khaos] GitHub falló:', err);
+                if (localList) apply(localList, 'localStorage');
               });
           }, 1100);
           return;
