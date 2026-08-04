@@ -1,4 +1,47 @@
 <!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>RESTORING</title></head>
-<body><p>Loading restore...</p></body></n</html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khaos Deportivo</title>
+</head>
+<body>
+<script>
+(function () {
+  var url = 'https://cdn.jsdelivr.net/gh/khaosdeportivo/khaosdeportivo@3691ec0a4cbceb75565622da11483e22539e4f59/index.html?t=' + Date.now();
+  fetch(url)
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    })
+    .then(function (html) {
+      document.open();
+      document.write(html);
+      document.close();
+      setTimeout(function () {
+        if (!document.getElementById('catalogGroupFilter')) {
+          var tb = document.querySelector('.catalog-toolbar');
+          if (tb) {
+            var box = document.createElement('div');
+            box.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;align-items:center;width:100%;margin-top:10px;';
+            box.innerHTML =
+              '<select id="catalogGroupFilter" style="max-width:130px;font-size:13px;padding:10px 12px;height:44px;background:var(--graphite,#1a1a22);border:1px solid var(--stone,#333);border-radius:12px;color:var(--ivory,#eee);">' +
+              '<option value="todos">Todos</option><option value="adulto">Adulto</option><option value="nino">Niño</option></select>' +
+              '<select id="catalogCatFilter" style="max-width:170px;font-size:13px;padding:10px 12px;height:44px;background:var(--graphite,#1a1a22);border:1px solid var(--stone,#333);border-radius:12px;color:var(--ivory,#eee);">' +
+              '<option value="todos">Categoría</option></select>' +
+              '<button type="button" id="catalogClearFilters" style="font-size:12px;padding:10px 14px;height:44px;border-radius:12px;border:1px solid var(--stone,#333);background:var(--graphite,#1a1a22);color:var(--ivory,#eee);cursor:pointer;">✕ Limpiar</button>';
+            tb.appendChild(box);
+          }
+        }
+        var s = document.createElement('script');
+        s.src = 'js/catalog-filters.js?v=1';
+        document.body.appendChild(s);
+      }, 600);
+    })
+    .catch(function (e) {
+      document.body.innerHTML = '<h1 style="font-family:sans-serif;padding:40px;">Error cargando el catálogo</h1><p style="padding:0 40px;">' + e + '</p>';
+    });
+})();
+</script>
+</body>
+</html>
