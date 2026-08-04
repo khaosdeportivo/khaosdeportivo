@@ -1377,29 +1377,9 @@
       "desc": "Adidas Sala azul con franjas blancas y cordones volt. Suela goma.",
       "badge": "new",
       "oldPrice": null
-    },
-    {
-      "id": 72,
-      "name": "Adidas Predator Elite Negro/Blanco",
-      "code": "8422",
-      "category": "futsal-corto",
-      "price": 120000,
-      "oldPrice": null,
-      "image": "",
-      "sizes": [
-        "40",
-        "41",
-        "42",
-        "43"
-      ],
-      "outOfStock": [
-        "42"
-      ],
-      "desc": "qawsedrftyuiuytrsasdfghnjm,.",
-      "badge": null
     }
   ],
   "cupones": [],
-  "fechaActualizacion": "2026-08-04T00:16:33.842Z",
+  "fechaActualizacion": "2026-08-04T00:16:46.082Z",
   "version": 1
 }
