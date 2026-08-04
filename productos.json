@@ -1419,11 +1419,11 @@
     },
     {
       "id": 73,
-      "name": "hfksjhjg",
+      "name": "Con lágrimas en los ojos.",
       "code": "GB-GX-CET",
       "category": "nino-sintetica-corta",
       "price": 210000,
-      "oldPrice": 0,
+      "oldPrice": null,
       "image": "",
       "sizes": [
         "31",
@@ -1432,12 +1432,12 @@
         "41"
       ],
       "outOfStock": [],
-      "desc": "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+      "desc": "Maria duerme sola.",
       "badge": null,
       "costPrice": 0
     }
   ],
   "cupones": [],
-  "fechaActualizacion": "2026-08-04T02:38:49.427Z",
+  "fechaActualizacion": "2026-08-04T02:49:14.046Z",
   "version": 1
 }
