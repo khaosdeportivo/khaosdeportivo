@@ -1,7 +1,7 @@
 /**
  * admin-fix.js — Parches sobre el admin estable (CDN)
- * Corrige: updateCouponStats (null DOM), renderTable (precios/tallas),
- * y contadores que quedaban en 0.
+ * - updateCouponStats / renderTable / updateAllStats seguros
+ * - syncToGithub con reintento ante conflicto de SHA
  */
 (function () {
   'use strict';
@@ -146,7 +146,7 @@
     }
   };
 
-  // --- updateAllStats: re-ejecutar contadores de forma segura ---
+  // --- updateAllStats seguro ---
   var _origUpdateAllStats = window.updateAllStats;
   window.updateAllStats = function () {
     try {
@@ -172,11 +172,133 @@
       setText('tabOutOfStock', outCount);
 
       var nino = prods.filter(function (p) { return (p.category || '').indexOf('nino-') === 0; }).length;
-      var adulto = prods.length - nino;
-      setText('sidebarAdultoCount', adulto);
+      setText('sidebarAdultoCount', prods.length - nino);
       setText('sidebarNinoCount', nino);
     } catch (e) {
       console.warn('[Khaos] updateAllStats fix:', e.message);
+    }
+  };
+
+  // ============================================================
+  // syncToGithub ROBUSTO — reintento ante conflicto de SHA
+  // ============================================================
+  var _syncLock = false;
+
+  function getToken() {
+    try { return localStorage.getItem('khaos_github_token') || ''; } catch (e) { return ''; }
+  }
+
+  async function fetchFileSha(token) {
+    var cfg = window.GITHUB_CONFIG || {
+      owner: 'khaosdeportivo', repo: 'khaosdeportivo', branch: 'main',
+      path: 'productos.json', apiBase: 'https://api.github.com'
+    };
+    var res = await fetch(
+      cfg.apiBase + '/repos/' + cfg.owner + '/' + cfg.repo + '/contents/' + cfg.path + '?ref=' + cfg.branch + '&t=' + Date.now(),
+      { headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }, cache: 'no-store' }
+    );
+    if (!res.ok) return null;
+    var data = await res.json();
+    return data.sha || null;
+  }
+
+  window.syncToGithub = async function syncToGithubFixed() {
+    var token = getToken();
+    if (!token) {
+      if (typeof showToast === 'function') showToast('Configura el token de GitHub en Ajustes', 'warning');
+      throw new Error('Sin token');
+    }
+
+    // Evitar sincronizaciones simultáneas
+    if (_syncLock) {
+      console.log('[Khaos] Sync ya en curso, se omite'); 
+      return;
+    }
+    _syncLock = true;
+
+    var cfg = window.GITHUB_CONFIG || {
+      owner: 'khaosdeportivo', repo: 'khaosdeportivo', branch: 'main',
+      path: 'productos.json', apiBase: 'https://api.github.com'
+    };
+
+    if (typeof showLoading === 'function') showLoading('Sincronizando con GitHub…');
+
+    try {
+      var prods = Array.isArray(window.products) ? window.products : [];
+      var cups = Array.isArray(window.coupons) ? window.coupons : [];
+      var content = {
+        productos: prods,
+        cupones: cups,
+        fechaActualizacion: new Date().toISOString(),
+        version: 1
+      };
+      var base64Content = btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2))));
+
+      var maxAttempts = 3;
+      var lastError = null;
+
+      for (var attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          // Siempre leer SHA fresco antes de cada intento
+          var sha = await fetchFileSha(token);
+
+          var body = {
+            message: 'Actualización catálogo — ' + new Date().toLocaleString('es-CO'),
+            content: base64Content,
+            branch: cfg.branch
+          };
+          if (sha) body.sha = sha;
+
+          var putRes = await fetch(
+            cfg.apiBase + '/repos/' + cfg.owner + '/' + cfg.repo + '/contents/' + cfg.path,
+            {
+              method: 'PUT',
+              headers: {
+                'Authorization': 'token ' + token,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(body)
+            }
+          );
+
+          if (putRes.ok || putRes.status === 201) {
+            var now = new Date().toISOString();
+            try { localStorage.setItem('khaos_last_sync', now); } catch (e) {}
+            setText('githubLastSync', new Date(now).toLocaleString('es-CO'));
+            if (typeof showToast === 'function') showToast('Catálogo sincronizado con GitHub', 'success');
+            if (typeof addNotification === 'function') addNotification('system', 'Catálogo sincronizado exitosamente');
+            console.log('[Khaos] Sync OK (intento ' + attempt + ')');
+            return true;
+          }
+
+          var err = {};
+          try { err = await putRes.json(); } catch (e) {}
+          lastError = err.message || ('HTTP ' + putRes.status);
+
+          // Conflicto de SHA → reintentar
+          if (putRes.status === 409 || /does not match/i.test(lastError)) {
+            console.warn('[Khaos] Conflicto SHA, reintento ' + attempt + '/' + maxAttempts);
+            await new Promise(function (r) { setTimeout(r, 400 * attempt); });
+            continue;
+          }
+
+          // Otro error: no reintentar
+          break;
+        } catch (e) {
+          lastError = e.message || String(e);
+          console.warn('[Khaos] Sync error intento ' + attempt + ':', lastError);
+          await new Promise(function (r) { setTimeout(r, 400 * attempt); });
+        }
+      }
+
+      if (typeof showToast === 'function') {
+        showToast('Error GitHub: ' + (lastError || 'Desconocido'), 'error');
+      }
+      throw new Error(lastError || 'Sync falló');
+    } finally {
+      _syncLock = false;
+      if (typeof hideLoading === 'function') hideLoading();
     }
   };
 
@@ -190,5 +312,5 @@
     } catch (e) {}
   }, 300);
 
-  console.log('[Khaos] admin-fix.js aplicado');
+  console.log('[Khaos] admin-fix.js aplicado (sync con reintento)');
 })();
