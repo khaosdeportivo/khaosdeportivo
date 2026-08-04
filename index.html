@@ -29,12 +29,26 @@
               '<option value="todos">Todos</option><option value="adulto">Adulto</option><option value="nino">Niño</option></select>' +
               '<select id="catalogCatFilter" style="max-width:170px;font-size:13px;padding:10px 12px;height:44px;background:var(--graphite,#1a1a22);border:1px solid var(--stone,#333);border-radius:12px;color:var(--ivory,#eee);">' +
               '<option value="todos">Categoría</option></select>' +
+              '<select id="catalogSizeFilter" style="max-width:120px;font-size:13px;padding:10px 12px;height:44px;background:var(--graphite,#1a1a22);border:1px solid var(--stone,#333);border-radius:12px;color:var(--ivory,#eee);">' +
+              '<option value="todos">Talla</option></select>' +
               '<button type="button" id="catalogClearFilters" style="font-size:12px;padding:10px 14px;height:44px;border-radius:12px;border:1px solid var(--stone,#333);background:var(--graphite,#1a1a22);color:var(--ivory,#eee);cursor:pointer;">✕ Limpiar</button>';
             tb.appendChild(box);
           }
+        } else if (!document.getElementById('catalogSizeFilter')) {
+          var cat = document.getElementById('catalogCatFilter');
+          var clearBtn = document.getElementById('catalogClearFilters');
+          var parent = cat && cat.parentNode;
+          if (parent) {
+            var sizeSel = document.createElement('select');
+            sizeSel.id = 'catalogSizeFilter';
+            sizeSel.style.cssText = 'max-width:120px;font-size:13px;padding:10px 12px;height:44px;background:var(--graphite,#1a1a22);border:1px solid var(--stone,#333);border-radius:12px;color:var(--ivory,#eee);';
+            sizeSel.innerHTML = '<option value="todos">Talla</option>';
+            if (clearBtn) parent.insertBefore(sizeSel, clearBtn);
+            else parent.appendChild(sizeSel);
+          }
         }
         var s = document.createElement('script');
-        s.src = 'js/catalog-filters.js?v=1';
+        s.src = 'js/catalog-filters.js?v=2';
         document.body.appendChild(s);
       }, 600);
     })
