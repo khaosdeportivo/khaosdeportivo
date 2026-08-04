@@ -1398,9 +1398,28 @@
       "desc": "ljhakhsgfpujckdagslñosifvjgh{sñifjvñdfihñaer",
       "badge": null,
       "costPrice": 0
+    },
+    {
+      "id": 72,
+      "name": "Adidas Predator Elite Negro/Verde Neón",
+      "code": "GB-GX-CET",
+      "category": "nino-sintetica-corta",
+      "price": 150000,
+      "oldPrice": 0,
+      "image": "",
+      "sizes": [
+        "31",
+        "32",
+        "33",
+        "34"
+      ],
+      "outOfStock": [],
+      "desc": "luytressdfgbnm,28962",
+      "badge": null,
+      "costPrice": 0
     }
   ],
   "cupones": [],
-  "fechaActualizacion": "2026-08-04T02:33:22.091Z",
+  "fechaActualizacion": "2026-08-04T02:34:31.796Z",
   "version": 1
 }
