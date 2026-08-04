@@ -1387,10 +1387,15 @@
       "oldPrice": null,
       "image": "",
       "sizes": [
+        "30",
         "31",
         "32",
         "33",
-        "34"
+        "34",
+        "35",
+        "36",
+        "37",
+        "38"
       ],
       "outOfStock": [],
       "desc": "sdfgyuijtrewschjkuytrewszc vbnmkytrewscvbnmkuytresdcfv",
@@ -1438,6 +1443,6 @@
     }
   ],
   "cupones": [],
-  "fechaActualizacion": "2026-08-04T02:49:41.372Z",
+  "fechaActualizacion": "2026-08-04T02:50:02.326Z",
   "version": 1
 }
