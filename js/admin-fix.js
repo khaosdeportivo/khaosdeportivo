@@ -1,5 +1,7 @@
 /**
  * admin-fix.js — Parches admin estable
+ * Sync sin carrera: siempre sube el array ACTUAL y no marca
+ * pending=0 si hubo cambios mientras sincronizaba.
  */
 (function () {
   'use strict';
@@ -113,7 +115,7 @@
     } catch (e) {}
   };
 
-  // ========== SYNC ==========
+  // ========== SYNC SIN CARRERA ==========
   var _syncLock = false;
   var _syncQueued = false;
 
@@ -121,9 +123,20 @@
     try { return localStorage.getItem('khaos_github_token') || ''; } catch (e) { return ''; }
   }
 
+  function getRev() {
+    try { return localStorage.getItem('khaos_local_revision') || '0'; } catch (e) { return '0'; }
+  }
+
+  function markLocalDirty() {
+    try {
+      localStorage.setItem('khaos_admin_products', JSON.stringify(window.products || []));
+      localStorage.setItem('khaos_local_revision', String(Date.now()));
+      localStorage.setItem('khaos_pending_sync', '1');
+    } catch (e) {}
+  }
+
   async function fetchFileSha(token) {
-    var cfg = { owner: 'khaosdeportivo', repo: 'khaosdeportivo', branch: 'main', path: 'productos.json', apiBase: 'https://api.github.com' };
-    if (window.GITHUB_CONFIG) cfg = window.GITHUB_CONFIG;
+    var cfg = window.GITHUB_CONFIG || { owner: 'khaosdeportivo', repo: 'khaosdeportivo', branch: 'main', path: 'productos.json', apiBase: 'https://api.github.com' };
     var res = await fetch(cfg.apiBase + '/repos/' + cfg.owner + '/' + cfg.repo + '/contents/' + cfg.path + '?ref=' + cfg.branch + '&t=' + Date.now(), {
       headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }, cache: 'no-store'
     });
@@ -132,49 +145,111 @@
     return data.sha || null;
   }
 
-  function markLocalDirty() {
-    try {
-      localStorage.setItem('khaos_admin_products', JSON.stringify(window.products || []));
-      localStorage.setItem('khaos_local_revision', String(Date.now()));
-    } catch (e) {}
-  }
-
   window.syncToGithub = async function () {
     var token = getToken();
     if (!token) {
       if (typeof showToast === 'function') showToast('Configura el token de GitHub en Ajustes', 'warning');
       throw new Error('Sin token');
     }
-    if (_syncLock) { _syncQueued = true; return; }
+    if (_syncLock) {
+      _syncQueued = true;
+      console.log('[Khaos] Sync en cola');
+      return;
+    }
     _syncLock = true;
     _syncQueued = false;
+
     var cfg = window.GITHUB_CONFIG || { owner: 'khaosdeportivo', repo: 'khaosdeportivo', branch: 'main', path: 'productos.json', apiBase: 'https://api.github.com' };
     if (typeof showLoading === 'function') showLoading('Sincronizando…');
+
+    var startedRev = getRev();
+    var lastError = null;
+
     try {
+      // Siempre leer el array MÁS RECIENTE justo antes de subir
       var prods = Array.isArray(window.products) ? window.products.slice() : [];
-      var cups = Array.isArray(window.coupons) ? window.coupons : [];
-      var content = { productos: prods, cupones: cups, fechaActualizacion: new Date().toISOString(), version: 1 };
+      var cups = Array.isArray(window.coupons) ? window.coupons.slice() : [];
+
+      // Persistir local antes de subir
+      try {
+        localStorage.setItem('khaos_admin_products', JSON.stringify(prods));
+      } catch (e) {}
+
+      var content = {
+        productos: prods,
+        cupones: cups,
+        fechaActualizacion: new Date().toISOString(),
+        version: 1
+      };
       var base64Content = btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2))));
-      var lastError = null;
+
       for (var attempt = 1; attempt <= 4; attempt++) {
+        // Si el usuario cambió algo mientras reintentábamos, re-snapshot
+        var nowRev = getRev();
+        if (nowRev !== startedRev) {
+          prods = Array.isArray(window.products) ? window.products.slice() : [];
+          cups = Array.isArray(window.coupons) ? window.coupons.slice() : [];
+          content = {
+            productos: prods,
+            cupones: cups,
+            fechaActualizacion: new Date().toISOString(),
+            version: 1
+          };
+          base64Content = btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2))));
+          startedRev = nowRev;
+          console.log('[Khaos] Snapshot actualizado por cambios locales:', prods.length);
+        }
+
         try {
           var sha = await fetchFileSha(token);
-          var body = { message: 'Actualización catálogo — ' + new Date().toLocaleString('es-CO') + ' (' + prods.length + ' productos)', content: base64Content, branch: cfg.branch };
+          var body = {
+            message: 'Actualización catálogo — ' + new Date().toLocaleString('es-CO') + ' (' + prods.length + ' productos)',
+            content: base64Content,
+            branch: cfg.branch
+          };
           if (sha) body.sha = sha;
-          var putRes = await fetch(cfg.apiBase + '/repos/' + cfg.owner + '/' + cfg.repo + '/contents/' + cfg.path, {
-            method: 'PUT',
-            headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-          });
+
+          var putRes = await fetch(
+            cfg.apiBase + '/repos/' + cfg.owner + '/' + cfg.repo + '/contents/' + cfg.path,
+            {
+              method: 'PUT',
+              headers: {
+                'Authorization': 'token ' + token,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(body)
+            }
+          );
+
           if (putRes.ok || putRes.status === 201) {
+            var endRev = getRev();
             try { localStorage.setItem('khaos_last_sync', new Date().toISOString()); } catch (e) {}
-            if (typeof showToast === 'function') showToast('Guardado en GitHub (' + prods.length + ' productos)', 'success');
+
+            // Solo marcar como sincronizado si NO hubo cambios nuevos mientras subíamos
+            if (endRev === startedRev) {
+              try { localStorage.setItem('khaos_pending_sync', '0'); } catch (e) {}
+              if (typeof showToast === 'function') {
+                showToast('Guardado en GitHub (' + prods.length + ' productos)', 'success');
+              }
+              console.log('[Khaos] Sync OK definitivo:', prods.length);
+            } else {
+              // Hubo cambios nuevos → dejar pending y re-sincronizar
+              try { localStorage.setItem('khaos_pending_sync', '1'); } catch (e) {}
+              _syncQueued = true;
+              if (typeof showToast === 'function') {
+                showToast('Guardado parcial. Hay cambios nuevos, re-sincronizando…', 'info');
+              }
+              console.log('[Khaos] Sync OK pero hay cambios más nuevos → cola');
+            }
             return true;
           }
+
           var err = {};
           try { err = await putRes.json(); } catch (e) {}
           lastError = err.message || ('HTTP ' + putRes.status);
-          if (putRes.status === 409 || /does not match/i.test(lastError)) {
+
+          if (putRes.status === 409 || /does not match/i.test(String(lastError))) {
             await new Promise(function (r) { setTimeout(r, 350 * attempt); });
             continue;
           }
@@ -184,14 +259,20 @@
           await new Promise(function (r) { setTimeout(r, 350 * attempt); });
         }
       }
-      if (typeof showToast === 'function') showToast('Error GitHub: ' + (lastError || '?'), 'error');
+
+      if (typeof showToast === 'function') {
+        showToast('Error GitHub: ' + (lastError || '?') + '. Tus productos siguen en este navegador.', 'error');
+      }
+      try { localStorage.setItem('khaos_pending_sync', '1'); } catch (e) {}
       throw new Error(lastError || 'Sync falló');
     } finally {
       _syncLock = false;
       if (typeof hideLoading === 'function') hideLoading();
       if (_syncQueued) {
         _syncQueued = false;
-        setTimeout(function () { window.syncToGithub().catch(function () {}); }, 300);
+        setTimeout(function () {
+          window.syncToGithub().catch(function () {});
+        }, 500);
       }
     }
   };
@@ -203,7 +284,25 @@
     }
   }
 
-  // ========== DELETE ROBUSTO ==========
+  // --- Parche saveProduct: tras crear/editar, forzar sync del array actual ---
+  function patchSaveProduct() {
+    if (typeof window.saveProduct !== 'function' || window.__khaosSaveProductPatched) return false;
+    window.__khaosSaveProductPatched = true;
+    var _orig = window.saveProduct;
+    window.saveProduct = function () {
+      var before = (window.products || []).length;
+      var r = _orig.apply(this, arguments);
+      var after = (window.products || []).length;
+      console.log('[Khaos] saveProduct', before, '→', after);
+      markLocalDirty();
+      // Sync inmediato con el array actual (incluye el nuevo producto)
+      setTimeout(function () { syncNow(); }, 300);
+      return r;
+    };
+    return true;
+  }
+
+  // ========== DELETE ==========
   function doDeleteProduct(id) {
     id = Number(id);
     var before = (window.products || []).length;
@@ -214,11 +313,11 @@
       if (window.selectedIds && window.selectedIds.delete) window.selectedIds.delete(id);
     } catch (e) {}
     markLocalDirty();
-    try { if (typeof saveProducts === 'function') saveProducts(); } catch (e) {
-      try { localStorage.setItem('khaos_admin_products', JSON.stringify(window.products)); } catch (e2) {}
-      try { if (typeof renderTable === 'function') renderTable(); } catch (e3) {}
-      try { if (typeof updateAllStats === 'function') updateAllStats(); } catch (e4) {}
-    }
+    try {
+      if (typeof updateAllStats === 'function') updateAllStats();
+      if (typeof renderTable === 'function') renderTable();
+      if (typeof updateDashboard === 'function') updateDashboard();
+    } catch (e) {}
     if (typeof showToast === 'function') {
       showToast(after < before ? 'Producto eliminado. Guardando…' : 'No se encontró el producto', after < before ? 'info' : 'warning');
     }
@@ -226,7 +325,6 @@
   }
 
   function safeConfirm(title, message, onYes) {
-    // 1) Modal del admin
     try {
       if (typeof showConfirm === 'function' &&
           document.getElementById('confirmTitle') &&
@@ -236,13 +334,8 @@
         showConfirm(title, message, onYes);
         return;
       }
-    } catch (e) {
-      console.warn('[Khaos] showConfirm falló', e);
-    }
-    // 2) confirm nativo del navegador
-    if (window.confirm(title + '\n\n' + message)) {
-      onYes();
-    }
+    } catch (e) {}
+    if (window.confirm(title + '\n\n' + message)) onYes();
   }
 
   window.deleteProduct = function (id) {
@@ -252,21 +345,18 @@
     });
   };
 
-  // Reinstalar por si el admin original lo redefine
   var tries = 0;
   (function keepPatch() {
-    if (typeof window.deleteProduct !== 'function' || !window.deleteProduct.toString().includes('doDeleteProduct') && tries < 30) {
-      // re-apply if overwritten by something that is not ours
-      var src = '';
-      try { src = window.deleteProduct.toString(); } catch (e) {}
-      if (src.indexOf('[Khaos] deleteProduct llamado') === -1) {
-        window.deleteProduct = function (id) {
-          console.log('[Khaos] deleteProduct llamado', id);
-          safeConfirm('Eliminar producto', '¿Eliminar este producto? Se guardará en GitHub.', function () {
-            doDeleteProduct(id);
-          });
-        };
-      }
+    patchSaveProduct();
+    var src = '';
+    try { src = window.deleteProduct.toString(); } catch (e) {}
+    if (src.indexOf('[Khaos] deleteProduct llamado') === -1) {
+      window.deleteProduct = function (id) {
+        console.log('[Khaos] deleteProduct llamado', id);
+        safeConfirm('Eliminar producto', '¿Eliminar este producto? Se guardará en GitHub.', function () {
+          doDeleteProduct(id);
+        });
+      };
     }
     if (++tries < 40) setTimeout(keepPatch, 250);
   })();
@@ -280,5 +370,5 @@
     } catch (e) {}
   }, 400);
 
-  console.log('[Khaos] admin-fix.js aplicado (delete robusto)');
+  console.log('[Khaos] admin-fix.js aplicado (sync sin carrera)');
 })();
