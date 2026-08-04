@@ -50,6 +50,11 @@
           core.onload = function () {
             var filters = document.createElement('script');
             filters.src = 'js/khaos-admin-filters.js?v=2';
+            filters.onload = function () {
+              var view = document.createElement('script');
+              view.src = 'js/khaos-admin-view.js?v=1';
+              document.body.appendChild(view);
+            };
             document.body.appendChild(filters);
           };
           document.body.appendChild(core);
