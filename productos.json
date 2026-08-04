@@ -1380,9 +1380,9 @@
     },
     {
       "id": 71,
-      "name": "Adidas Predator Elite Negro/Blanco",
+      "name": "Te daré un puño, zorra",
       "code": "GB-GX-CEL",
-      "category": "nino-sintetica-corta",
+      "category": "nino-futsal-bota",
       "price": 500000,
       "oldPrice": null,
       "image": "",
@@ -1443,6 +1443,6 @@
     }
   ],
   "cupones": [],
-  "fechaActualizacion": "2026-08-04T02:53:24.329Z",
+  "fechaActualizacion": "2026-08-04T02:54:30.711Z",
   "version": 1
 }
