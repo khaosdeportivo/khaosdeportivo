@@ -1,6 +1,7 @@
 /**
- * khaos-admin-core.js — UNICO modulo de persistencia del admin
- * Sobrescribe: loadProducts, saveProducts, saveProduct, deleteProduct, syncToGithub
+ * khaos-admin-core.js — Persistencia unica del admin
+ * Importante: el admin CDN declara `let products` (no window.products).
+ * Hay que asignar a la variable global `products`, no a window.products.
  */
 (function () {
   'use strict';
@@ -16,9 +17,46 @@
     try { return localStorage.getItem('khaos_local_revision') || '0'; } catch (e) { return '0'; }
   }
 
+  function currentProducts() {
+    try {
+      if (typeof products !== 'undefined' && Array.isArray(products)) return products;
+    } catch (e) {}
+    if (Array.isArray(window.products)) return window.products;
+    return [];
+  }
+
+  function currentCoupons() {
+    try {
+      if (typeof coupons !== 'undefined' && Array.isArray(coupons)) return coupons;
+    } catch (e) {}
+    if (Array.isArray(window.coupons)) return window.coupons;
+    return [];
+  }
+
+  /** Asigna el array al `let products` del admin CDN */
+  function applyList(list) {
+    list = Array.isArray(list) ? list.slice() : [];
+    try {
+      products = list;
+    } catch (e) {
+      window.products = list;
+    }
+    try {
+      nextId = list.length
+        ? Math.max.apply(null, list.map(function (p) { return Number(p.id) || 0; }).concat([0])) + 1
+        : 1;
+    } catch (e) {
+      try { window.nextId = 1; } catch (e2) {}
+    }
+    try {
+      localStorage.setItem('khaos_admin_products', JSON.stringify(list));
+    } catch (e) {}
+    return list.length;
+  }
+
   function markDirty() {
     try {
-      localStorage.setItem('khaos_admin_products', JSON.stringify(window.products || []));
+      localStorage.setItem('khaos_admin_products', JSON.stringify(currentProducts()));
       localStorage.setItem('khaos_local_revision', String(Date.now()));
       localStorage.setItem('khaos_pending_sync', '1');
     } catch (e) {}
@@ -35,24 +73,15 @@
   };
 
   window.loadProducts = async function loadProducts() {
-    function applyList(list) {
-      window.products = Array.isArray(list) ? list : [];
-      try {
-        window.nextId = window.products.length
-          ? Math.max.apply(null, window.products.map(function (p) { return p.id || 0; }).concat([0])) + 1
-          : 1;
-      } catch (e) { window.nextId = 1; }
-      try { localStorage.setItem('khaos_admin_products', JSON.stringify(window.products)); } catch (e) {}
-    }
-
+    // 1) Local pendiente solo si tiene datos razonables
     try {
       if (localStorage.getItem('khaos_pending_sync') === '1') {
         var saved = localStorage.getItem('khaos_admin_products');
         if (saved) {
           var parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length) {
-            applyList(parsed);
-            console.log('[Khaos] load: local pendiente', window.products.length);
+          if (Array.isArray(parsed) && parsed.length >= 10) {
+            var n = applyList(parsed);
+            console.log('[Khaos] load: local pendiente', n);
             setTimeout(function () { window.syncToGithub().catch(function () {}); }, 600);
             return;
           }
@@ -60,6 +89,7 @@
       }
     } catch (e) {}
 
+    // 2) GitHub (fuente de verdad)
     try {
       var res = await fetch(
         'https://raw.githubusercontent.com/khaosdeportivo/khaosdeportivo/main/productos.json?t=' + Date.now(),
@@ -69,12 +99,14 @@
         var data = await res.json();
         var list = Array.isArray(data) ? data : (data.productos || []);
         if (list.length) {
-          applyList(list);
+          var n2 = applyList(list);
           if (data.cupones && Array.isArray(data.cupones)) {
-            try { window.coupons = data.cupones; } catch (e) {}
+            try { coupons = data.cupones; } catch (e) {
+              try { window.coupons = data.cupones; } catch (e2) {}
+            }
           }
           try { localStorage.setItem('khaos_pending_sync', '0'); } catch (e) {}
-          console.log('[Khaos] load: github', window.products.length);
+          console.log('[Khaos] load: github', n2);
           return;
         }
       }
@@ -82,20 +114,19 @@
       console.warn('[Khaos] github load fail', e);
     }
 
+    // 3) Fallback localStorage
     try {
       var s2 = localStorage.getItem('khaos_admin_products');
       if (s2) {
         var p2 = JSON.parse(s2);
         if (Array.isArray(p2) && p2.length) {
-          applyList(p2);
-          console.log('[Khaos] load: localStorage', window.products.length);
+          console.log('[Khaos] load: localStorage', applyList(p2));
           return;
         }
       }
     } catch (e) {}
 
-    window.products = [];
-    window.nextId = 1;
+    applyList([]);
   };
 
   window.syncToGithub = async function syncToGithub() {
@@ -118,8 +149,8 @@
     try {
       var lastError = null;
       for (var attempt = 1; attempt <= 4; attempt++) {
-        var prods = Array.isArray(window.products) ? window.products.slice() : [];
-        var cups = Array.isArray(window.coupons) ? window.coupons.slice() : [];
+        var prods = currentProducts().slice();
+        var cups = currentCoupons().slice();
         try { localStorage.setItem('khaos_admin_products', JSON.stringify(prods)); } catch (e) {}
 
         var content = {
@@ -221,15 +252,18 @@
   window.deleteProduct = function deleteProduct(id) {
     function doDel() {
       id = Number(id);
-      var before = (window.products || []).length;
-      window.products = (window.products || []).filter(function (p) { return Number(p.id) !== id; });
-      try { if (window.selectedIds && window.selectedIds.delete) window.selectedIds.delete(id); } catch (e) {}
+      var before = currentProducts().length;
+      var next = currentProducts().filter(function (p) { return Number(p.id) !== id; });
+      applyList(next);
+      try {
+        if (typeof selectedIds !== 'undefined' && selectedIds && selectedIds.delete) selectedIds.delete(id);
+      } catch (e) {}
       window.saveProducts();
       try { if (typeof renderCategoryChips === 'function') renderCategoryChips(); } catch (e) {}
       if (typeof showToast === 'function') {
-        showToast(window.products.length < before ? 'Producto eliminado. Guardando...' : 'No encontrado', 'info');
+        showToast(next.length < before ? 'Producto eliminado. Guardando...' : 'No encontrado', 'info');
       }
-      if (window.products.length < before) window.syncToGithub().catch(function () {});
+      if (next.length < before) window.syncToGithub().catch(function () {});
     }
     if (typeof showConfirm === 'function') {
       try {
@@ -272,24 +306,31 @@
     toolbar.insertBefore(btn, toolbar.firstChild);
   }
 
+  function refreshUI() {
+    try { if (typeof renderTable === 'function') renderTable(); } catch (e) {}
+    try { if (typeof updateAllStats === 'function') updateAllStats(); } catch (e) {}
+    try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (e) {}
+    try { if (typeof renderSidebarCategories === 'function') renderSidebarCategories(); } catch (e) {}
+    try { if (typeof renderCategoryChips === 'function') renderCategoryChips(); } catch (e) {}
+  }
+
   function boot() {
     patchSaveProduct();
     placeSaveBtn();
-    if (typeof window.loadProducts === 'function') {
-      Promise.resolve(window.loadProducts()).then(function () {
-        try { if (typeof renderTable === 'function') renderTable(); } catch (e) {}
-        try { if (typeof updateAllStats === 'function') updateAllStats(); } catch (e) {}
-        try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (e) {}
-        try { if (typeof renderSidebarCategories === 'function') renderSidebarCategories(); } catch (e) {}
-        try { if (typeof renderCategoryChips === 'function') renderCategoryChips(); } catch (e) {}
-        console.log('[Khaos] core boot — productos:', (window.products || []).length);
-      });
-    }
+    Promise.resolve(window.loadProducts()).then(function () {
+      refreshUI();
+      console.log('[Khaos] core boot — productos:', currentProducts().length);
+      if (typeof showToast === 'function') {
+        showToast('Catalogo: ' + currentProducts().length + ' productos', 'success');
+      }
+    }).catch(function (err) {
+      console.error('[Khaos] boot load error', err);
+    });
   }
 
   var tries = 0;
   (function wait() {
-    if (typeof window.saveProduct === 'function' || tries > 40) {
+    if (typeof window.saveProduct === 'function' || tries > 50) {
       boot();
       setInterval(function () { placeSaveBtn(); patchSaveProduct(); }, 1500);
       return;
