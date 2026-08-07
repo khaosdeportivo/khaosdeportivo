@@ -1,7 +1,6 @@
 /**
- * admin.js — loader del núcleo (v20260807d)
- * Sin reescritura del código fuente (evita romper funciones).
- * Crea DOM faltante + parches seguros después del eval.
+ * admin.js — loader del núcleo (v20260807f)
+ * Carga asíncrona del núcleo (sin XHR síncrono).
  */
 (function () {
   if (window.__khaosAdminBooted) return;
@@ -33,10 +32,25 @@
   }
   ensureDom();
 
+  function exposeGlobals() {
+    try {
+      (0, eval)(
+        'try{window.products=products;}catch(e){}' +
+        'try{window.orders=orders;}catch(e){}' +
+        'try{window.coupons=coupons;}catch(e){}' +
+        'try{window.nextId=nextId;}catch(e){}' +
+        'try{window.nextOrderId=nextOrderId;}catch(e){}'
+      );
+    } catch (e) {}
+    if (!Array.isArray(window.products)) window.products = [];
+    if (!Array.isArray(window.orders)) window.orders = [];
+    if (!Array.isArray(window.coupons)) window.coupons = [];
+  }
+
   function safeUpdateCouponStats() {
     ensureDom();
     try {
-      var list = (typeof coupons !== 'undefined' && Array.isArray(coupons)) ? coupons : [];
+      var list = (typeof coupons !== 'undefined' && Array.isArray(coupons)) ? coupons : (window.coupons || []);
       function st(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; }
       function ss(id, p, v) { var e = document.getElementById(id); if (e && e.style) e.style[p] = v; }
       var total = list.length;
@@ -66,7 +80,7 @@
   function safeGetFilteredCoupons() {
     ensureDom();
     try {
-      var list = (typeof coupons !== 'undefined' && Array.isArray(coupons)) ? coupons.slice() : [];
+      var list = (typeof coupons !== 'undefined' && Array.isArray(coupons)) ? coupons.slice() : (window.coupons || []).slice();
       var filter = (typeof currentCouponFilter !== 'undefined') ? currentCouponFilter : 'all';
       if (filter === 'active') list = list.filter(function (c) {
         return typeof isCouponActive === 'function' ? isCouponActive(c) : true;
@@ -96,39 +110,16 @@
     window.addEventListener('storage', function (e) {
       if (e.key !== 'khaos_admin_orders') return;
       try {
-        var newOrders = JSON.parse(e.newValue || '[]');
-        var oldOrders = JSON.parse(e.oldValue || '[]');
-        if (newOrders.length > oldOrders.length) {
-          var newOrder = newOrders[0];
-          if (newOrder && newOrder.source === 'web') {
-            if (typeof showToast === 'function') {
-              showToast(
-                'Nuevo pedido web: ' + (newOrder.customer || 'Cliente') +
-                ' — $' + (newOrder.total || 0).toLocaleString('es-CO'),
-                'success'
-              );
-            }
-            if (typeof addNotification === 'function') {
-              addNotification(
-                'order',
-                'Nuevo pedido #' + String(newOrder.id).slice(-4) +
-                ' desde catálogo — $' + (newOrder.total || 0).toLocaleString('es-CO')
-              );
-            }
-          }
-        }
         if (typeof loadOrders === 'function') loadOrders();
         if (typeof renderOrders === 'function') renderOrders();
-      } catch (err) {
-        console.warn('[Khaos] storage listener', err);
-      }
+      } catch (err) {}
     });
   }
 
   function installStubsAndPatches() {
     ensureDom();
+    exposeGlobals();
 
-    // Stubs si el núcleo no los definió
     if (typeof window.initStorageListener !== 'function') {
       window.initStorageListener = safeInitStorageListener;
     }
@@ -148,16 +139,14 @@
       window.initAutoHideSidebar = function () {};
     }
 
-    // Parches seguros (siempre)
     window.updateCouponStats = safeUpdateCouponStats;
     window.getFilteredCoupons = safeGetFilteredCoupons;
 
-    // Envolver init para que nunca tumbe el login
     if (typeof window.init === 'function' && !window.init.__khaosWrapped) {
       var _init = window.init;
       window.init = function () {
         ensureDom();
-        // Reafirmar stubs por si init corre en otro orden
+        exposeGlobals();
         if (typeof window.initStorageListener !== 'function') {
           window.initStorageListener = safeInitStorageListener;
         }
@@ -182,32 +171,53 @@
     try {
       (0, eval)(code);
       installStubsAndPatches();
-      console.log('[Khaos] admin.js OK v20260807d (' + code.length + ' bytes)');
+      console.log('[Khaos] admin.js OK v20260807f (' + code.length + ' bytes)');
       window.__khaosAdminReady = true;
+      try {
+        if (typeof window.loadProducts === 'function') {
+          Promise.resolve(window.loadProducts()).catch(function () {});
+        }
+      } catch (e) {}
     } catch (e) {
       console.error('[Khaos] admin.js eval error', e);
       installStubsAndPatches();
     }
   }
 
-  try {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', CDN + '?t=' + Date.now(), false);
-    xhr.send(null);
-    if (xhr.status >= 200 && xhr.status < 300 && xhr.responseText) {
-      run(xhr.responseText);
-      return;
+  // Carga ASÍNCRONA (sin XHR síncrono)
+  function loadCore() {
+    if (typeof fetch === 'function') {
+      fetch(CDN + '?t=' + Date.now(), { cache: 'no-store' })
+        .then(function (res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.text();
+        })
+        .then(function (text) {
+          run(text);
+        })
+        .catch(function (err) {
+          console.warn('[Khaos] fetch falló, usando script tag', err);
+          loadViaScriptTag();
+        });
+    } else {
+      loadViaScriptTag();
     }
-  } catch (e) {
-    console.error('[Khaos] admin sync fail', e);
   }
 
-  var s = document.createElement('script');
-  s.src = CDN + '?t=' + Date.now();
-  s.onload = function () {
-    installStubsAndPatches();
-    window.__khaosAdminReady = true;
-    console.log('[Khaos] admin.js OK v20260807d (async)');
-  };
-  (document.head || document.documentElement).appendChild(s);
+  function loadViaScriptTag() {
+    var s = document.createElement('script');
+    s.src = CDN + '?t=' + Date.now();
+    s.async = true;
+    s.onload = function () {
+      installStubsAndPatches();
+      window.__khaosAdminReady = true;
+      console.log('[Khaos] admin.js OK v20260807f (script tag)');
+    };
+    s.onerror = function () {
+      console.error('[Khaos] admin.js no se pudo cargar');
+    };
+    (document.head || document.documentElement).appendChild(s);
+  }
+
+  loadCore();
 })();
