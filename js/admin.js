@@ -1,5 +1,7 @@
 /**
- * admin.js — loader del núcleo + protecciones DOM (v20260807c)
+ * admin.js — loader del núcleo (v20260807d)
+ * Sin reescritura del código fuente (evita romper funciones).
+ * Crea DOM faltante + parches seguros después del eval.
  */
 (function () {
   if (window.__khaosAdminBooted) return;
@@ -8,10 +10,9 @@
   var CDN = 'https://cdn.jsdelivr.net/gh/khaosdeportivo/khaosdeportivo@0c971526acc7/js/admin.js';
   var SPAN_IDS = ['tabCouponAll','tabCouponActive','tabCouponExpired','tabCouponPct','tabCouponFixed'];
 
-  function ensure() {
+  function ensureDom() {
     var host = document.getElementById('view-coupons') || document.body || document.documentElement;
     if (!host) return;
-
     SPAN_IDS.forEach(function (id) {
       if (!document.getElementById(id)) {
         var s = document.createElement('span');
@@ -21,22 +22,19 @@
         try { host.appendChild(s); } catch (e) {}
       }
     });
-
-    // Campo de búsqueda que el HTML actual no trae
     if (!document.getElementById('couponSearchBox')) {
       var input = document.createElement('input');
       input.type = 'search';
       input.id = 'couponSearchBox';
-      input.placeholder = 'Buscar cupón...';
-      input.style.cssText = 'display:none;';
       input.value = '';
+      input.style.display = 'none';
       try { host.appendChild(input); } catch (e) {}
     }
   }
-  ensure();
+  ensureDom();
 
   function safeUpdateCouponStats() {
-    ensure();
+    ensureDom();
     try {
       var list = (typeof coupons !== 'undefined' && Array.isArray(coupons)) ? coupons : [];
       function st(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; }
@@ -66,7 +64,7 @@
   }
 
   function safeGetFilteredCoupons() {
-    ensure();
+    ensureDom();
     try {
       var list = (typeof coupons !== 'undefined' && Array.isArray(coupons)) ? coupons.slice() : [];
       var filter = (typeof currentCouponFilter !== 'undefined') ? currentCouponFilter : 'all';
@@ -78,7 +76,6 @@
       });
       else if (filter === 'percentage') list = list.filter(function (c) { return c.type === 'percentage'; });
       else if (filter === 'fixed') list = list.filter(function (c) { return c.type === 'fixed'; });
-
       var box = document.getElementById('couponSearchBox');
       var search = (box && box.value ? String(box.value) : '').toLowerCase().trim();
       if (search) {
@@ -89,56 +86,107 @@
       return list;
     } catch (err) {
       console.warn('[Khaos] getFilteredCoupons', err);
-      return (typeof coupons !== 'undefined' && Array.isArray(coupons)) ? coupons.slice() : [];
+      return [];
     }
   }
 
-  window.__khaosSafeUpdateCouponStats = safeUpdateCouponStats;
-  window.__khaosSafeGetFilteredCoupons = safeGetFilteredCoupons;
-  window.updateCouponStats = safeUpdateCouponStats;
-  window.getFilteredCoupons = safeGetFilteredCoupons;
-
-  function replaceFn(code, name, bodySrc) {
-    var start = code.indexOf('function ' + name);
-    if (start < 0) return code;
-    var brace = code.indexOf('{', start);
-    if (brace < 0) return code;
-    var depth = 0, end = brace;
-    for (var i = brace; i < code.length; i++) {
-      if (code[i] === '{') depth++;
-      else if (code[i] === '}') {
-        depth--;
-        if (depth === 0) { end = i + 1; break; }
+  function safeInitStorageListener() {
+    if (window.__khaosStorageListening) return;
+    window.__khaosStorageListening = true;
+    window.addEventListener('storage', function (e) {
+      if (e.key !== 'khaos_admin_orders') return;
+      try {
+        var newOrders = JSON.parse(e.newValue || '[]');
+        var oldOrders = JSON.parse(e.oldValue || '[]');
+        if (newOrders.length > oldOrders.length) {
+          var newOrder = newOrders[0];
+          if (newOrder && newOrder.source === 'web') {
+            if (typeof showToast === 'function') {
+              showToast(
+                'Nuevo pedido web: ' + (newOrder.customer || 'Cliente') +
+                ' — $' + (newOrder.total || 0).toLocaleString('es-CO'),
+                'success'
+              );
+            }
+            if (typeof addNotification === 'function') {
+              addNotification(
+                'order',
+                'Nuevo pedido #' + String(newOrder.id).slice(-4) +
+                ' desde catálogo — $' + (newOrder.total || 0).toLocaleString('es-CO')
+              );
+            }
+          }
+        }
+        if (typeof loadOrders === 'function') loadOrders();
+        if (typeof renderOrders === 'function') renderOrders();
+      } catch (err) {
+        console.warn('[Khaos] storage listener', err);
       }
-    }
-    return code.slice(0, start) + bodySrc + code.slice(end);
+    });
   }
 
-  function rewrite(code) {
-    ensure();
-    code = replaceFn(
-      code,
-      'updateCouponStats',
-      'function updateCouponStats(){ if(window.__khaosSafeUpdateCouponStats) window.__khaosSafeUpdateCouponStats(); }'
-    );
-    code = replaceFn(
-      code,
-      'getFilteredCoupons',
-      'function getFilteredCoupons(){ return window.__khaosSafeGetFilteredCoupons ? window.__khaosSafeGetFilteredCoupons() : []; }'
-    );
-    return code;
+  function installStubsAndPatches() {
+    ensureDom();
+
+    // Stubs si el núcleo no los definió
+    if (typeof window.initStorageListener !== 'function') {
+      window.initStorageListener = safeInitStorageListener;
+    }
+    if (typeof window.initEventListeners !== 'function') {
+      window.initEventListeners = function () {};
+    }
+    if (typeof window.initScrollEffects !== 'function') {
+      window.initScrollEffects = function () {};
+    }
+    if (typeof window.startRealtimeSimulation !== 'function') {
+      window.startRealtimeSimulation = function () {};
+    }
+    if (typeof window.initCharts !== 'function') {
+      window.initCharts = function () {};
+    }
+    if (typeof window.initAutoHideSidebar !== 'function') {
+      window.initAutoHideSidebar = function () {};
+    }
+
+    // Parches seguros (siempre)
+    window.updateCouponStats = safeUpdateCouponStats;
+    window.getFilteredCoupons = safeGetFilteredCoupons;
+
+    // Envolver init para que nunca tumbe el login
+    if (typeof window.init === 'function' && !window.init.__khaosWrapped) {
+      var _init = window.init;
+      window.init = function () {
+        ensureDom();
+        // Reafirmar stubs por si init corre en otro orden
+        if (typeof window.initStorageListener !== 'function') {
+          window.initStorageListener = safeInitStorageListener;
+        }
+        window.updateCouponStats = safeUpdateCouponStats;
+        window.getFilteredCoupons = safeGetFilteredCoupons;
+        try {
+          return _init.apply(this, arguments);
+        } catch (err) {
+          console.error('[Khaos] init error (recuperado):', err);
+          try { safeInitStorageListener(); } catch (e2) {}
+          if (typeof showToast === 'function') {
+            showToast('Panel cargado con advertencias', 'info');
+          }
+        }
+      };
+      window.init.__khaosWrapped = true;
+    }
   }
 
   function run(code) {
-    code = rewrite(code);
+    ensureDom();
     try {
       (0, eval)(code);
-      window.updateCouponStats = safeUpdateCouponStats;
-      window.getFilteredCoupons = safeGetFilteredCoupons;
-      console.log('[Khaos] admin.js OK v20260807c (' + code.length + ' bytes)');
+      installStubsAndPatches();
+      console.log('[Khaos] admin.js OK v20260807d (' + code.length + ' bytes)');
       window.__khaosAdminReady = true;
     } catch (e) {
       console.error('[Khaos] admin.js eval error', e);
+      installStubsAndPatches();
     }
   }
 
@@ -157,9 +205,9 @@
   var s = document.createElement('script');
   s.src = CDN + '?t=' + Date.now();
   s.onload = function () {
-    window.updateCouponStats = safeUpdateCouponStats;
-    window.getFilteredCoupons = safeGetFilteredCoupons;
+    installStubsAndPatches();
     window.__khaosAdminReady = true;
+    console.log('[Khaos] admin.js OK v20260807d (async)');
   };
   (document.head || document.documentElement).appendChild(s);
 })();
