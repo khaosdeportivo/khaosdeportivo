@@ -1,17 +1,18 @@
 /**
- * admin.js — loader del núcleo + protección cupones (v20260807b)
+ * admin.js — loader del núcleo + protecciones DOM (v20260807c)
  */
 (function () {
   if (window.__khaosAdminBooted) return;
   window.__khaosAdminBooted = true;
 
   var CDN = 'https://cdn.jsdelivr.net/gh/khaosdeportivo/khaosdeportivo@0c971526acc7/js/admin.js';
-  var IDS = ['tabCouponAll','tabCouponActive','tabCouponExpired','tabCouponPct','tabCouponFixed'];
+  var SPAN_IDS = ['tabCouponAll','tabCouponActive','tabCouponExpired','tabCouponPct','tabCouponFixed'];
 
   function ensure() {
     var host = document.getElementById('view-coupons') || document.body || document.documentElement;
     if (!host) return;
-    IDS.forEach(function (id) {
+
+    SPAN_IDS.forEach(function (id) {
       if (!document.getElementById(id)) {
         var s = document.createElement('span');
         s.id = id;
@@ -20,6 +21,17 @@
         try { host.appendChild(s); } catch (e) {}
       }
     });
+
+    // Campo de búsqueda que el HTML actual no trae
+    if (!document.getElementById('couponSearchBox')) {
+      var input = document.createElement('input');
+      input.type = 'search';
+      input.id = 'couponSearchBox';
+      input.placeholder = 'Buscar cupón...';
+      input.style.cssText = 'display:none;';
+      input.value = '';
+      try { host.appendChild(input); } catch (e) {}
+    }
   }
   ensure();
 
@@ -53,14 +65,44 @@
     }
   }
 
-  window.__khaosSafeUpdateCouponStats = safeUpdateCouponStats;
-  window.updateCouponStats = safeUpdateCouponStats;
-
-  function rewrite(code) {
+  function safeGetFilteredCoupons() {
     ensure();
-    var start = code.indexOf('function updateCouponStats');
+    try {
+      var list = (typeof coupons !== 'undefined' && Array.isArray(coupons)) ? coupons.slice() : [];
+      var filter = (typeof currentCouponFilter !== 'undefined') ? currentCouponFilter : 'all';
+      if (filter === 'active') list = list.filter(function (c) {
+        return typeof isCouponActive === 'function' ? isCouponActive(c) : true;
+      });
+      else if (filter === 'expired') list = list.filter(function (c) {
+        return typeof isCouponExpired === 'function' ? isCouponExpired(c) : false;
+      });
+      else if (filter === 'percentage') list = list.filter(function (c) { return c.type === 'percentage'; });
+      else if (filter === 'fixed') list = list.filter(function (c) { return c.type === 'fixed'; });
+
+      var box = document.getElementById('couponSearchBox');
+      var search = (box && box.value ? String(box.value) : '').toLowerCase().trim();
+      if (search) {
+        list = list.filter(function (c) {
+          return String(c.code || '').toLowerCase().indexOf(search) >= 0;
+        });
+      }
+      return list;
+    } catch (err) {
+      console.warn('[Khaos] getFilteredCoupons', err);
+      return (typeof coupons !== 'undefined' && Array.isArray(coupons)) ? coupons.slice() : [];
+    }
+  }
+
+  window.__khaosSafeUpdateCouponStats = safeUpdateCouponStats;
+  window.__khaosSafeGetFilteredCoupons = safeGetFilteredCoupons;
+  window.updateCouponStats = safeUpdateCouponStats;
+  window.getFilteredCoupons = safeGetFilteredCoupons;
+
+  function replaceFn(code, name, bodySrc) {
+    var start = code.indexOf('function ' + name);
     if (start < 0) return code;
     var brace = code.indexOf('{', start);
+    if (brace < 0) return code;
     var depth = 0, end = brace;
     for (var i = brace; i < code.length; i++) {
       if (code[i] === '{') depth++;
@@ -69,20 +111,31 @@
         if (depth === 0) { end = i + 1; break; }
       }
     }
-    var safeFn = 'function updateCouponStats(){ if(window.__khaosSafeUpdateCouponStats) window.__khaosSafeUpdateCouponStats(); }';
-    return code.slice(0, start) + safeFn + code.slice(end);
+    return code.slice(0, start) + bodySrc + code.slice(end);
+  }
+
+  function rewrite(code) {
+    ensure();
+    code = replaceFn(
+      code,
+      'updateCouponStats',
+      'function updateCouponStats(){ if(window.__khaosSafeUpdateCouponStats) window.__khaosSafeUpdateCouponStats(); }'
+    );
+    code = replaceFn(
+      code,
+      'getFilteredCoupons',
+      'function getFilteredCoupons(){ return window.__khaosSafeGetFilteredCoupons ? window.__khaosSafeGetFilteredCoupons() : []; }'
+    );
+    return code;
   }
 
   function run(code) {
     code = rewrite(code);
-    code = code.replace(
-      /document\.getElementById\('(tabCouponAll|tabCouponActive|tabCouponExpired|tabCouponPct|tabCouponFixed)'\)\.textContent/g,
-      "(document.getElementById('$1')||{textContent:''}).textContent"
-    );
     try {
       (0, eval)(code);
       window.updateCouponStats = safeUpdateCouponStats;
-      console.log('[Khaos] admin.js OK v20260807b (' + code.length + ' bytes)');
+      window.getFilteredCoupons = safeGetFilteredCoupons;
+      console.log('[Khaos] admin.js OK v20260807c (' + code.length + ' bytes)');
       window.__khaosAdminReady = true;
     } catch (e) {
       console.error('[Khaos] admin.js eval error', e);
@@ -105,6 +158,7 @@
   s.src = CDN + '?t=' + Date.now();
   s.onload = function () {
     window.updateCouponStats = safeUpdateCouponStats;
+    window.getFilteredCoupons = safeGetFilteredCoupons;
     window.__khaosAdminReady = true;
   };
   (document.head || document.documentElement).appendChild(s);
