@@ -3,16 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Khaos Admin</title>
+<title>Khaos Admin — restaurando...</title>
 <script>
-// Admin estable (commit 0c971526) — version que funcionaba antes de los cambios rotos
-location.replace(
-  'https://cdn.jsdelivr.net/gh/khaosdeportivo/khaosdeportivo@0c971526acc7/admin.html'
-);
+// Carga el admin HTML completo estable + inyección de productos
+(async function () {
+  var CDN_HTML = 'https://cdn.jsdelivr.net/gh/khaosdeportivo/khaosdeportivo@0c971526acc7/admin.html';
+  var CDN_JS = 'https://cdn.jsdelivr.net/gh/khaosdeportivo/khaosdeportivo@0c971526acc7/js/admin.js';
+  try {
+    var res = await fetch(CDN_HTML + '?t=' + Date.now(), { cache: 'no-store' });
+    var html = await res.text();
+    // Forzar núcleo JS desde el mismo commit estable
+    html = html.replace('src="js/admin.js"', 'src="' + CDN_JS + '"');
+    // Inyectar cargador de productos antes de </body>
+    var loader = "\n<script>(function(){\nfunction applyProducts(list){if(!Array.isArray(list)||!list.length)return;try{products=list}catch(e){}window.products=list;try{var m=0;for(var i=0;i<list.length;i++){var n=Number(list[i].id)||0;if(n>m)m=n}nextId=m+1;window.nextId=nextId}catch(e){}try{localStorage.setItem('khaos_admin_products',JSON.stringify(list))}catch(e){}try{if(typeof renderTable==='function')renderTable()}catch(e){}try{if(typeof updateAllStats==='function')updateAllStats()}catch(e){}try{if(typeof updateDashboard==='function')updateDashboard()}catch(e){}console.log('[Khaos] Productos:',list.length)}\nfunction load(){try{var s=localStorage.getItem('khaos_admin_products');if(s){var p=JSON.parse(s);if(Array.isArray(p)&&p.length>0){applyProducts(p);if(p.length>=5)return}}}catch(e){}fetch('https://raw.githubusercontent.com/khaosdeportivo/khaosdeportivo/main/productos.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){var list=Array.isArray(d)?d:(d.productos||[]);if(d.cupones){try{coupons=d.cupones}catch(e){}window.coupons=d.cupones;try{if(typeof renderCoupons==='function')renderCoupons()}catch(e){}}applyProducts(list);if(typeof showToast==='function'&&list.length)showToast('Catalogo: '+list.length+' productos','success')}).catch(function(e){console.warn(e)})}\nvar t=0,id=setInterval(function(){t++;if(typeof renderTable==='function'||t>50){clearInterval(id);load()}},150);\n})();<\\/script>\n";
+    html = html.replace(/<\\/body>/i, loader + '</body>');
+    document.open();
+    document.write(html);
+    document.close();
+  } catch (e) {
+    document.body.innerHTML = '<p>Error cargando admin. <a href="' + CDN_HTML + '">Abrir version estable</a></p>';
+    console.error(e);
+  }
+})();
 </script>
 </head>
 <body>
-<p>Cargando panel de administracion estable…</p>
-<p>Si no redirige, <a href="https://cdn.jsdelivr.net/gh/khaosdeportivo/khaosdeportivo@0c971526acc7/admin.html">abre el admin aqui</a>.</p>
+<p style="font-family:sans-serif;padding:2rem">Cargando panel de administracion…</p>
 </body>
 </html>
