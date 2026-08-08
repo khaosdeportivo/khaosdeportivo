@@ -268,17 +268,18 @@ function updateCouponStats() {
     const active = coupons.filter(c => isCouponActive(c)).length;
     const used = coupons.reduce((s, c) => s + (c.usedCount || 0), 0);
     const saved = coupons.reduce((s, c) => s + ((c.totalSaved || 0)), 0);
-    document.getElementById('couponTotal').textContent = total;
-    document.getElementById('couponActive').textContent = active;
-    document.getElementById('couponUsed').textContent = used;
-    document.getElementById('couponSaved').textContent = '$' + saved.toLocaleString('es-CO');
-    document.getElementById('sidebarCouponCount').textContent = active;
-    document.getElementById('sidebarCouponCount').style.display = active > 0 ? 'flex' : 'none';
-    document.getElementById('tabCouponAll').textContent = total;
-    document.getElementById('tabCouponActive').textContent = active;
-    document.getElementById('tabCouponExpired').textContent = coupons.filter(c => !isCouponActive(c) && isCouponExpired(c)).length;
-    document.getElementById('tabCouponPct').textContent = coupons.filter(c => c.type === 'percentage').length;
-    document.getElementById('tabCouponFixed').textContent = coupons.filter(c => c.type === 'fixed').length;
+    const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setText('couponTotal', total);
+    setText('couponActive', active);
+    setText('couponUsed', used);
+    setText('couponSaved', '$' + saved.toLocaleString('es-CO'));
+    const badge = document.getElementById('sidebarCouponCount');
+    if (badge) { badge.textContent = active; badge.style.display = active > 0 ? 'flex' : 'none'; }
+    setText('tabCouponAll', total);
+    setText('tabCouponActive', active);
+    setText('tabCouponExpired', coupons.filter(c => !isCouponActive(c) && isCouponExpired(c)).length);
+    setText('tabCouponPct', coupons.filter(c => c.type === 'percentage').length);
+    setText('tabCouponFixed', coupons.filter(c => c.type === 'fixed').length);
 }
 
 function isCouponExpired(c) {
