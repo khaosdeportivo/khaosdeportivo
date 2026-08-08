@@ -17,7 +17,7 @@
       "image": "https://drive.google.com/thumbnail?id=1tFceuG15kPvMvbUg-75lZFpk9lVMqHcv&sz=w800",
       "desc": "Guayo bota Phantom GX Elite. Upper Gripknit celeste/blanco, caña alta y taches FG.",
       "badge": "new",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 2,
@@ -36,7 +36,7 @@
       "image": "https://drive.google.com/thumbnail?id=1xmekVstID3TovdlPP7Bw97pohz14eYB2&sz=w800",
       "desc": "Phantom GX Elite caña alta. Colorway naranja y burdeos con suela Air Zoom.",
       "badge": "new",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 3,
@@ -54,7 +54,7 @@
       "image": "https://drive.google.com/thumbnail?id=1iWmNZkF58H0-DrawF3HLjPWKoXI1u6m4&sz=w800",
       "desc": "Phantom GX Elite en gris/azul oscuro. Diseño dinámico con caña calcetín.",
       "badge": "recommended",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 4,
@@ -74,7 +74,7 @@
       "image": "https://drive.google.com/thumbnail?id=1_rk8wQrXosnSU67IDJaQdkzt_PPtLYWh&sz=w800",
       "desc": "Guayo corto Phantom GX Elite naranja brillante. Suela iridiscente Air Zoom.",
       "badge": "bestseller",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 5,
@@ -94,7 +94,7 @@
       "image": "https://drive.google.com/thumbnail?id=1xRS7uaC88U-rBTPcAqwjEwj86GksqvJH&sz=w800",
       "desc": "Edición United. Blanco y azul con gráficos especiales y suela Air Zoom.",
       "badge": "limited",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 6,
@@ -113,7 +113,7 @@
       "image": "https://drive.google.com/thumbnail?id=1CkOCCrdh1vLt_5PPLI6I2uTi9vUQAH4j&sz=w800",
       "desc": "Phantom GX Elite en amarillo neón volt. Máxima visibilidad en cancha.",
       "badge": "new",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 7,
@@ -133,7 +133,7 @@
       "image": "https://drive.google.com/thumbnail?id=1jW9QhjBz9XpvaNmMqQ1llyB0QQdnNchp&sz=w800",
       "desc": "New Balance Furon Speed. Blanco con degradé neón y rosa. Muy liviano.",
       "badge": "recommended",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 8,
@@ -153,7 +153,7 @@
       "image": "https://drive.google.com/thumbnail?id=1NxkpGEEzOECP3VYr9xGrV_RPSnlqbWK3&sz=w800",
       "desc": "Blanco con degradé rosa a azul y suela iridiscente. Diseño premium.",
       "badge": "bestseller",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 9,
@@ -172,7 +172,7 @@
       "image": "https://drive.google.com/thumbnail?id=1eXY9VLQqXlEkNpUssdj4vZYGgOvTubyb&sz=w800",
       "desc": "Furon completo en verde neón. Agarre agresivo y peso mínimo.",
       "badge": "promo",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 10,
@@ -192,7 +192,7 @@
       "image": "https://drive.google.com/thumbnail?id=1--moehYP3k7J2KtBCo-UU0IiWb-8YtW6&sz=w800",
       "desc": "Phantom GX con knit gris, acentos naranja y verde. Suela holográfica.",
       "badge": "new",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 11,
@@ -212,7 +212,7 @@
       "image": "https://drive.google.com/thumbnail?id=1IhWDnL6SAib_Vvw9vJH6X7EEnfVCQQZM&sz=w800",
       "desc": "Mercurial Vapor Flyknit Ultra. Celeste con swoosh dorado y Air Zoom.",
       "badge": "bestseller",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 12,
@@ -232,7 +232,7 @@
       "image": "https://drive.google.com/thumbnail?id=1JUVj5yX030JHGBwV3QJygrX1XV7zcnpx&sz=w800",
       "desc": "Predator Elite con estampado cebra y power strap. Control total del balón.",
       "badge": "limited",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 13,
@@ -251,7 +251,7 @@
       "image": "https://drive.google.com/thumbnail?id=13ALGj7339YXvL9ELxC0CO8-1ibD0pjMd&sz=w800",
       "desc": "Mercurial Vapor con patrón abstracto naranja/verde/amarillo. Air Zoom Max Speed.",
       "badge": "new",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 14,
@@ -272,7 +272,7 @@
       "image": "https://drive.google.com/thumbnail?id=1oiMc-MeZCO9CwmoYb9yAsJBci-OSE6bW&sz=w800",
       "desc": "Clásico Adidas World Cup en cuero negro. Taches de aluminio intercambiables.",
       "badge": "recommended",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 15,
@@ -292,7 +292,7 @@
       "image": "https://drive.google.com/thumbnail?id=1GzioMBa-hcG8tFxzJtQ4PiAejQ4PsKGr&sz=w800",
       "desc": "Nike Premier III para cancha sintética. Cuero negro, suela multipunta TF.",
       "badge": "bestseller",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 16,
@@ -312,7 +312,7 @@
       "image": "https://drive.google.com/thumbnail?id=1lZG3ooEUAkVHizAkdpC3NuNgeph_z1aJ&sz=w800",
       "desc": "Mercurial Flyweave Ultra degradé negro a blanco con líneas azules. Taches FG.",
       "badge": "new",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 17,
@@ -332,7 +332,7 @@
       "image": "https://drive.google.com/thumbnail?id=1r7-KSjhBlib9q99i6i6x8-7SBIAKio1v&sz=w800",
       "desc": "Adidas F50 Elite blanco con líneas negras y rojas. Suela iridiscente.",
       "badge": "recommended",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 18,
@@ -351,7 +351,7 @@
       "image": "https://drive.google.com/thumbnail?id=12zeRVndRyqjs5H59TwT-7mKin2vVHcqA&sz=w800",
       "desc": "Nike Atomknit amarillo a negro con swoosh rosa. Suela holográfica FG.",
       "badge": "new",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 19,
@@ -372,7 +372,7 @@
       "image": "https://drive.google.com/thumbnail?id=1PAdcuVfCCqL2f22DHFxuB8FgNYNbU3W2&sz=w800",
       "desc": "Clásico Adidas Copa Mundial en cuero negro. Ícono del fútbol mundial.",
       "badge": "bestseller",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 20,
@@ -393,7 +393,7 @@
       "image": "https://drive.google.com/thumbnail?id=14LRqfxmMe4zJLa9dslyXTFFq6w_wZN0Y&sz=w800",
       "desc": "Adidas World Cup blanco con franjas negras. Taches de aluminio.",
       "badge": "recommended",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 21,
@@ -413,7 +413,7 @@
       "image": "https://drive.google.com/thumbnail?id=1K0KlLu9fs4HhBBkJZGmKRip5_5rvaMs8&sz=w800",
       "desc": "Predator Elite negro con acentos menta y power strap. Control superior.",
       "badge": "new",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 22,
@@ -432,7 +432,7 @@
       "image": "https://drive.google.com/thumbnail?id=1FKtnEIX4DVqg4CxHvcs2cR8N0lOMaihM&sz=w800",
       "desc": "Phantom GX Elite verde y coral con Gripknit. Diseño vibrante FG.",
       "badge": "promo",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 23,
@@ -452,7 +452,7 @@
       "image": "https://drive.google.com/thumbnail?id=1X1tO2UjBru2XNrmCKuzlmGYEUjeFPRo-&sz=w800",
       "desc": "Predator Elite blanco con power strap azul y suela iridiscente.",
       "badge": "limited",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 24,
@@ -472,7 +472,7 @@
       "image": "https://drive.google.com/thumbnail?id=1U_RzIiE6-TX21in14m7CjuqHxBCw9uzD&sz=w800",
       "desc": "Phantom GX para sintética. Blanco con swoosh turquesa y suela TF.",
       "badge": "bestseller",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 25,
@@ -492,7 +492,7 @@
       "image": "https://drive.google.com/thumbnail?id=1mi80FWtu29xJdinCdx0Z6t45RkC1s8O9&sz=w800",
       "desc": "Predator Elite edición Zizou. Blanco con detalles dorados y firma.",
       "badge": "limited",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 26,
@@ -512,7 +512,7 @@
       "image": "https://drive.google.com/thumbnail?id=1B8fPWieA7TQQkWTSpjqYstsQdZhawQrD&sz=w800",
       "desc": "Phantom GX TF blanco con degradé rosa/rojo. Suela roja multipunta.",
       "badge": "new",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 27,
@@ -531,7 +531,7 @@
       "image": "https://drive.google.com/thumbnail?id=1456h_15q5SclvtuE4oyg1pOlSD-N_TCN&sz=w800",
       "desc": "Phantom GX TF blanco con acentos celeste, rosa y naranja. Suela negra.",
       "badge": "recommended",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 28,
@@ -551,7 +551,7 @@
       "image": "https://drive.google.com/thumbnail?id=1rFfhTmcq4BdB6n8ZO7UK6FV3wdjfpu-w&sz=w800",
       "desc": "Phantom GX TF menta con swoosh dorado y degradé rosa/lila.",
       "badge": "new",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 29,
@@ -570,7 +570,7 @@
       "image": "https://drive.google.com/thumbnail?id=1oZT8iXTRgT9lbXKLYKl1stgelp3y6lRM&sz=w800",
       "desc": "Phantom GX TF blanco con degradé rosa y celeste. Swoosh iridiscente.",
       "badge": "bestseller",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 30,
@@ -590,7 +590,7 @@
       "image": "https://drive.google.com/thumbnail?id=1luhWmEr8Dyrk7qeF-OS86ZKLYZLgMQRc&sz=w800",
       "desc": "Phantom GX TF completamente rosa con swoosh fucsia. Diseño femenino.",
       "badge": "promo",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 31,
@@ -609,7 +609,7 @@
       "image": "https://drive.google.com/thumbnail?id=1UVo1qaZTpDCDJjAPfvYr4Gpq8NDf0gsU&sz=w800",
       "desc": "Phantom GX bota TF. Blanco con gráficos coloridos Diamond Bar y suela azul.",
       "badge": "new",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 32,
@@ -629,7 +629,7 @@
       "image": "https://drive.google.com/thumbnail?id=1tCxnW1tjnHxtgwMh3Ofhn7k74al4Eg5E&sz=w800",
       "desc": "Tiempo Legend TF azul metálico acolchado. Clásico para cancha sintética.",
       "badge": "recommended",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 33,
@@ -649,7 +649,7 @@
       "image": "https://drive.google.com/thumbnail?id=1KD9NfP0Yb_wY25uNJhzjpCWn6r47Osk0&sz=w800",
       "desc": "Mercurial Flyweave Ultra TF blanco con swoosh coral/dorado. Cushlon.",
       "badge": "bestseller",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 34,
@@ -668,7 +668,7 @@
       "image": "https://drive.google.com/thumbnail?id=1fo6GcKO2NgL5yz4i2O2tUDUDOOuZL_SU&sz=w800",
       "desc": "Phantom GX bota TF completamente negra. Diseño elegante y versátil.",
       "badge": "bestseller",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 35,
@@ -687,7 +687,7 @@
       "image": "https://drive.google.com/thumbnail?id=1j8NHpww7ObRFGe86I5TxPdA8Hk4B9nMl&sz=w800",
       "desc": "Phantom GX bota TF en coral/rosa. Suela rosa multipunta.",
       "badge": "promo",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 36,
@@ -706,7 +706,7 @@
       "image": "https://drive.google.com/thumbnail?id=190vsRltVK1ZnRMuGhKDcnKttLGfe01P3&sz=w800",
       "desc": "Phantom GX bota TF blanca con swoosh turquesa y suela verde.",
       "badge": "new",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 37,
@@ -724,7 +724,7 @@
       "image": "https://drive.google.com/thumbnail?id=1eD2HEpWrE2fUb2MDPjTVx0Q1ANfLYcgf&sz=w800",
       "desc": "Phantom GX bota TF azul con caña beige y acentos amarillos.",
       "badge": "recommended",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 38,
@@ -743,7 +743,7 @@
       "image": "https://drive.google.com/thumbnail?id=1xirftNj3LH36h-LtNRTOd1li71jtTBmR&sz=w800",
       "desc": "Phantom GX bota TF amarillo neón volt. Máxima visibilidad.",
       "badge": "new",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 39,
@@ -761,7 +761,7 @@
       "image": "https://drive.google.com/thumbnail?id=1GpkW6dohDu1EkhAn4g8viVyi9yWX4SDW&sz=w800",
       "desc": "Phantom GX bota TF gris con knit multicolor y swoosh verde.",
       "badge": "limited",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 40,
@@ -780,7 +780,7 @@
       "image": "https://drive.google.com/thumbnail?id=1hxK9DrjMtJgv7HX79Ew2dGno6uYglk9o&sz=w800",
       "desc": "Phantom GX bota TF naranja y burdeos con caña gris.",
       "badge": "promo",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 41,
@@ -800,7 +800,7 @@
       "image": "https://drive.google.com/thumbnail?id=1SZul2ZheXbJC_2qMH5gIbKtnQbCBaDdU&sz=w800",
       "desc": "Furon Speed naranja con logo azul y suela iridiscente FG.",
       "badge": "new",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 42,
@@ -820,7 +820,7 @@
       "image": "https://drive.google.com/thumbnail?id=1h35wMUv8yRKrQnwkJkpG3UA5KZAEvf7y&sz=w800",
       "desc": "Phantom GX Elite blanco con degradé rosa y suela Air Zoom.",
       "badge": "bestseller",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 43,
@@ -839,7 +839,7 @@
       "image": "https://drive.google.com/thumbnail?id=1YwFf2RBMfXtpxW7kwfNKKTWjQpmDQqoy&sz=w800",
       "desc": "Phantom GX Elite rosa con degradé lila y suela menta.",
       "badge": "promo",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 44,
@@ -859,7 +859,7 @@
       "image": "https://drive.google.com/thumbnail?id=15Ip9sq9CovQF9KMQ7FKu2kZ-oBBRgKHf&sz=w800",
       "desc": "Phantom GX TF rosa/coral con suela naranja multipunta.",
       "badge": "recommended",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 45,
@@ -879,7 +879,7 @@
       "image": "https://drive.google.com/thumbnail?id=10ftczKxK5NqseNWnE_U5bGw0bFNeWuII&sz=w800",
       "desc": "Joma Top Flex azul con acentos naranja. Ideal para cancha dura.",
       "badge": "bestseller",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 46,
@@ -899,7 +899,7 @@
       "image": "https://drive.google.com/thumbnail?id=1xyUwUj0DILXlh0TjYxWqDXgnmzwo6Z3C&sz=w800",
       "desc": "Joma Top Flex naranja con detalles verdes. Suela goma.",
       "badge": "new",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 47,
@@ -918,7 +918,7 @@
       "image": "https://drive.google.com/thumbnail?id=1OUyhNz_kVXPNiEyhpEkIh5JT9LFmOzUM&sz=w800",
       "desc": "Joma Top Flex azul con estampado graffiti y suela neón.",
       "badge": "limited",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 48,
@@ -938,7 +938,7 @@
       "image": "https://drive.google.com/thumbnail?id=1fDwbwnu1W0eYNRdcMU5Oabbm6etG3Kty&sz=w800",
       "desc": "Joma Top Flex blanco con suela naranja. Clásico y versátil.",
       "badge": "recommended",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 49,
@@ -958,7 +958,7 @@
       "image": "https://drive.google.com/thumbnail?id=1tnwjAGiCGBrMKnajaWuYnHXSUarM_wt_&sz=w800",
       "desc": "Nike MagistaX Finale IC. Blanco con acentos volt neón.",
       "badge": "bestseller",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 50,
@@ -977,7 +977,7 @@
       "image": "https://drive.google.com/thumbnail?id=192sEDxGikvOxCM0QgybLLsOGYq9XvSPp&sz=w800",
       "desc": "Phantom GX bota TF azul con swoosh rosa. Caña calcetín.",
       "badge": "new",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 51,
@@ -997,7 +997,7 @@
       "image": "https://drive.google.com/thumbnail?id=1SNxkYuyMWcmbkQzgLudXtUU7AHKQvcVK&sz=w800",
       "desc": "Puma Future Ultimate blanco con logo dorado. Suela goma TF.",
       "badge": "new",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 52,
@@ -1017,7 +1017,7 @@
       "image": "https://drive.google.com/thumbnail?id=1l0DbvoD1TqzINetgLX0Djbhi3sImGPCk&sz=w800",
       "desc": "Nike Street Gato gris gamuza con suela rosa IC. Clásico indoor.",
       "badge": "bestseller",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 53,
@@ -1037,7 +1037,7 @@
       "image": "https://drive.google.com/thumbnail?id=1Qs9t5Km3CJ3mrPum_bmY7Ss1a3Hs8ELN&sz=w800",
       "desc": "Nike Street Gato azul marino gamuza. Suela blanca IC.",
       "badge": "recommended",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 54,
@@ -1057,7 +1057,7 @@
       "image": "https://drive.google.com/thumbnail?id=1vtDlWNE3_YV_aolcPCKSAPRfESCRIEkk&sz=w800",
       "desc": "Joma Top Flex blanco con detalles azul y naranja. Suela goma.",
       "badge": "new",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 55,
@@ -1077,7 +1077,7 @@
       "image": "https://drive.google.com/thumbnail?id=1HxZREbkJcuMN_KhRp3UUa7G0Qf8xuuID&sz=w800",
       "desc": "Joma Top Flex blanco con logo plateado y suela rosa.",
       "badge": "bestseller",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 56,
@@ -1097,7 +1097,7 @@
       "image": "https://drive.google.com/thumbnail?id=1Z05fiMQRRATCUNuYPtPGIbQhJlscjTk6&sz=w800",
       "desc": "Joma Top Flex azul con Reactive Ball y suela rosa.",
       "badge": "promo",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 57,
@@ -1116,7 +1116,7 @@
       "image": "https://drive.google.com/thumbnail?id=1edMeCkF_rYRCX-a950DTw7zFDiU09S1i&sz=w800",
       "desc": "Joma Top Flex azul cielo con suela naranja. Versátil indoor.",
       "badge": "recommended",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 58,
@@ -1136,7 +1136,7 @@
       "image": "https://drive.google.com/thumbnail?id=17vp2U5X3fxbF2Ajohm-qsCuGNd6I4Xrk&sz=w800",
       "desc": "Nike Tiempo Premier II negro con swoosh dorado. Edición especial.",
       "badge": "limited",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 59,
@@ -1156,7 +1156,7 @@
       "image": "https://drive.google.com/thumbnail?id=1yaxLLspOKeecSzmkpQuwYEzXsp8E4kxA&sz=w800",
       "desc": "Nike Tiempo Premier II completamente dorado. Edición limitada 1000.",
       "badge": "limited",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 60,
@@ -1176,7 +1176,7 @@
       "image": "https://drive.google.com/thumbnail?id=1hAyRhcOfoxIpSuJZpeNUNhatr3lnULpB&sz=w800",
       "desc": "Nike Tiempo Premier II blanco con swoosh dorado. Edición 0257/1000.",
       "badge": "bestseller",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 61,
@@ -1196,7 +1196,7 @@
       "image": "https://drive.google.com/thumbnail?id=1yh-HYrDg99Jz0_bmZUn-dOLmqDiYEraQ&sz=w800",
       "desc": "Joma Top Flex blanco clásico con logo negro. Suela goma indoor.",
       "badge": "bestseller",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 62,
@@ -1216,7 +1216,7 @@
       "image": "https://drive.google.com/thumbnail?id=1G9auehvTJKogPvLmf3sIqjegSgM2KRke&sz=w800",
       "desc": "Adidas Sala negro con franjas volt. Suela verde neón non-marking.",
       "badge": "new",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 63,
@@ -1236,7 +1236,7 @@
       "image": "https://drive.google.com/thumbnail?id=1TokVsswJZkkxdHhJ1IBgIo49dHWFv2GW&sz=w800",
       "desc": "Joma Top Flex blanco con Reactive Ball y suela naranja.",
       "badge": "recommended",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 64,
@@ -1256,7 +1256,7 @@
       "image": "https://drive.google.com/thumbnail?id=1pv071zlTghcW5lF-n1BtttfI7jdebtqK&sz=w800",
       "desc": "Nike Street Gato crema gamuza con swoosh coral. Suela goma.",
       "badge": "promo",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 65,
@@ -1276,7 +1276,7 @@
       "image": "https://drive.google.com/thumbnail?id=1wswAxgfeJ2eaWy1qzD_x8zco3XP69evJ&sz=w800",
       "desc": "Nike Street Gato gris gamuza con swoosh azul. Suela azul IC.",
       "badge": "bestseller",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 66,
@@ -1296,7 +1296,7 @@
       "image": "https://drive.google.com/thumbnail?id=1zZ6R7nfDLjzvqnehOo8vw48XaL7xlmY_&sz=w800",
       "desc": "Adidas Sala blanco con franjas menta. Suela verde non-marking.",
       "badge": "new",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 67,
@@ -1316,7 +1316,7 @@
       "image": "https://drive.google.com/thumbnail?id=1HpLPDTXwhWOcCD1PH1TfsINRr-olua3b&sz=w800",
       "desc": "Adidas Sala blanco con franjas negras y acentos rosa/menta.",
       "badge": "recommended",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 68,
@@ -1336,7 +1336,7 @@
       "image": "https://drive.google.com/thumbnail?id=1YQzdAw0xQ93A4IWGXhoMvqzQs5nj8nft&sz=w800",
       "desc": "Adidas Sala blanco con franjas azules y cordones naranja.",
       "badge": "bestseller",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 69,
@@ -1356,7 +1356,7 @@
       "image": "https://drive.google.com/thumbnail?id=1Cpoi4SDCJOPtuyOn8ZhYYipNw6njpm9K&sz=w800",
       "desc": "Adidas Sala blanco con franjas negras y laterales rosa. Suela coral.",
       "badge": "promo",
-      "oldPrice": null
+      "oldPrice": 0
     },
     {
       "id": 70,
@@ -1376,73 +1376,10 @@
       "image": "https://drive.google.com/thumbnail?id=1hld-AJG3a7f-ZFIhD75FI7yL59f7d2SY&sz=w800",
       "desc": "Adidas Sala azul con franjas blancas y cordones volt. Suela goma.",
       "badge": "new",
-      "oldPrice": null
-    },
-    {
-      "id": 71,
-      "name": "Te daré un puño, zorra",
-      "code": "GB-GX-CEL",
-      "category": "nino-futsal-bota",
-      "price": 500000,
-      "oldPrice": null,
-      "image": "",
-      "sizes": [
-        "30",
-        "31",
-        "32",
-        "33",
-        "34",
-        "35",
-        "36",
-        "37",
-        "38"
-      ],
-      "outOfStock": [],
-      "desc": "sdfgyuijtrewschjkuytrewszc vbnmkytrewscvbnmkuytresdcfv",
-      "badge": null,
-      "costPrice": 0
-    },
-    {
-      "id": 72,
-      "name": "Cuál palero perra",
-      "code": "GB-GX-CE",
-      "category": "nino-sintetica-corta",
-      "price": 200000,
-      "oldPrice": null,
-      "image": "",
-      "sizes": [
-        "30",
-        "31",
-        "32",
-        "33",
-        "34"
-      ],
-      "outOfStock": [],
-      "desc": "kkyu75sdfñjfutflf  tc u j lhg kih igth l lg l es gay",
-      "badge": null,
-      "costPrice": 0
-    },
-    {
-      "id": 73,
-      "name": "Con lágrimas en los ojos.",
-      "code": "GB-GX-CET",
-      "category": "nino-sintetica-corta",
-      "price": 210000,
-      "oldPrice": null,
-      "image": "",
-      "sizes": [
-        "31",
-        "32",
-        "40",
-        "41"
-      ],
-      "outOfStock": [],
-      "desc": "Maria duerme sola.",
-      "badge": null,
-      "costPrice": 0
+      "oldPrice": 0
     }
   ],
   "cupones": [],
-  "fechaActualizacion": "2026-08-04T02:54:40.937Z",
+  "fechaActualizacion": "2026-08-08T02:30:00.000Z",
   "version": 1
 }
