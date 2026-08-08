@@ -34,14 +34,196 @@
 <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><div class="loading-text">Cargando...</div></div>
 <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleMobileSidebar()"></div>
 
-<!-- HOTFIX LOADER: if full admin.html update fails, this minimal page still loads core + hotfix -->
+<div class="app-layout" id="appLayout" style="display:none;">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header"><div class="sidebar-logo">K</div><div class="sidebar-logo-text">KHAOS</div></div>
+        <nav class="sidebar-nav">
+            <div class="sidebar-section-title">Principal</div>
+            <a href="#" class="active" onclick="switchView('dashboard', this)"><i class="fas fa-chart-pie"></i><span class="sidebar-text">Dashboard</span></a>
+            <a href="#" onclick="switchView('products', this)"><i class="fas fa-box"></i><span class="sidebar-text">Productos</span><span class="badge" id="sidebarProductCount">0</span></a>
+            <div class="sidebar-section-title">Categorías</div>
+            <div id="sidebarCategories"></div>
+            <div class="sidebar-section-title">Gestión</div>
+            <a href="#" onclick="switchView('orders', this)"><i class="fas fa-shopping-bag"></i><span class="sidebar-text">Pedidos</span><span class="badge" id="sidebarOrderCount" style="display:none;">0</span></a>
+            <a href="#" onclick="switchView('coupons', this)"><i class="fas fa-ticket-alt"></i><span class="sidebar-text">Cupones</span><span class="badge" id="sidebarCouponCount" style="display:none;">0</span></a>
+            <a href="#" onclick="switchView('inventory', this)"><i class="fas fa-warehouse"></i><span class="sidebar-text">Inventario</span></a>
+            <a href="#" onclick="switchView('analytics', this)"><i class="fas fa-chart-line"></i><span class="sidebar-text">Analíticas</span></a>
+            <div class="sidebar-section-title">Configuración</div>
+            <a href="#" onclick="switchView('settings', this)"><i class="fas fa-cog"></i><span class="sidebar-text">Ajustes</span></a>
+            <a href="index.html" target="_blank"><i class="fas fa-external-link-alt"></i><span class="sidebar-text">Ver Catálogo</span></a>
+        </nav>
+        <div class="sidebar-footer" onclick="logout()">
+            <div class="sidebar-footer-avatar">A</div>
+            <div class="sidebar-footer-info"><div class="sidebar-footer-name">Administrador</div><div class="sidebar-footer-role">Cerrar sesión</div></div>
+            <i class="fas fa-sign-out-alt" style="color:var(--fog);font-size:14px;"></i>
+        </div>
+    </aside>
+
+    <main class="main-content" id="mainContent">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileSidebar()"><i class="fas fa-bars"></i></button>
+                <div><div class="top-bar-breadcrumb"><a href="#" onclick="switchView('dashboard')">Inicio</a><span class="sep">/</span><span class="current" id="pageTitle">Dashboard</span></div></div>
+            </div>
+            <div class="top-bar-right">
+                <button class="top-bar-btn" title="Notificaciones" onclick="toggleNotifications()"><i class="fas fa-bell"></i><span class="dot" id="notifDot" style="display:none;"></span></button>
+                <button class="top-bar-btn" id="themeToggleBtn" title="Cambiar tema" onclick="toggleTheme()"><i class="fas fa-moon" id="themeIcon"></i></button>
+                <button class="top-bar-btn" title="Buscar" onclick="openSpotlight()"><i class="fas fa-search"></i></button>
+            </div>
+        </header>
+
+        <div class="notif-panel" id="notifPanel">
+            <div class="notif-header"><h4>Notificaciones</h4><button onclick="clearAllNotifications()">Marcar todo leído</button></div>
+            <div class="notif-list" id="notifList"></div>
+        </div>
+
+        <div class="content-area">
+            <div id="view-dashboard">
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon gold"><i class="fas fa-box"></i></div></div><div class="stat-card-value" id="dashTotalProducts">0</div><div class="stat-card-label">Productos totales</div></div>
+                    <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon blue"><i class="fas fa-user"></i></div></div><div class="stat-card-value" id="dashAdulto">0</div><div class="stat-card-label">Línea Adulto</div></div>
+                    <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon purple"><i class="fas fa-child"></i></div></div><div class="stat-card-value" id="dashNino">0</div><div class="stat-card-label">Línea Niño</div></div>
+                    <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon green"><i class="fas fa-check-circle"></i></div></div><div class="stat-card-value" id="dashActiveProducts">0</div><div class="stat-card-label">Productos activos</div></div>
+                    <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon orange"><i class="fas fa-star"></i></div></div><div class="stat-card-value" id="dashNewProducts">0</div><div class="stat-card-label">Nuevos</div></div>
+                </div>
+                <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:28px;">
+                    <div class="stat-card" style="padding:18px;"><div class="stat-card-value" style="font-size:26px;" id="dashSintetica">0</div><div class="stat-card-label">Sintética</div></div>
+                    <div class="stat-card" style="padding:18px;"><div class="stat-card-value" style="font-size:26px;" id="dashGuayo">0</div><div class="stat-card-label">Guayo</div></div>
+                    <div class="stat-card" style="padding:18px;"><div class="stat-card-value" style="font-size:26px;" id="dashFutsal">0</div><div class="stat-card-label">Futsal</div></div>
+                    <div class="stat-card" style="padding:18px;"><div class="stat-card-value" style="font-size:26px;" id="dashZapatillas">0</div><div class="stat-card-label">Zapatillas</div></div>
+                    <div class="stat-card" style="padding:18px;"><div class="stat-card-value" style="font-size:26px;" id="dashAccesorios">0</div><div class="stat-card-label">Accesorios</div></div>
+                    <div class="stat-card" style="padding:18px;"><div class="stat-card-value" style="font-size:26px;" id="dashBestsellers">0</div><div class="stat-card-label">Más vendidos</div></div>
+                </div>
+                <div class="chart-grid">
+                    <div class="chart-card"><h4><i class="fas fa-chart-bar"></i> Productos por Categoría</h4><div class="chart-container"><canvas id="chartCategories"></canvas></div></div>
+                    <div class="chart-card"><h4><i class="fas fa-chart-pie"></i> Distribución de Stock</h4><div class="chart-container"><canvas id="chartStock"></canvas></div></div>
+                </div>
+                <div class="card"><div class="card-header"><h3><i class="fas fa-clock"></i> Actividad Reciente</h3></div><div class="card-body"><div class="table-wrap"><table class="data-table"><thead><tr><th>Producto</th><th>Acción</th><th>Fecha</th><th>Estado</th></tr></thead><tbody id="activityTableBody"></tbody></table></div></div></div>
+            </div>
+
+            <div id="view-products" style="display:none">
+                <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;margin-bottom:20px;">
+                    <div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;" id="statTotal">0</div><div class="stat-card-label" style="font-size:11px;">Total</div></div>
+                    <div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;" id="statGuayo">0</div><div class="stat-card-label" style="font-size:11px;">Guayos</div></div>
+                    <div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;" id="statSintetica">0</div><div class="stat-card-label" style="font-size:11px;">Sintética</div></div>
+                    <div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;" id="statFutsal">0</div><div class="stat-card-label" style="font-size:11px;">Futsal</div></div>
+                    <div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;" id="statZapatillas">0</div><div class="stat-card-label" style="font-size:11px;">Zapatillas</div></div>
+                    <div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;" id="statAccesorios">0</div><div class="stat-card-label" style="font-size:11px;">Accesorios</div></div>
+                    <div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;" id="statNino">0</div><div class="stat-card-label" style="font-size:11px;">Línea Niño</div></div>
+                    <div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;" id="statAgotados">0</div><div class="stat-card-label" style="font-size:11px;">Agotados</div></div>
+                </div>
+                <div class="card">
+                    <div class="toolbar">
+                        <div class="toolbar-left">
+                            <button class="btn btn-primary" onclick="openProductModal()"><i class="fas fa-plus"></i> Nuevo Producto</button>
+                            <div class="dropdown"><button class="btn btn-secondary" onclick="toggleDropdown('exportDropdown')"><i class="fas fa-download"></i> Exportar</button>
+                                <div class="dropdown-menu" id="exportDropdown">
+                                    <button class="dropdown-item" onclick="exportJSON()"><i class="fas fa-file-code"></i> Exportar JSON</button>
+                                    <button class="dropdown-item" onclick="exportCSV()"><i class="fas fa-file-csv"></i> Exportar CSV</button>
+                                    <div class="dropdown-divider"></div>
+                                    <button class="dropdown-item" onclick="showImportModal()"><i class="fas fa-file-import"></i> Importar JSON</button>
+                                </div>
+                            </div>
+                            <button class="btn btn-danger" onclick="confirmReset()"><i class="fas fa-undo"></i> Restaurar</button>
+                        </div>
+                        <div class="toolbar-right"><div class="input-group"><i class="fas fa-search"></i><input type="text" class="form-input" id="searchBox" placeholder="Buscar producto..." oninput="renderTable()" style="width:260px;"></div></div>
+                    </div>
+                    <div class="bulk-bar" id="bulkBar"><div class="bulk-bar-left"><div class="checkbox checked" onclick="toggleSelectAll()" id="selectAllCheckbox"><i class="fas fa-check"></i></div><span><strong id="selectedCount">0</strong> seleccionados</span></div><div class="bulk-bar-right"><button class="btn btn-danger btn-sm" onclick="bulkDelete()"><i class="fas fa-trash"></i> Eliminar</button><button class="btn btn-secondary btn-sm" onclick="clearSelection()">Cancelar</button></div></div>
+                    <div class="tabs" style="flex-wrap:wrap;">
+                        <button class="tab active" onclick="filterByTab('all', this)">Todos <span class="count" id="tabAll">0</span></button>
+                        <button class="tab" onclick="filterByTab('bestseller', this)">🔥 <span class="count" id="tabBest">0</span></button>
+                        <button class="tab" onclick="filterByTab('new', this)">⭐ <span class="count" id="tabNew">0</span></button>
+                        <button class="tab" onclick="filterByTab('promo', this)">🏷️ <span class="count" id="tabPromo">0</span></button>
+                        <button class="tab" onclick="filterByTab('lastunits', this)">⚡ <span class="count" id="tabLastUnits">0</span></button>
+                        <button class="tab" onclick="filterByTab('limited', this)">💎 <span class="count" id="tabLimited">0</span></button>
+                        <button class="tab" onclick="filterByTab('preorder', this)">📅 <span class="count" id="tabPreorder">0</span></button>
+                        <button class="tab" onclick="filterByTab('outofstock', this)">Agotados <span class="count" id="tabOut">0</span></button>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:0 16px 12px;" id="categoryFilterArea">
+                        <div class="cat-filter-wrap" id="catFilterWrap">
+                            <button class="cat-filter-btn" onclick="toggleCatFilter()" id="catFilterBtn"><i class="fas fa-folder-open"></i> <span id="catFilterLabel">Categorías</span> <i class="fas fa-chevron-down" style="font-size:10px;" id="catFilterChevron"></i></button>
+                            <div class="cat-filter-dropdown" id="catFilterDropdown" onclick="event.stopPropagation()"><div class="cat-filter-header">Filtrar por categoría</div><div id="catFilterContent"></div><div class="cat-filter-footer"><button onclick="filterByCategory('all'); toggleCatFilter();"><i class="fas fa-times"></i> Limpiar filtro</button></div></div>
+                        </div>
+                        <div id="activeFilterPill"></div>
+                    </div>
+                    <div class="table-wrap"><table class="data-table"><thead><tr><th style="width:40px;"><div class="checkbox" onclick="toggleSelectAll()" id="headerCheckbox"></div></th><th class="sortable" onclick="sortTable('name')">Producto</th><th class="sortable" onclick="sortTable('category')">Categoría</th><th class="sortable" onclick="sortTable('price')">Precio</th><th>Tallas</th><th>Estado</th><th style="width:120px;">Acciones</th></tr></thead><tbody id="productsTableBody"></tbody></table></div>
+                    <div class="pagination" id="paginationArea"><div class="pagination-info">Mostrando <span id="pageStart">1</span>-<span id="pageEnd">10</span> de <span id="pageTotal">0</span></div><div class="pagination-controls" id="paginationControls"></div></div>
+                </div>
+            </div>
+
+            <div id="view-categories" style="display:none"><div class="card"><div class="card-header"><h3><i class="fas fa-tags"></i> Categorías</h3></div><div class="card-body"><div class="table-wrap"><table class="data-table"><thead><tr><th>Categoría</th><th>Productos</th><th>Stock</th><th>Precio Prom.</th><th>Disponible</th></tr></thead><tbody id="categoriesTableBody"></tbody></table></div></div></div></div>
+            <div id="view-orders" style="display:none"><div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));"><div class="stat-card" style="padding:18px;"><div class="stat-card-value" style="font-size:26px;" id="orderTotal">0</div><div class="stat-card-label">Total Pedidos</div></div><div class="stat-card" style="padding:18px;"><div class="stat-card-value" style="font-size:26px;" id="orderPending">0</div><div class="stat-card-label">Pendientes</div></div><div class="stat-card" style="padding:18px;"><div class="stat-card-value" style="font-size:26px;" id="orderDelivered">0</div><div class="stat-card-label">Entregados</div></div><div class="stat-card" style="padding:18px;"><div class="stat-card-value" style="font-size:26px;" id="orderRevenue">$0</div><div class="stat-card-label">Ingresos</div></div></div><div class="card"><div class="toolbar"><div class="toolbar-left"><button class="btn btn-primary" onclick="openOrderModal()"><i class="fas fa-plus"></i> Nuevo Pedido</button></div></div><div id="ordersList"></div></div></div>
+            <div id="view-coupons" style="display:none"><div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:20px;"><div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;" id="couponTotal">0</div><div class="stat-card-label" style="font-size:11px;">Cupones</div></div><div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;" id="couponActive">0</div><div class="stat-card-label" style="font-size:11px;">Activos</div></div><div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;" id="couponUsed">0</div><div class="stat-card-label" style="font-size:11px;">Usados</div></div><div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;" id="couponSaved">$0</div><div class="stat-card-label" style="font-size:11px;">Ahorrado</div></div></div><div class="card"><div class="toolbar"><div class="toolbar-left"><button class="btn btn-primary" onclick="openCouponModal()"><i class="fas fa-plus"></i> Nuevo Cupón</button></div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Código</th><th>Tipo</th><th>Valor</th><th>Mínimo</th><th>Usos</th><th>Vigencia</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="couponsTableBody"></tbody></table></div></div></div>
+            <div id="view-inventory" style="display:none"><div id="inventoryAlerts"></div><div class="card"><div class="card-header"><h3><i class="fas fa-warehouse"></i> Inventario</h3></div><div class="card-body"><div class="table-wrap"><table class="data-table"><thead><tr><th>Producto</th><th>Categoría</th><th>Disponibles</th><th>Agotadas</th><th>Estado</th></tr></thead><tbody id="inventoryTableBody"></tbody></table></div></div></div></div>
+            <div id="view-analytics" style="display:none"><div class="chart-grid"><div class="chart-card"><h4>Tendencia</h4><div class="chart-container"><canvas id="chartTrend"></canvas></div></div><div class="chart-card"><h4>Por Línea</h4><div class="chart-container"><canvas id="chartLine"></canvas></div></div></div><div class="chart-grid" style="grid-template-columns:1fr;"><div class="chart-card"><h4>Precios</h4><div class="chart-container"><canvas id="chartPrices"></canvas></div></div></div></div>
+            <div id="view-settings" style="display:none"><div class="card" style="max-width:800px;"><div class="card-header"><h3><i class="fas fa-store"></i> Configuración</h3></div><div class="card-body" style="padding:24px;"><div class="settings-section"><h4>Información General</h4><div class="settings-row"><div class="settings-info"><h5>Nombre</h5></div><input type="text" class="form-input" id="settingStoreName" value="Khaos Deportivo" style="width:280px;"></div><div class="settings-row"><div class="settings-info"><h5>WhatsApp</h5></div><input type="text" class="form-input" id="settingWhatsapp" value="573105624563" style="width:280px;"></div><div class="settings-row"><div class="settings-info"><h5>Instagram</h5></div><input type="text" class="form-input" id="settingInstagram" value="https://www.instagram.com/khaosdeportivo" style="width:280px;"></div><div class="settings-row"><div class="settings-info"><h5>Facebook</h5></div><input type="text" class="form-input" id="settingFacebook" value="https://www.facebook.com/share/1Bkqc7LWJW/" style="width:280px;"></div></div><div class="settings-section"><h4>GitHub</h4><div class="settings-row"><div class="settings-info"><h5>Token</h5></div><div style="display:flex;gap:8px;flex-direction:column;align-items:flex-end;"><input type="password" class="form-input" id="settingGithubToken" placeholder="ghp_xxxx" style="width:280px;"><button class="btn btn-secondary btn-sm" onclick="saveGithubToken()" style="width:280px;"><i class="fas fa-save"></i> Guardar Token</button></div></div><div class="settings-row"><div class="settings-info"><h5>Estado</h5><p id="githubSyncStatus">No configurado</p></div><button class="btn btn-primary" id="githubSyncBtn" onclick="syncToGithub()" disabled><i class="fas fa-sync"></i> Sincronizar</button></div><div class="settings-row"><div class="settings-info"><h5>Última sync</h5><p id="githubLastSync">Nunca</p></div><button class="btn btn-ghost btn-sm" onclick="testGithubConnection()"><i class="fas fa-plug"></i> Probar</button></div></div><div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px;"><button class="btn btn-secondary" onclick="resetSettings()">Restaurar</button><button class="btn btn-primary" onclick="saveSettings()"><i class="fas fa-save"></i> Guardar</button></div></div></div></div>
+        </div>
+    </main>
+</div>
+
+<div class="modal-overlay" id="productModalOverlay"><div class="modal"><div class="modal-header"><h2 id="productModalTitle"><i class="fas fa-box"></i> Nuevo Producto</h2><button class="modal-close" onclick="closeProductModal()"><i class="fas fa-times"></i></button></div><div class="modal-body"><input type="hidden" id="editId"><div class="form-row"><div class="form-group"><label>Nombre <span class="required">*</span></label><input type="text" class="form-input" id="prodName"></div><div class="form-group"><label>Código <span class="required">*</span></label><input type="text" class="form-input" id="prodCode"></div></div><div class="form-row"><div class="form-group"><label>Categoría <span class="required">*</span></label><select class="form-select" id="prodCategory"><optgroup label="Sintética"><option value="sintetica-corta">Sintética Corta</option><option value="sintetica-bota">Sintética Bota</option></optgroup><optgroup label="Guayo"><option value="guayo-corto">Guayo Corto</option><option value="guayo-bota">Guayo Bota</option><option value="gc-tache-aluminio">GC Tache Aluminio</option><option value="gb-tache-aluminio">GB Tache Aluminio</option></optgroup><optgroup label="Futsal"><option value="futsal-corto">Futsal Corto</option><option value="futsal-bota">Futsal Bota</option></optgroup><optgroup label="Zapatillas"><option value="zapatillas-urbanas">Urbanas</option><option value="zapatillas-running">Running</option><option value="zapatillas-casual">Casual</option></optgroup><optgroup label="Accesorios"><option value="canilleras">Canilleras</option><option value="medias">Medias</option><option value="bolsos">Bolsos</option></optgroup><optgroup label="Niño"><option value="nino-sintetica-corta">Niño Sintética Corta</option><option value="nino-sintetica-bota">Niño Sintética Bota</option><option value="nino-guayo-corto">Niño Guayo Corto</option><option value="nino-guayo-bota">Niño Guayo Bota</option><option value="nino-futsal-corto">Niño Futsal Corto</option><option value="nino-futsal-bota">Niño Futsal Bota</option></optgroup></select></div><div class="form-group"><label>Badge</label><select class="form-select" id="prodBadge"><option value="">Ninguno</option><option value="bestseller">Más vendido</option><option value="new">Nuevo</option><option value="promo">Promoción</option><option value="lastunits">Últimas unidades</option><option value="limited">Edición limitada</option><option value="recommended">Recomendado</option><option value="clearance">Liquidación</option><option value="preorder">Preventa</option><option value="webonly">Exclusivo web</option></select></div></div><div class="form-row three"><div class="form-group"><label>Precio <span class="required">*</span></label><input type="number" class="form-input" id="prodPrice"></div><div class="form-group"><label>Precio anterior</label><input type="number" class="form-input" id="prodOldPrice"></div><div class="form-group"><label>URL imagen</label><input type="text" class="form-input" id="prodImage"></div></div><div class="form-group"><label>Descripción</label><textarea class="form-textarea" id="prodDesc"></textarea></div><div class="form-group"><label>Tallas</label><div class="sizes-editor" id="sizesEditor"></div><div class="size-legend"><span><div class="dot available"></div> Disponible</span><span><div class="dot out"></div> Agotado</span><span><div class="dot off"></div> No ofrecida</span></div></div></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeProductModal()">Cancelar</button><button class="btn btn-primary" onclick="saveProduct()"><i class="fas fa-save"></i> Guardar</button></div></div></div>
+
+<div class="modal-overlay" id="importModalOverlay"><div class="modal"><div class="modal-header"><h2>Importar</h2><button class="modal-close" onclick="closeImportModal()"><i class="fas fa-times"></i></button></div><div class="modal-body"><textarea class="form-textarea" id="importText" style="min-height:200px;"></textarea></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeImportModal()">Cancelar</button><button class="btn btn-primary" onclick="doImport()">Importar</button></div></div></div>
+
+<div class="modal-overlay" id="orderModalOverlay"><div class="modal" style="max-width:600px;"><div class="modal-header"><h2>Nuevo Pedido</h2><button class="modal-close" onclick="closeModal('orderModalOverlay')"><i class="fas fa-times"></i></button></div><div class="modal-body"><div class="form-row"><div class="form-group"><label>Cliente</label><input type="text" class="form-input" id="orderCustomer"></div><div class="form-group"><label>Teléfono</label><input type="text" class="form-input" id="orderPhone"></div></div><div class="form-group"><label>Dirección</label><input type="text" class="form-input" id="orderAddress"></div><div class="form-group"><label>Estado</label><select class="form-select" id="orderStatus"><option value="pending">Pendiente</option><option value="processing">En proceso</option><option value="shipped">Enviado</option><option value="delivered">Entregado</option></select></div><div id="orderItemsContainer"></div><button class="btn btn-secondary btn-sm" onclick="addOrderItem()"><i class="fas fa-plus"></i> Agregar producto</button><div id="orderCouponInfo" style="display:none;"></div><div style="margin-top:16px;"><span id="orderSubtotalDisplay">$0</span> / <span id="orderTotalDisplay">$0</span></div></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('orderModalOverlay')">Cancelar</button><button class="btn btn-primary" onclick="saveOrder()">Crear</button></div></div></div>
+
+<div class="modal-overlay" id="confirmModalOverlay"><div class="modal" style="max-width:420px;"><div class="modal-body"><div class="confirm-dialog"><div class="confirm-dialog-icon"><i class="fas fa-exclamation-triangle"></i></div><h3 id="confirmTitle">Confirmar</h3><p id="confirmMessage">¿Estás seguro?</p><div style="display:flex;gap:10px;justify-content:center;"><button class="btn btn-secondary" onclick="closeConfirmModal()">Cancelar</button><button class="btn btn-danger" id="confirmBtn">Confirmar</button></div></div></div></div></div>
+
+<div class="modal-overlay" id="passwordModalOverlay"><div class="modal" style="max-width:420px;"><div class="modal-header"><h2>Cambiar Contraseña</h2><button class="modal-close" onclick="closeModal('passwordModalOverlay')"><i class="fas fa-times"></i></button></div><div class="modal-body"><div class="form-group"><label>Actual</label><input type="password" class="form-input" id="currentPassword"></div><div class="form-group"><label>Nueva</label><input type="password" class="form-input" id="newPassword"></div><div class="form-group"><label>Confirmar</label><input type="password" class="form-input" id="confirmPassword"></div></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('passwordModalOverlay')">Cancelar</button><button class="btn btn-primary" onclick="changePassword()">Guardar</button></div></div></div>
+
+<div class="modal-overlay" id="couponModalOverlay"><div class="modal" style="max-width:520px;"><div class="modal-header"><h2 id="couponModalTitle">Nuevo Cupón</h2><button class="modal-close" onclick="closeModal('couponModalOverlay')"><i class="fas fa-times"></i></button></div><div class="modal-body"><input type="hidden" id="editCouponId"><div class="form-row"><div class="form-group"><label>Código</label><input type="text" class="form-input" id="couponCode" style="text-transform:uppercase;"></div><div class="form-group"><label>Tipo</label><select class="form-select" id="couponType"><option value="percentage">%</option><option value="fixed">$</option><option value="gift">Regalo / Combo</option></select></div></div><div class="form-row three"><div class="form-group"><label>Valor</label><input type="number" class="form-input" id="couponValue"></div><div class="form-group"><label>Mínimo</label><input type="number" class="form-input" id="couponMinPurchase" value="0"></div><div class="form-group"><label>Usos máx</label><input type="number" class="form-input" id="couponMaxUses" value="0"></div></div><div class="form-row"><div class="form-group"><label>Inicio</label><input type="date" class="form-input" id="couponStartDate"></div><div class="form-group"><label>Fin</label><input type="date" class="form-input" id="couponEndDate"></div></div><div class="form-group" id="categoryScopeGroup"><label>Dispara con (compra de)</label><select class="form-select" id="couponAppliesTo"><option value="all">Todos</option><option value="calzado">Cualquier par (calzado)</option><option value="guayo">Guayos</option><option value="sintetica">Sintética</option><option value="futsal">Futsal</option><option value="zapatillas">Zapatillas</option><option value="accesorios">Accesorios</option><option value="nino">Niño</option></select></div><div class="form-group" id="productScopeGroup" style="display:none;"><div class="product-selector" id="productSelector"><div class="product-selector-input" onclick="toggleProductSelector()"><span id="productSelectorLabel">Seleccionar...</span></div><div class="product-selector-dropdown" id="productSelectorDropdown"><div class="product-selector-search"><input type="text" id="productSelectorSearch" oninput="filterProductSelector()"></div><div id="productSelectorList"></div></div></div><div class="product-selector-tags" id="productSelectorTags"></div></div><div class="form-group"><div class="toggle-switch active" id="couponActiveToggle" onclick="this.classList.toggle('active')"></div> Activo</div><div style="display:none;"><input type="radio" name="couponScope" id="scopeCategory" value="category" checked><input type="radio" name="couponScope" id="scopeProduct" value="product"></div></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('couponModalOverlay')">Cancelar</button><button class="btn btn-primary" onclick="saveCoupon()">Guardar</button></div></div></div>
+
+<div class="spotlight-overlay" id="spotlightOverlay" onclick="closeSpotlight(event)"><div class="spotlight-box" onclick="event.stopPropagation()"><div class="spotlight-input"><i class="fas fa-search"></i><input type="text" id="spotlightInput" placeholder="Buscar..." oninput="searchSpotlight()" onkeydown="navigateSpotlight(event)"></div><div class="spotlight-results" id="spotlightResults"></div></div></div>
+<div class="toast-container" id="toastContainer"></div>
+<button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()"><i class="fas fa-chevron-left" id="sidebarToggleIcon"></i></button>
+
 <script src="js/admin-a.js"></script>
 <script src="js/admin-b.js"></script>
 <script src="js/admin-categories.js"></script>
 <script src="js/admin-promo-gift.js"></script>
-<script src="js/admin-hotfix.js"></script>
+
 <script>
-alert('admin.html quedó incompleto por un error de subida. Restaura admin.html desde GitHub history (commit dd6a9c5) y agrega solo: <script src=\"js/admin-hotfix.js\"><\/script> antes de <\/body>');
+(function(){
+  function applyProducts(list){
+    if(!Array.isArray(list)||!list.length) return;
+    try{ products = list; }catch(e){}
+    window.products = list;
+    try{
+      var m=0;
+      for(var i=0;i<list.length;i++){ var n=Number(list[i].id)||0; if(n>m)m=n; }
+      nextId=m+1; window.nextId=nextId;
+    }catch(e){}
+    try{ localStorage.setItem('khaos_admin_products', JSON.stringify(list)); }catch(e){}
+    try{ if(typeof renderTable==='function') renderTable(); }catch(e){}
+    try{ if(typeof updateAllStats==='function') updateAllStats(); }catch(e){}
+    try{ if(typeof updateDashboard==='function') updateDashboard(); }catch(e){}
+    console.log('[Khaos] Productos:', list.length);
+  }
+  function load(){
+    try{
+      var s=localStorage.getItem('khaos_admin_products');
+      if(s){ var p=JSON.parse(s); if(Array.isArray(p)&&p.length>0){ applyProducts(p); if(p.length>=5) return; } }
+    }catch(e){}
+    fetch('productos.json?t='+Date.now(),{cache:'no-store'})
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        var list=Array.isArray(d)?d:(d.productos||[]);
+        if(d.cupones){ try{ coupons=d.cupones; }catch(e){} window.coupons=d.cupones; }
+        applyProducts(list);
+        if(typeof showToast==='function'&&list.length) showToast('Catálogo: '+list.length+' productos','success');
+      })
+      .catch(function(){
+        fetch('https://raw.githubusercontent.com/khaosdeportivo/khaosdeportivo/main/productos.json?t='+Date.now(),{cache:'no-store'})
+          .then(function(r){ return r.json(); })
+          .then(function(d){
+            var list=Array.isArray(d)?d:(d.productos||[]);
+            applyProducts(list);
+          }).catch(function(e){ console.warn(e); });
+      });
+  }
+  var t=0,id=setInterval(function(){ t++; if(typeof renderTable==='function'||t>60){ clearInterval(id); load(); } },150);
+})();
 </script>
+
 </body>
 </html>
