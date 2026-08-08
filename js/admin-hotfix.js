@@ -1,57 +1,106 @@
-/**
- * admin-hotfix.js — protege updateCouponStats y otros accesos a DOM faltante
- */
+/* Khaos admin hotfix: oldPrice null + coupon stats missing DOM */
 (function () {
-  function safeText(id, value) {
-    var el = document.getElementById(id);
-    if (el) el.textContent = value;
-  }
-  function safeStyle(id, prop, value) {
-    var el = document.getElementById(id);
-    if (el && el.style) el.style[prop] = value;
+  function safeLocale(n) {
+    return Number(n || 0).toLocaleString('es-CO');
   }
 
-  function patch() {
-    if (typeof window.updateCouponStats !== 'function') {
-      return false;
-    }
-
-    window.updateCouponStats = function updateCouponStats() {
+  function patchRenderTable() {
+    if (typeof renderTable !== 'function') return false;
+    var original = renderTable;
+    window.renderTable = function () {
       try {
-        var list = (typeof coupons !== 'undefined' && Array.isArray(coupons)) ? coupons : [];
-        var total = list.length;
-        var active = list.filter(function (c) {
-          return typeof isCouponActive === 'function' ? isCouponActive(c) : true;
-        }).length;
-        var used = list.reduce(function (s, c) { return s + (c.usedCount || 0); }, 0);
-        var saved = list.reduce(function (s, c) { return s + (c.totalSaved || 0); }, 0);
-
-        safeText('couponTotal', total);
-        safeText('couponActive', active);
-        safeText('couponUsed', used);
-        safeText('couponSaved', '$' + Number(saved).toLocaleString('es-CO'));
-        safeText('sidebarCouponCount', active);
-        safeStyle('sidebarCouponCount', 'display', active > 0 ? 'flex' : 'none');
-        safeText('tabCouponAll', total);
-        safeText('tabCouponActive', active);
-        safeText('tabCouponExpired', list.filter(function (c) {
-          return typeof isCouponExpired === 'function' && isCouponExpired(c);
-        }).length);
-        safeText('tabCouponPct', list.filter(function (c) { return c.type === 'percentage'; }).length);
-        safeText('tabCouponFixed', list.filter(function (c) { return c.type === 'fixed'; }).length);
+        var tbody = document.getElementById('productsTableBody');
+        if (!tbody) return;
+        if (!products || !products.length) {
+          tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><h3>No hay productos</h3></div></td></tr>';
+          return;
+        }
+        // Normalize null oldPrice so original map never crashes
+        products.forEach(function (p) {
+          if (p.oldPrice == null) p.oldPrice = 0;
+          if (!Array.isArray(p.sizes)) p.sizes = [];
+          if (!Array.isArray(p.outOfStock)) p.outOfStock = [];
+        });
+        return original.apply(this, arguments);
       } catch (e) {
-        console.warn('[Khaos] updateCouponStats safe', e);
+        console.error('[hotfix] renderTable', e);
+        var tb = document.getElementById('productsTableBody');
+        if (tb) {
+          tb.innerHTML = '<tr><td colspan="7"><div class="empty-state"><h3>Error al renderizar</h3><p>' + e.message + '</p></div></td></tr>';
+        }
       }
     };
-
-    try { window.updateCouponStats(); } catch (e) {}
-    console.log('[Khaos] admin-hotfix: updateCouponStats protegido');
     return true;
   }
 
-  var tries = 0;
-  var t = setInterval(function () {
-    tries++;
-    if (patch() || tries > 40) clearInterval(t);
-  }, 100);
+  function patchCouponStats() {
+    if (typeof updateCouponStats !== 'function') return false;
+    window.updateCouponStats = function () {
+      try {
+        var setText = function (id, val) {
+          var el = document.getElementById(id);
+          if (el) el.textContent = val;
+        };
+        var total = (typeof coupons !== 'undefined' && coupons) ? coupons.length : 0;
+        var active = 0, used = 0, saved = 0;
+        if (typeof coupons !== 'undefined' && Array.isArray(coupons)) {
+          active = coupons.filter(function (c) {
+            return typeof isCouponActive === 'function' ? isCouponActive(c) : !!c.active;
+          }).length;
+          used = coupons.reduce(function (s, c) { return s + (c.usedCount || 0); }, 0);
+          saved = coupons.reduce(function (s, c) { return s + (c.totalSaved || 0); }, 0);
+        }
+        setText('couponTotal', total);
+        setText('couponActive', active);
+        setText('couponUsed', used);
+        setText('couponSaved', '$' + safeLocale(saved));
+        var badge = document.getElementById('sidebarCouponCount');
+        if (badge) {
+          badge.textContent = active;
+          badge.style.display = active > 0 ? 'flex' : 'none';
+        }
+        setText('tabCouponAll', total);
+        setText('tabCouponActive', active);
+      } catch (e) {
+        console.warn('[hotfix] updateCouponStats', e);
+      }
+    };
+    return true;
+  }
+
+  function removeJunk() {
+    if (!Array.isArray(products)) return;
+    var before = products.length;
+    products = products.filter(function (p) {
+      return p.id !== 71 && p.id !== 72 && p.id !== 73;
+    });
+    window.products = products;
+    if (products.length !== before) {
+      try {
+        localStorage.setItem('khaos_admin_products', JSON.stringify(products));
+      } catch (e) {}
+      console.log('[hotfix] Eliminados productos basura. Quedan:', products.length);
+    }
+  }
+
+  function apply() {
+    patchCouponStats();
+    patchRenderTable();
+    removeJunk();
+    if (typeof renderTable === 'function') {
+      try { renderTable(); } catch (e) {}
+    }
+    if (typeof updateAllStats === 'function') {
+      try { updateAllStats(); } catch (e) {}
+    }
+    console.log('[Khaos hotfix] aplicado');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(apply, 400);
+    });
+  } else {
+    setTimeout(apply, 400);
+  }
 })();
