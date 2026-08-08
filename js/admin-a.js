@@ -546,7 +546,7 @@ function loadSidebarState() {
 // ===== STATS =====
 function updateAllStats() {
     document.getElementById('dashTotalProducts').textContent = products.length;
-    document.getElementById('dashActiveProducts').textContent = products.filter(p => p.sizes.some(s => !p.outOfStock.includes(s))).length;
+    document.getElementById('dashActiveProducts').textContent = products.filter(p => p.sizes.some(s => !(p.outOfStock||[]).includes(s))).length;
     document.getElementById('dashBestsellers').textContent = products.filter(p => p.badge === 'bestseller').length;
     document.getElementById('dashNewProducts').textContent = products.filter(p => p.badge === 'new').length;
     document.getElementById('dashAdulto').textContent = products.filter(p => getCategoryMeta(p.category).group === 'adulto').length;
@@ -556,7 +556,7 @@ function updateAllStats() {
     document.getElementById('dashFutsal').textContent = products.filter(p => getCategoryMeta(p.category).family === 'futsal').length;
     // Auto-badge: últimas unidades si quedan <= 2 tallas
     products.forEach(p => {
-        const availableCount = p.sizes.filter(s => !p.outOfStock.includes(s)).length;
+        const availableCount = p.sizes.filter(s => !(p.outOfStock||[]).includes(s)).length;
         if (availableCount <= 2 && availableCount > 0 && !p.badge) {
             // No sobrescribir badges manuales, solo sugerir visualmente
         }
@@ -579,7 +579,7 @@ function updateAllStats() {
         const meta = getCategoryMeta(p.category);
         return meta.group === 'nino';
     }).length;
-    document.getElementById('statAgotados').textContent = products.filter(p => p.sizes.every(s => p.outOfStock.includes(s))).length;
+    document.getElementById('statAgotados').textContent = products.filter(p => p.sizes.every(s => (p.outOfStock||[]).includes(s))).length;
     document.getElementById('tabAll').textContent = products.length;
     document.getElementById('tabBest').textContent = products.filter(p => p.badge === 'bestseller').length;
     document.getElementById('tabNew').textContent = products.filter(p => p.badge === 'new').length;
@@ -587,7 +587,7 @@ function updateAllStats() {
     document.getElementById('tabLastUnits').textContent = products.filter(p => p.badge === 'lastunits').length;
     document.getElementById('tabLimited').textContent = products.filter(p => p.badge === 'limited').length;
     document.getElementById('tabPreorder').textContent = products.filter(p => p.badge === 'preorder').length;
-    document.getElementById('tabOut').textContent = products.filter(p => p.sizes.every(s => p.outOfStock.includes(s))).length;
+    document.getElementById('tabOut').textContent = products.filter(p => p.sizes.every(s => (p.outOfStock||[]).includes(s))).length;
     updateOrderStats();
     // Update sidebar categories
     renderSidebarCategories();
@@ -833,7 +833,7 @@ function getFilteredProducts() {
     else if (currentTab === 'clearance') result = result.filter(p => p.badge === 'clearance');
     else if (currentTab === 'preorder') result = result.filter(p => p.badge === 'preorder');
     else if (currentTab === 'webonly') result = result.filter(p => p.badge === 'webonly');
-    else if (currentTab === 'outofstock') result = result.filter(p => p.sizes.every(s => p.outOfStock.includes(s)));
+    else if (currentTab === 'outofstock') result = result.filter(p => p.sizes.every(s => (p.outOfStock||[]).includes(s)));
 
     // Hierarchical category filtering
     if (currentCategoryFilter && currentCategoryFilter !== 'all') {
@@ -902,15 +902,15 @@ function renderTable() {
     }
 
     tbody.innerHTML = pageItems.map(p => {
-        const sizesHtml = p.sizes.slice(0, 6).map(s => `<span class="size-pill ${p.outOfStock.includes(s) ? 'out' : 'available'}">${s}</span>`).join('');
-        const moreSizes = p.sizes.length > 6 ? `<span class="size-pill available">+${p.sizes.length - 6}</span>` : '';
+        const sizesHtml = (p.sizes||[]).slice(0, 6).map(s => `<span class="size-pill ${(p.outOfStock||[]).includes(s) ? 'out' : 'available'}">${s}</span>`).join('');
+        const moreSizes = (p.sizes||[]).length > 6 ? `<span class="size-pill available">+${(p.sizes||[]).length - 6}</span>` : '';
         const badgeHtml = p.badge && badgeConfig[p.badge] 
             ? `<span class="badge" style="background:${badgeConfig[p.badge].bg};color:${badgeConfig[p.badge].color};border-color:${badgeConfig[p.badge].border};"><i class="fas ${badgeConfig[p.badge].icon}"></i> ${badgeConfig[p.badge].label}</span>`
             : '<span class="badge badge-gray">Normal</span>';
         const isSelected = selectedIds.has(p.id);
         const catColor = categoryColors[p.category] || '#888';
         const meta = getCategoryMeta(p.category);
-        return `<tr class="${isSelected ? 'selected' : ''}"><td data-label="Seleccionar"><div class="checkbox ${isSelected ? 'checked' : ''}" onclick="toggleSelect(${p.id}, event)">${isSelected ? '<i class="fas fa-check"></i>' : ''}</div></td><td data-label="Producto"><div class="product-cell"><img class="product-thumb" src="${p.image || ''}" onerror="this.style.opacity='0.3'"><div class="product-cell-info"><div class="product-cell-name">${p.name}</div><div class="product-cell-code">${p.code}</div></div></div></td><td data-label="Categoría"><div style="display:flex;flex-direction:column;gap:2px;"><span class="badge" style="background:${catColor}15;color:${catColor};border-color:${catColor}30;font-size:11px;padding:3px 10px;">${categoryNames[p.category] || p.category}</span><span style="font-size:10px;color:var(--fog);">${meta.groupLabel} > ${meta.familyLabel}</span></div></td><td data-label="Precio"><div style="font-weight:900;color:var(--gold-light);font-size:15px;">$${p.price.toLocaleString('es-CO')}</div><div style="font-size:11px;color:var(--fog);text-decoration:line-through;">$${p.oldPrice.toLocaleString('es-CO')}</div></td><td data-label="Tallas"><div class="size-pills">${sizesHtml}${moreSizes}</div></td><td data-label="Estado">${badgeHtml}</td><td data-label="Acciones"><div class="action-btns"><button class="action-btn view" onclick="viewProduct(${p.id})" title="Ver"><i class="fas fa-eye"></i></button><button class="action-btn edit" onclick="editProduct(${p.id})" title="Editar"><i class="fas fa-pen"></i></button><button class="action-btn delete" onclick="deleteProduct(${p.id})" title="Eliminar"><i class="fas fa-trash"></i></button></div></td></tr>`;
+        return `<tr class="${isSelected ? 'selected' : ''}"><td data-label="Seleccionar"><div class="checkbox ${isSelected ? 'checked' : ''}" onclick="toggleSelect(${p.id}, event)">${isSelected ? '<i class="fas fa-check"></i>' : ''}</div></td><td data-label="Producto"><div class="product-cell"><img class="product-thumb" src="${p.image || ''}" onerror="this.style.opacity='0.3'"><div class="product-cell-info"><div class="product-cell-name">${p.name}</div><div class="product-cell-code">${p.code}</div></div></div></td><td data-label="Categoría"><div style="display:flex;flex-direction:column;gap:2px;"><span class="badge" style="background:${catColor}15;color:${catColor};border-color:${catColor}30;font-size:11px;padding:3px 10px;">${categoryNames[p.category] || p.category}</span><span style="font-size:10px;color:var(--fog);">${meta.groupLabel} > ${meta.familyLabel}</span></div></td><td data-label="Precio"><div style="font-weight:900;color:var(--gold-light);font-size:15px;">$${Number(p.price||0).toLocaleString('es-CO')}</div>${p.oldPrice ? `<div style="font-size:11px;color:var(--fog);text-decoration:line-through;">$${Number(p.oldPrice).toLocaleString('es-CO')}</div>` : ''}</td><td data-label="Tallas"><div class="size-pills">${sizesHtml}${moreSizes}</div></td><td data-label="Estado">${badgeHtml}</td><td data-label="Acciones"><div class="action-btns"><button class="action-btn view" onclick="viewProduct(${p.id})" title="Ver"><i class="fas fa-eye"></i></button><button class="action-btn edit" onclick="editProduct(${p.id})" title="Editar"><i class="fas fa-pen"></i></button><button class="action-btn delete" onclick="deleteProduct(${p.id})" title="Eliminar"><i class="fas fa-trash"></i></button></div></td></tr>`;
     }).join('');
 }
 
