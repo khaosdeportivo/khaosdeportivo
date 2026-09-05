@@ -186,7 +186,11 @@ function renderCategoriesView() {
         }
     }
 
-    document.getElementById('catCountTotal').textContent = totalCats;
+    // Otro elemento huérfano: #catCountTotal tampoco existe en admin.html.
+    // Igual que con couponSearchBox, esto interrumpía init() a mitad de
+    // camino en cada login. Se protege con optional chaining.
+    const catCountEl = document.getElementById('catCountTotal');
+    if (catCountEl) catCountEl.textContent = totalCats;
     tbody.innerHTML = html || '<tr><td colspan="5"><div class="empty-state" style="padding:40px;"><h3>Sin categorías</h3></div></td></tr>';
 }
 
@@ -399,7 +403,17 @@ function getFilteredCoupons() {
     else if (currentCouponFilter === 'expired') result = result.filter(c => isCouponExpired(c));
     else if (currentCouponFilter === 'percentage') result = result.filter(c => c.type === 'percentage');
     else if (currentCouponFilter === 'fixed') result = result.filter(c => c.type === 'fixed');
-    const search = document.getElementById('couponSearchBox').value.toLowerCase().trim();
+    // BUG REAL ENCONTRADO: el HTML de la pestaña "Cupones" nunca tuvo un
+    // input #couponSearchBox (se ve en admin.html: la vista view-coupons no
+    // tiene caja de búsqueda), pero este código intentaba leer su .value sin
+    // comprobar que existiera. Eso lanzaba una excepción en CADA login (en
+    // init() -> loadCoupons() -> saveCoupons() -> renderCoupons()), y como
+    // nada la atrapaba, cortaba a la mitad la inicialización del panel:
+    // todo lo que init() programa después de loadCoupons() (gráficas,
+    // listeners de eventos, efectos de scroll, notificación de "Panel
+    // cargado") se quedaba sin ejecutar. Con el optional chaining de abajo,
+    // si el buscador no existe simplemente no se filtra por texto.
+    const search = (document.getElementById('couponSearchBox')?.value || '').toLowerCase().trim();
     if (search) result = result.filter(c => c.code.toLowerCase().includes(search));
     return result;
 }
@@ -1041,28 +1055,39 @@ const GITHUB_CONFIG = {
     apiBase: 'https://api.github.com'
 };
 
-function getGithubToken() {
-    try { return localStorage.getItem('khaos_github_token') || ''; } catch(e) { return ''; }
+// El token ahora vive cifrado (ver TokenVault en admin-a.js). Si la página
+// se recargó y el vault quedó bloqueado (sin la clave en memoria), se le
+// pide al usuario reingresar su contraseña antes de poder usar el token.
+async function getGithubToken() {
+    if (!TokenVault.isUnlocked()) {
+        if (TokenVault.hasToken()) {
+            showToast('Reingresa tu contraseña para desbloquear el token de GitHub', 'warning');
+            logout();
+        }
+        return '';
+    }
+    return await TokenVault.read();
 }
 
-function saveGithubToken() {
+async function saveGithubToken() {
     const token = document.getElementById('settingGithubToken').value.trim();
     if (!token) { showToast('Ingresa un token válido', 'warning'); return; }
     if (!token.startsWith('ghp_') && !token.startsWith('github_pat_')) {
         showToast('El token debe empezar con ghp_ o github_pat_', 'error'); return;
     }
-    try { localStorage.setItem('khaos_github_token', token); } catch(e) {}
+    if (!TokenVault.isUnlocked()) { showToast('Sesión no válida, vuelve a iniciar sesión', 'error'); return; }
+    await TokenVault.save(token);
     document.getElementById('settingGithubToken').value = '';
     updateGithubUI();
-    showToast('Token guardado correctamente', 'success');
+    showToast('Token guardado (cifrado) correctamente', 'success');
 }
 
 function updateGithubUI() {
-    const token = getGithubToken();
     const btn = document.getElementById('githubSyncBtn');
     const status = document.getElementById('githubSyncStatus');
+    const hasToken = TokenVault.hasToken();
 
-    if (token) {
+    if (hasToken) {
         btn.disabled = false;
         status.innerHTML = '<span style="color:var(--success);"><i class="fas fa-check-circle"></i> Configurado</span>';
     } else {
@@ -1078,7 +1103,7 @@ function updateGithubUI() {
 }
 
 async function testGithubConnection() {
-    const token = getGithubToken();
+    const token = await getGithubToken();
     if (!token) { showToast('Primero guarda tu token en Ajustes', 'warning'); return; }
 
     showLoading('Probando conexión...');
@@ -1101,7 +1126,7 @@ async function testGithubConnection() {
 }
 
 async function syncToGithub() {
-    const token = getGithubToken();
+    const token = await getGithubToken();
     if (!token) { showToast('Token no configurado', 'error'); return; }
     if (products.length === 0) { showToast('No hay productos para sincronizar', 'warning'); return; }
 

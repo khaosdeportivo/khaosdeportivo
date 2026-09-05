@@ -155,13 +155,26 @@ const allSizes = ["30","31","32","33","34","35","36","37","38","39","40","41","4
 const Security = {
     maxAttempts: 5,
     lockoutDuration: 5 * 60 * 1000,
-    defaultHash: 'f0bdce7f3ab50bc2a10a9bb69ef2d05c24edfe56d40a3d023d8bad95a9f4ac5a',
+    // NOTA DE SEGURIDAD: antes existía aquí un hash de contraseña "por defecto"
+    // fijo en el código fuente público. Cualquiera podía leerlo en GitHub e
+    // intentar crackearlo sin límite de intentos, o simplemente iniciar sesión
+    // con la contraseña por defecto si nunca se había cambiado. Se eliminó:
+    // ahora, si no hay una contraseña configurada (hasPassword() === false),
+    // la pantalla de login pide CREAR una contraseña nueva en vez de aceptar
+    // una conocida.
+
+    hasPassword() {
+        try { return !!localStorage.getItem('khaos_admin_hash'); } catch(e) { return false; }
+    },
 
     getAttempts() {
         try {
-            const data = JSON.parse(sessionStorage.getItem('khaos_login_attempts') || '{}');
+            // Se usa localStorage (no sessionStorage) para que el bloqueo por
+            // intentos fallidos persista entre pestañas/reinicios del navegador
+            // y no se pueda evadir abriendo una pestaña nueva.
+            const data = JSON.parse(localStorage.getItem('khaos_login_attempts') || '{}');
             if (data.lockedUntil && Date.now() > data.lockedUntil) {
-                sessionStorage.removeItem('khaos_login_attempts');
+                localStorage.removeItem('khaos_login_attempts');
                 return { count: 0, lockedUntil: null };
             }
             return data;
@@ -174,7 +187,7 @@ const Security = {
         if (data.count >= this.maxAttempts) {
             data.lockedUntil = Date.now() + this.lockoutDuration;
         }
-        try { sessionStorage.setItem('khaos_login_attempts', JSON.stringify(data)); } catch(e) {}
+        try { localStorage.setItem('khaos_login_attempts', JSON.stringify(data)); } catch(e) {}
         return data;
     },
 
@@ -197,10 +210,11 @@ const Security = {
     },
 
     async verifyPassword(password) {
-        const hash = await this.hashPassword(password);
         let storedHash;
         try { storedHash = localStorage.getItem('khaos_admin_hash'); } catch(e) {}
-        return hash === (storedHash || this.defaultHash);
+        if (!storedHash) return false; // sin contraseña configurada, no hay nada que verificar
+        const hash = await this.hashPassword(password);
+        return hash === storedHash;
     },
 
     async storePassword(password) {
@@ -254,10 +268,98 @@ const Security = {
     }
 };
 
+// ===== TOKEN VAULT =====
+// El token de GitHub (con permiso de escritura sobre el repo) antes se
+// guardaba en localStorage.setItem('khaos_github_token', token) en TEXTO
+// PLANO. Eso significa que cualquier script inyectado (XSS), extensión de
+// navegador maliciosa, o alguien con acceso físico al navegador podía leerlo
+// directo con `localStorage.getItem(...)` y quedarse con permiso de
+// escritura sobre el repositorio, sin necesitar la contraseña del panel.
+//
+// TokenVault cifra el token con AES-GCM usando una clave derivada de la
+// contraseña del panel. Esa clave derivada NUNCA se guarda: solo vive en
+// memoria (variable de módulo) mientras dura la sesión activa. Si se recarga
+// la página o se cierra sesión, la clave se pierde y el token cifrado en
+// localStorage queda inútil hasta volver a iniciar sesión. Esto no es
+// invulnerable (si alguien compromete la página MIENTRAS la sesión está
+// activa, puede seguir leyendo el token en memoria), pero elimina el
+// escenario más común y barato: extraer el token directo de localStorage.
+const TokenVault = {
+    _key: null, // CryptoKey en memoria, nunca persistida
+
+    async unlock(password) {
+        const encoder = new TextEncoder();
+        const material = await crypto.subtle.digest('SHA-256', encoder.encode(password + 'khaos-token-key-v1'));
+        this._key = await crypto.subtle.importKey('raw', material, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+        await this._migrateLegacyPlaintextToken();
+    },
+
+    lock() {
+        this._key = null;
+    },
+
+    isUnlocked() {
+        return !!this._key;
+    },
+
+    async _migrateLegacyPlaintextToken() {
+        // Compatibilidad con instalaciones existentes: si hay un token viejo
+        // guardado en texto plano, lo cifra y borra el original en texto plano.
+        let legacy;
+        try { legacy = localStorage.getItem('khaos_github_token'); } catch(e) {}
+        if (legacy) {
+            await this.save(legacy);
+            try { localStorage.removeItem('khaos_github_token'); } catch(e) {}
+        }
+    },
+
+    async save(token) {
+        if (!this._key) throw new Error('TokenVault bloqueado: inicia sesión de nuevo antes de guardar el token.');
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const encoded = new TextEncoder().encode(token);
+        const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, this._key, encoded);
+        const payload = { iv: Array.from(iv), data: Array.from(new Uint8Array(cipher)) };
+        try { localStorage.setItem('khaos_github_token_enc', JSON.stringify(payload)); } catch(e) {}
+    },
+
+    async read() {
+        if (!this._key) return ''; // sesión sin desbloquear: no se puede leer el token
+        let raw;
+        try { raw = localStorage.getItem('khaos_github_token_enc'); } catch(e) {}
+        if (!raw) return '';
+        try {
+            const payload = JSON.parse(raw);
+            const iv = new Uint8Array(payload.iv);
+            const data = new Uint8Array(payload.data);
+            const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, this._key, data);
+            return new TextDecoder().decode(plain);
+        } catch(e) {
+            return ''; // clave incorrecta (p.ej. la contraseña cambió) o dato corrupto
+        }
+    },
+
+    hasToken() {
+        try { return !!localStorage.getItem('khaos_github_token_enc') || !!localStorage.getItem('khaos_github_token'); } catch(e) { return false; }
+    },
+
+    clear() {
+        try {
+            localStorage.removeItem('khaos_github_token_enc');
+            localStorage.removeItem('khaos_github_token');
+        } catch(e) {}
+    }
+};
+
 // ===== AUTH =====
 function checkAuth() {
     try {
         if (Security.validateSession()) {
+            // La sesión (localStorage) sigue vigente pero, si la página se
+            // recargó, la clave del TokenVault (que solo vive en memoria) se
+            // perdió. No hay forma segura de recuperarla sin la contraseña:
+            // el panel se ve con normalidad, pero para sincronizar con GitHub
+            // (leer/guardar el token) hace falta reingresar la contraseña una
+            // vez (ver getGithubToken()/saveGithubToken() en admin-b.js).
             showApp();
             return true;
         }
@@ -266,15 +368,25 @@ function checkAuth() {
     return false;
 }
 function showLogin() {
+    const firstRun = !Security.hasPassword();
     document.getElementById('loginScreen').classList.remove('hidden');
     document.getElementById('appLayout').style.display = 'none';
+
+    const title = document.getElementById('loginSubtitle');
+    const btn = document.getElementById('loginBtnText');
+    const confirmGroup = document.getElementById('loginConfirmGroup');
+    if (title) title.textContent = firstRun ? 'Crea la contraseña del panel' : 'Panel de Administración';
+    if (btn) btn.textContent = firstRun ? 'Crear contraseña y entrar' : 'Acceder al Panel';
+    if (confirmGroup) confirmGroup.style.display = firstRun ? 'block' : 'none';
 }
 function showApp() {
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('appLayout').style.display = 'flex';
 }
 function doLogin() {
-    if (Security.isLocked()) {
+    const firstRun = !Security.hasPassword();
+
+    if (!firstRun && Security.isLocked()) {
         const seconds = Security.getLockoutTime();
         document.getElementById('loginError').textContent = 'Demasiados intentos. Espera ' + seconds + ' segundos.';
         document.getElementById('loginError').classList.add('show');
@@ -283,23 +395,56 @@ function doLogin() {
 
     const password = document.getElementById('loginPassword').value;
 
-    Security.verifyPassword(password).then(function(valid) {
-        if (valid) {
-            try {
-                Security.createSession();
-                sessionStorage.removeItem('khaos_login_attempts');
-            } catch(e) {}
+    if (firstRun) {
+        const confirmInput = document.getElementById('loginPasswordConfirm');
+        const confirmPass = confirmInput ? confirmInput.value : '';
+        if (password.length < 8) {
+            document.getElementById('loginError').textContent = 'La contraseña debe tener al menos 8 caracteres.';
+            document.getElementById('loginError').classList.add('show');
+            return;
+        }
+        if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+            document.getElementById('loginError').textContent = 'Debe incluir mayúscula, minúscula y número.';
+            document.getElementById('loginError').classList.add('show');
+            return;
+        }
+        if (password !== confirmPass) {
+            document.getElementById('loginError').textContent = 'Las contraseñas no coinciden.';
+            document.getElementById('loginError').classList.add('show');
+            return;
+        }
+        Security.storePassword(password).then(function() {
+            return TokenVault.unlock(password);
+        }).then(function() {
+            Security.createSession();
+            try { localStorage.removeItem('khaos_login_attempts'); } catch(e) {}
             document.getElementById('loginError').classList.remove('show');
             document.getElementById('loginPassword').value = '';
+            if (document.getElementById('loginPasswordConfirm')) document.getElementById('loginPasswordConfirm').value = '';
             showApp();
             init();
-            showToast('Bienvenido al Panel de Administración', 'success');
+            showToast('Contraseña creada. Bienvenido al Panel de Administración', 'success');
+        });
+        return;
+    }
+
+    Security.verifyPassword(password).then(function(valid) {
+        if (valid) {
+            return TokenVault.unlock(password).then(function() {
+                Security.createSession();
+                try { localStorage.removeItem('khaos_login_attempts'); } catch(e) {}
+                document.getElementById('loginError').classList.remove('show');
+                document.getElementById('loginPassword').value = '';
+                showApp();
+                init();
+                showToast('Bienvenido al Panel de Administración', 'success');
+            });
         } else {
             Security.recordAttempt();
             var attempts = Security.getAttempts();
             var remaining = Security.maxAttempts - attempts.count;
-            document.getElementById('loginError').textContent = remaining > 0 
-                ? 'Contraseña incorrecta. ' + remaining + ' intentos restantes.' 
+            document.getElementById('loginError').textContent = remaining > 0
+                ? 'Contraseña incorrecta. ' + remaining + ' intentos restantes.'
                 : 'Cuenta bloqueada por 5 minutos.';
             document.getElementById('loginError').classList.add('show');
             document.getElementById('loginPassword').value = '';
@@ -313,6 +458,7 @@ function doLogin() {
 }
 function logout() {
     Security.clearSession();
+    TokenVault.lock();
     showLogin();
     showToast('Sesión cerrada', 'info');
 }
@@ -329,12 +475,21 @@ function changePassword() {
         }
         if (newPass !== confirm) { showToast('Las contraseñas no coinciden', 'error'); return; }
 
-        Security.storePassword(newPass).then(function() {
-            closeModal('passwordModalOverlay');
-            showToast('Contraseña actualizada correctamente', 'success');
-            document.getElementById('currentPassword').value = '';
-            document.getElementById('newPassword').value = '';
-            document.getElementById('confirmPassword').value = '';
+        // El token de GitHub está cifrado con una clave derivada de la
+        // contraseña actual: hay que descifrarlo ANTES de cambiarla y volver
+        // a cifrarlo con la clave nueva, o quedaría ilegible para siempre.
+        TokenVault.read().then(function(existingToken) {
+            Security.storePassword(newPass).then(function() {
+                return TokenVault.unlock(newPass);
+            }).then(function() {
+                return existingToken ? TokenVault.save(existingToken) : Promise.resolve();
+            }).then(function() {
+                closeModal('passwordModalOverlay');
+                showToast('Contraseña actualizada correctamente', 'success');
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+            });
         });
     });
 }
@@ -437,29 +592,43 @@ function filterByFamily(filter) {
 
 
 function init() {
-    loadProducts();
-    loadOrders();
-    loadCoupons();
-    loadTheme();
-    loadSidebarState();
-    loadSettings();
-    updateGithubUI();
-    loadOrientation();
-    initAutoHideSidebar();
-    createLoginParticles();
-    updateAllStats();
-    renderSidebarCategories();
-    renderCategoryChips();
-    renderTable();
-    updateDashboard();
-    renderCategoriesView();
-    renderInventory();
-    renderOrders();
-    initCharts();
-    initStorageListener();
-    initEventListeners();
-    initScrollEffects();
-    startRealtimeSimulation();
+    // BUG REAL ENCONTRADO: init() ejecutaba estos pasos en secuencia SIN
+    // manejo de errores. Se encontraron varias referencias a elementos del
+    // DOM que ya no existen en admin.html (#couponSearchBox, #catCountTotal
+    // — probablemente restos de una vista que se rediseñó sin limpiar el JS
+    // que la acompañaba). Como cualquier excepción sin capturar detiene la
+    // ejecución del resto de la función, CADA login estaba abortando el
+    // panel a mitad de camino: todo lo que viene después del primer paso
+    // que falla (gráficas, listeners de eventos, efectos de scroll, la
+    // notificación de "Panel cargado") nunca llegaba a ejecutarse. Ya se
+    // corrigieron los casos encontrados, pero además se aísla cada paso:
+    // así, si aparece OTRA referencia rota en el futuro, ese paso puntual
+    // falla (queda registrado en consola) sin tumbar el resto del panel.
+    // Los nombres se resuelven dinámicamente (window[nombre]) en vez de
+    // referenciar las funciones directo: así, si alguna ya no existe (como
+    // pasaba con "initStorageListener", que no está definida en ningún
+    // archivo — otra referencia obsoleta), no se rompe la construcción de
+    // la lista completa por un ReferenceError.
+    const stepNames = [
+        'loadProducts', 'loadOrders', 'loadCoupons', 'loadTheme', 'loadSidebarState',
+        'loadSettings', 'updateGithubUI', 'loadOrientation', 'initAutoHideSidebar',
+        'createLoginParticles', 'updateAllStats', 'renderSidebarCategories',
+        'renderCategoryChips', 'renderTable', 'updateDashboard', 'renderCategoriesView',
+        'renderInventory', 'renderOrders', 'initCharts', 'initStorageListener',
+        'initEventListeners', 'initScrollEffects', 'startRealtimeSimulation'
+    ];
+    for (const name of stepNames) {
+        const fn = window[name];
+        if (typeof fn !== 'function') {
+            console.error('[Khaos] init: "' + name + '" no existe (referencia obsoleta) — se omite este paso');
+            continue;
+        }
+        try {
+            fn();
+        } catch (e) {
+            console.error('[Khaos] init: fallo en "' + name + '" — el resto del panel sigue cargando:', e);
+        }
+    }
     showToast('Panel cargado correctamente', 'success');
     // Delayed re-render to ensure everything is ready
     setTimeout(() => { renderTable(); renderSidebarCategories(); renderCategoryChips(); }, 100);

@@ -970,14 +970,27 @@ function updateHeroStats() {
 function initScrollEffects() {
   const nav = document.getElementById('navHeader');
   const indicator = document.getElementById('scrollIndicator');
+  const cartFloat = document.getElementById('cartFloat');
+  const hero = document.getElementById('hero');
 
-  window.addEventListener('scroll', () => {
+  function onScroll() {
     const y = window.scrollY;
     nav.classList.toggle('scrolled', y > 50);
 
     const docHeight = document.documentElement.scrollHeight - window.innerHeight;
     indicator.style.width = docHeight > 0 ? (y / docHeight * 100) + '%' : '0%';
-  });
+
+    // El botón flotante del carrito solo aparece pasado el hero: antes se
+    // mostraba siempre, tapando las estadísticas ("70 Productos", etc.) que
+    // están justo donde cae el botón en esa posición de scroll.
+    if (cartFloat) {
+      const threshold = hero ? hero.offsetHeight - 120 : 400;
+      cartFloat.classList.toggle('visible', y > threshold);
+    }
+  }
+
+  window.addEventListener('scroll', onScroll);
+  onScroll(); // por si la página carga ya con scroll restaurado (ej. al volver atrás)
 }
 
 /* ===== TOAST ===== */
