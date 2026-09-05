@@ -18,14 +18,18 @@
     <div class="login-card">
         <div class="login-logo">K</div>
         <h1>Khaos Deportivo</h1>
-        <p>Panel de Administración</p>
+        <p id="loginSubtitle">Panel de Administración</p>
         <div class="login-form">
             <div class="form-group">
                 <label>Contraseña</label>
                 <input type="password" class="form-input" id="loginPassword" placeholder="Ingresa tu contraseña" onkeypress="if(event.key==='Enter'){event.preventDefault();doLogin();}">
             </div>
+            <div class="form-group" id="loginConfirmGroup" style="display:none;">
+                <label>Confirmar contraseña</label>
+                <input type="password" class="form-input" id="loginPasswordConfirm" placeholder="Repite la contraseña" onkeypress="if(event.key==='Enter'){event.preventDefault();doLogin();}">
+            </div>
             <div class="login-error" id="loginError">Contraseña incorrecta. Intenta de nuevo.</div>
-            <button type="button" class="btn btn-primary login-btn" onclick="doLogin()"><i class="fas fa-lock"></i> Acceder al Panel</button>
+            <button type="button" class="btn btn-primary login-btn" onclick="doLogin()"><i class="fas fa-lock"></i> <span id="loginBtnText">Acceder al Panel</span></button>
         </div>
         <div class="login-hint" style="display:none;"></div>
     </div>
