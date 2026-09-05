@@ -103,7 +103,10 @@ svg.nav-logo-mark{background:url('../logo.jpeg') center/cover no-repeat!importan
 .trust-text p{font-size:11px;color:var(--fog);font-weight:500}
 
 /* CATALOG - rest unchanged from previous - abbreviated for size, keep full styles */
-.catalog-section{max-width:1400px;margin:0 auto;padding:60px 32px 80px}
+/* scroll-margin-top: el header es fixed (72px, 64px al hacer scroll/mobile);
+   sin esto, el link "Catálogo" del menú (href="#catalogo") deja el título de
+   la sección tapado detrás del header al saltar con el ancla. */
+.catalog-section{max-width:1400px;margin:0 auto;padding:60px 32px 80px;scroll-margin-top:96px}
 .catalog-header{text-align:center;margin-bottom:48px}
 .catalog-header h2{font-family:var(--font-display);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;color:var(--white);margin-bottom:12px}
 .catalog-header p{color:var(--fog);font-size:15px;max-width:500px;margin:0 auto}
@@ -193,7 +196,13 @@ svg.nav-logo-mark{background:url('../logo.jpeg') center/cover no-repeat!importan
 .modal-btn-primary:disabled{opacity:.4;cursor:not-allowed}
 .modal-close{position:absolute;top:16px;right:16px;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.1);color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10}
 .stock-counter{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:var(--r-sm);font-size:12px;font-weight:600;color:var(--warning);margin-bottom:16px}
-.cart-float{position:fixed;bottom:28px;right:28px;z-index:150;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:var(--void);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 30px rgba(212,175,55,0.4)}
+/* Antes no tenía ningún control de visibilidad: quedaba fijo en pantalla
+   desde el primer momento, tapando las estadísticas del hero y, al hacer
+   scroll, el texto de las tarjetas de producto. Ahora aparece con una
+   transición suave solo después de pasar el hero (ver toggleCartFloatVisibility
+   en shared.js), igual que ya existe un botón "Carrito" en el header. */
+.cart-float{position:fixed;bottom:28px;right:28px;z-index:150;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:var(--void);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 30px rgba(212,175,55,0.4);opacity:0;transform:translateY(16px) scale(.9);pointer-events:none;transition:opacity .3s var(--ease),transform .3s var(--ease)}
+.cart-float.visible{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
 .cart-count{position:absolute;top:-4px;right:-4px;width:26px;height:26px;background:var(--danger);color:white;border-radius:50%;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;border:3px solid var(--void)}
 .cart-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:180}
 .cart-overlay.active{display:block}
