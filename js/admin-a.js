@@ -350,6 +350,37 @@ const TokenVault = {
     }
 };
 
+// ===== SESIÓN CONTRA EL BACKEND (D1) =====
+// El catálogo ahora se publica en Cloudflare D1 vía el propio Worker, no con
+// un commit a GitHub. Esta sesión autoriza esas llamadas: se abre con la
+// misma contraseña del panel (ver doLogin) y el token vive solo en memoria.
+// La primera vez que esto corre contra el servidor, la contraseña que se
+// mande queda registrada ahí como la contraseña del panel; después, cada
+// login verifica contra ese registro.
+const AdminSession = {
+    token: null,
+
+    async establish(password) {
+        try {
+            const res = await fetch('/api/admin/session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password })
+            });
+            if (!res.ok) { this.token = null; return false; }
+            const data = await res.json();
+            this.token = data.token || null;
+            return !!this.token;
+        } catch(e) {
+            this.token = null;
+            return false;
+        }
+    },
+
+    isActive() { return !!this.token; },
+    clear() { this.token = null; }
+};
+
 // ===== AUTH =====
 function checkAuth() {
     try {
@@ -416,6 +447,8 @@ function doLogin() {
         Security.storePassword(password).then(function() {
             return TokenVault.unlock(password);
         }).then(function() {
+            return AdminSession.establish(password);
+        }).then(function() {
             Security.createSession();
             try { localStorage.removeItem('khaos_login_attempts'); } catch(e) {}
             document.getElementById('loginError').classList.remove('show');
@@ -431,13 +464,19 @@ function doLogin() {
     Security.verifyPassword(password).then(function(valid) {
         if (valid) {
             return TokenVault.unlock(password).then(function() {
+                return AdminSession.establish(password);
+            }).then(function(serverOk) {
                 Security.createSession();
                 try { localStorage.removeItem('khaos_login_attempts'); } catch(e) {}
                 document.getElementById('loginError').classList.remove('show');
                 document.getElementById('loginPassword').value = '';
                 showApp();
                 init();
-                showToast('Bienvenido al Panel de Administración', 'success');
+                if (!serverOk) {
+                    showToast('Bienvenido. No se pudo confirmar la sesión con el servidor: revisa tu conexión antes de publicar cambios.', 'warning');
+                } else {
+                    showToast('Bienvenido al Panel de Administración', 'success');
+                }
             });
         } else {
             Security.recordAttempt();
@@ -459,6 +498,7 @@ function doLogin() {
 function logout() {
     Security.clearSession();
     TokenVault.lock();
+    AdminSession.clear();
     showLogin();
     showToast('Sesión cerrada', 'info');
 }
@@ -681,7 +721,7 @@ function loadProducts() {
     nextId = 1;
     saveProducts();
 }
-function saveProducts() { try { localStorage.setItem('khaos_admin_products', JSON.stringify(products)); } catch(e) {} updateAllStats(); renderTable(); updateDashboard(); renderCategoriesView(); renderInventory(); updateCharts(); }
+function saveProducts() { try { localStorage.setItem('khaos_admin_products', JSON.stringify(products)); } catch(e) {} updateAllStats(); renderTable(); updateDashboard(); renderCategoriesView(); renderInventory(); updateCharts(); try { if (window.PublishStatus) PublishStatus.refreshUI(); } catch(e) {} }
 
 function loadOrders() {
     try {
@@ -766,11 +806,85 @@ function updateOrderStats() {
     document.getElementById('orderTotal').textContent = orders.length;
     document.getElementById('orderPending').textContent = orders.filter(o => o.status === 'pending').length;
     document.getElementById('orderDelivered').textContent = orders.filter(o => o.status === 'delivered').length;
-    document.getElementById('orderRevenue').textContent = '$' + orders.reduce((s, o) => s + o.total, 0).toLocaleString('es-CO');
+    document.getElementById('orderRevenue').textContent = '$' + orders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + o.total, 0).toLocaleString('es-CO');
     const badge = document.getElementById('sidebarOrderCount');
     const pending = orders.filter(o => o.status === 'pending').length;
     badge.textContent = pending;
     badge.style.display = pending > 0 ? 'flex' : 'none';
+}
+
+// ===== PEDIDOS: cargar desde el servidor (base de datos real) =====
+function fetchOrdersFromServer() {
+    if (!window.AdminSession || !AdminSession.isActive()) { renderOrders(); updateOrderStats(); return; }
+    showLoading('Cargando pedidos...');
+    fetch('/api/admin/pedidos', { headers: { 'Authorization': 'Bearer ' + AdminSession.token } })
+        .then(function(res) { if (res.status === 401) { AdminSession.clear(); throw new Error('unauth'); } return res.json(); })
+        .then(function(data) {
+            orders = Array.isArray(data.pedidos) ? data.pedidos : [];
+            const maxId = orders.reduce(function(m, o) { return Math.max(m, o.id || 0); }, 0);
+            nextOrderId = maxId + 1;
+            renderOrders();
+            updateOrderStats();
+        })
+        .catch(function() { renderOrders(); updateOrderStats(); })
+        .then(function() { hideLoading(); });
+}
+
+// ===== ANALÍTICAS: cargar agregados reales desde el servidor =====
+let lastAnalytics = null;
+function fetchAnalyticsFromServer() {
+    if (!window.AdminSession || !AdminSession.isActive()) return;
+    fetch('/api/admin/analytics', { headers: { 'Authorization': 'Bearer ' + AdminSession.token } })
+        .then(function(res) { if (res.status === 401) { AdminSession.clear(); throw new Error('unauth'); } return res.json(); })
+        .then(function(data) { lastAnalytics = data; renderAnalyticsPedidos(data); })
+        .catch(function() {});
+}
+
+function renderAnalyticsPedidos(data) {
+    const el = document.getElementById('analyticsPedidosSection');
+    if (!el || !data) return;
+
+    const estadoLabels = { pending: 'Pendientes', processing: 'En proceso', shipped: 'Enviados', delivered: 'Entregados', cancelled: 'Cancelados' };
+    const porEstadoHtml = (data.porEstado || []).map(function(r) {
+        return '<div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;">' + r.n + '</div><div class="stat-card-label" style="font-size:11px;">' + (estadoLabels[r.status] || r.status) + '</div></div>';
+    }).join('');
+
+    const topProductosHtml = (data.topProductos || []).length ? (data.topProductos || []).map(function(p) {
+        const confiabilidad = p.pedidos > 0 ? Math.round(100 - (p.cancelados / (p.pedidos + p.cancelados)) * 100) : 100;
+        const color = confiabilidad >= 90 ? 'var(--success)' : (confiabilidad >= 70 ? 'var(--gold)' : 'var(--danger)');
+        return '<tr><td>' + (p.name || 'Producto #' + p.productId) + '</td><td>' + p.unidades + '</td><td>' + p.pedidos + '</td><td>' + p.cancelados + '</td><td style="color:' + color + ';font-weight:800;">' + confiabilidad + '%</td></tr>';
+    }).join('') : '<tr><td colspan="5" style="text-align:center;color:var(--fog);padding:20px;">Todavía no hay pedidos suficientes</td></tr>';
+
+    const motivosHtml = (data.motivosCancelacion || []).length ? (data.motivosCancelacion || []).map(function(m) {
+        return '<tr><td>' + m.cancel_reason + '</td><td>' + m.n + '</td></tr>';
+    }).join('') : '<tr><td colspan="2" style="text-align:center;color:var(--fog);padding:20px;">Sin cancelaciones registradas</td></tr>';
+
+    const cuponesHtml = (data.cupones || []).length ? (data.cupones || []).map(function(c) {
+        return '<tr><td>' + c.coupon + '</td><td>' + c.usos + '</td><td>$' + (c.ahorrado || 0).toLocaleString('es-CO') + '</td></tr>';
+    }).join('') : '<tr><td colspan="3" style="text-align:center;color:var(--fog);padding:20px;">Ningún cupón se ha usado todavía</td></tr>';
+
+    el.innerHTML = `
+        <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin:20px 0;">
+            <div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;">${data.pedidos || 0}</div><div class="stat-card-label" style="font-size:11px;">Pedidos totales</div></div>
+            <div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;">$${(data.ingresos || 0).toLocaleString('es-CO')}</div><div class="stat-card-label" style="font-size:11px;">Ingresos (sin cancelados)</div></div>
+            <div class="stat-card" style="padding:14px 16px;"><div class="stat-card-value" style="font-size:22px;">$${(data.ticketPromedio || 0).toLocaleString('es-CO')}</div><div class="stat-card-label" style="font-size:11px;">Ticket promedio</div></div>
+            ${porEstadoHtml}
+        </div>
+        <div class="card" style="margin-bottom:20px;">
+            <div class="card-header"><h3><i class="fas fa-shield-alt"></i> Confiabilidad por producto</h3></div>
+            <div class="card-body"><div class="table-wrap"><table class="data-table"><thead><tr><th>Producto</th><th>Unidades vendidas</th><th>Pedidos</th><th>Cancelados</th><th>Confiabilidad</th></tr></thead><tbody>${topProductosHtml}</tbody></table></div></div>
+        </div>
+        <div class="chart-grid">
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-exclamation-circle"></i> Motivos de cancelación</h3></div>
+                <div class="card-body"><div class="table-wrap"><table class="data-table"><thead><tr><th>Motivo</th><th>Veces</th></tr></thead><tbody>${motivosHtml}</tbody></table></div></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-ticket-alt"></i> Uso real de cupones</h3></div>
+                <div class="card-body"><div class="table-wrap"><table class="data-table"><thead><tr><th>Código</th><th>Usos</th><th>Ahorrado</th></tr></thead><tbody>${cuponesHtml}</tbody></table></div></div>
+            </div>
+        </div>
+    `;
 }
 
 function updateDashboard() {
@@ -1079,7 +1193,12 @@ function renderTable() {
         const isSelected = selectedIds.has(p.id);
         const catColor = categoryColors[p.category] || '#888';
         const meta = getCategoryMeta(p.category);
-        return `<tr class="${isSelected ? 'selected' : ''}"><td data-label="Seleccionar"><div class="checkbox ${isSelected ? 'checked' : ''}" onclick="toggleSelect(${p.id}, event)">${isSelected ? '<i class="fas fa-check"></i>' : ''}</div></td><td data-label="Producto"><div class="product-cell"><img class="product-thumb" src="${p.image || ''}" onerror="this.style.opacity='0.3'"><div class="product-cell-info"><div class="product-cell-name">${p.name}</div><div class="product-cell-code">${p.code}</div></div></div></td><td data-label="Categoría"><div style="display:flex;flex-direction:column;gap:2px;"><span class="badge" style="background:${catColor}15;color:${catColor};border-color:${catColor}30;font-size:11px;padding:3px 10px;">${categoryNames[p.category] || p.category}</span><span style="font-size:10px;color:var(--fog);">${meta.groupLabel} > ${meta.familyLabel}</span></div></td><td data-label="Precio"><div style="font-weight:900;color:var(--gold-light);font-size:15px;">$${Number(p.price||0).toLocaleString('es-CO')}</div>${p.oldPrice ? `<div style="font-size:11px;color:var(--fog);text-decoration:line-through;">$${Number(p.oldPrice).toLocaleString('es-CO')}</div>` : ''}</td><td data-label="Tallas"><div class="size-pills">${sizesHtml}${moreSizes}</div></td><td data-label="Estado">${badgeHtml}</td><td data-label="Acciones"><div class="action-btns"><button class="action-btn view" onclick="viewProduct(${p.id})" title="Ver"><i class="fas fa-eye"></i></button><button class="action-btn edit" onclick="editProduct(${p.id})" title="Editar"><i class="fas fa-pen"></i></button><button class="action-btn delete" onclick="deleteProduct(${p.id})" title="Eliminar"><i class="fas fa-trash"></i></button></div></td></tr>`;
+        const hasDriveImage = (p.image && p.image.indexOf('drive.google.com') !== -1) || (p.images||[]).some(u => u && u.indexOf('drive.google.com') !== -1);
+        const isPublished = window.PublishStatus ? PublishStatus.isProductPublished(p) : true;
+        const publishBadge = isPublished
+            ? '<span class="badge badge-published"><i class="fas fa-check-circle"></i> Publicado</span>'
+            : '<span class="badge badge-unpublished"><i class="fas fa-clock"></i> Sin publicar</span>';
+        return `<tr class="${isSelected ? 'selected' : ''}" data-id="${p.id}"><td data-label="Seleccionar"><div class="checkbox ${isSelected ? 'checked' : ''}" onclick="toggleSelect(${p.id}, event)">${isSelected ? '<i class="fas fa-check"></i>' : ''}</div></td><td data-label="Producto"><div class="product-cell"><div class="product-thumb-wrap"><img class="product-thumb" src="${p.image || ''}" onerror="this.style.opacity='0.3'">${hasDriveImage ? '<span class="drive-warning-badge" title="Esta imagen sigue alojada en Google Drive — puede dejar de cargar"><i class="fas fa-exclamation-triangle"></i></span>' : ''}</div><div class="product-cell-info"><div class="product-cell-name">${p.name}</div><div class="product-cell-code">${p.code}</div></div></div></td><td data-label="Categoría"><div style="display:flex;flex-direction:column;gap:2px;"><span class="badge" style="background:${catColor}15;color:${catColor};border-color:${catColor}30;font-size:11px;padding:3px 10px;">${categoryNames[p.category] || p.category}</span><span style="font-size:10px;color:var(--fog);">${meta.groupLabel} > ${meta.familyLabel}</span></div></td><td data-label="Precio"><div style="font-weight:900;color:var(--gold-light);font-size:15px;">$${Number(p.price||0).toLocaleString('es-CO')}</div>${p.oldPrice ? `<div style="font-size:11px;color:var(--fog);text-decoration:line-through;">$${Number(p.oldPrice).toLocaleString('es-CO')}</div>` : ''}</td><td data-label="Tallas"><div class="size-pills">${sizesHtml}${moreSizes}</div></td><td data-label="Estado"><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;">${badgeHtml}${publishBadge}</div></td><td data-label="Acciones"><div class="action-btns"><button class="action-btn view" onclick="viewProduct(${p.id})" title="Ver"><i class="fas fa-eye"></i></button><button class="action-btn edit" onclick="editProduct(${p.id})" title="Editar"><i class="fas fa-pen"></i></button><button class="action-btn" onclick="duplicateProduct(${p.id})" title="Duplicar"><i class="fas fa-clone"></i></button><button class="action-btn delete" onclick="deleteProduct(${p.id})" title="Eliminar"><i class="fas fa-trash"></i></button></div></td></tr>`;
     }).join('');
 }
 
@@ -1137,10 +1256,11 @@ function openProductModal() {
     document.getElementById('prodCategory').value = 'nino-sintetica-corta';
     document.getElementById('prodPrice').value = '';
     document.getElementById('prodOldPrice').value = '';
-    document.getElementById('prodImage').value = '';
     document.getElementById('prodDesc').value = '';
     document.getElementById('prodBadge').value = '';
     initSizesEditor([], []);
+    if (window.ImageManager) ImageManager.reset();
+    if (window.updateLivePreview) updateLivePreview();
     openModal('productModalOverlay');
 }
 function editProduct(id) {
@@ -1152,13 +1272,25 @@ function editProduct(id) {
     document.getElementById('prodCategory').value = p.category;
     document.getElementById('prodPrice').value = p.price;
     document.getElementById('prodOldPrice').value = p.oldPrice || '';
-    document.getElementById('prodImage').value = p.image || '';
     document.getElementById('prodDesc').value = p.desc || '';
     document.getElementById('prodBadge').value = p.badge || '';
     initSizesEditor(p.sizes || [], p.outOfStock || []);
+    if (window.ImageManager) ImageManager.load(p.images && p.images.length ? p.images.slice() : (p.image ? [p.image] : []));
+    if (window.updateLivePreview) updateLivePreview();
     openModal('productModalOverlay');
 }
 function viewProduct(id) { const p = products.find(x => x.id === id); if (p) showToast(`${p.name} — $${p.price.toLocaleString('es-CO')}`, 'info'); }
+function duplicateProduct(id) {
+    const p = products.find(x => x.id === id); if (!p) return;
+    const copy = JSON.parse(JSON.stringify(p));
+    copy.id = nextId++;
+    copy.name = copy.name + ' (copia)';
+    products.push(copy);
+    saveProducts();
+    renderCategoryChips();
+    showToast('Producto duplicado, ajusta el código antes de publicar', 'success');
+    editProduct(copy.id);
+}
 function saveProduct() {
     const editId = document.getElementById('editId').value;
     const name = document.getElementById('prodName').value.trim();
@@ -1166,7 +1298,8 @@ function saveProduct() {
     const category = document.getElementById('prodCategory').value;
     const price = parseInt(document.getElementById('prodPrice').value) || 0;
     const oldPrice = parseInt(document.getElementById('prodOldPrice').value) || 0;
-    const image = document.getElementById('prodImage').value.trim();
+    const images = window.ImageManager ? ImageManager.getImages() : [];
+    const image = images[0] || '';
     const desc = document.getElementById('prodDesc').value.trim();
     const badge = document.getElementById('prodBadge').value;
     if (!name) { showToast('El nombre es obligatorio', 'error'); return; }
@@ -1175,8 +1308,8 @@ function saveProduct() {
     const sizes = []; const outOfStock = [];
     allSizes.forEach(s => { if (currentSizes[s].active) sizes.push(s); if (currentSizes[s].out) outOfStock.push(s); });
     if (sizes.length === 0) { showToast('Selecciona al menos una talla', 'error'); return; }
-    if (editId) { const idx = products.findIndex(p => p.id == editId); if (idx >= 0) products[idx] = { id: parseInt(editId), name, code, category, price, oldPrice, image, sizes, outOfStock, desc, badge: badge || null }; showToast('Producto actualizado', 'success'); }
-    else { products.push({ id: nextId++, name, code, category, price, oldPrice, image, sizes, outOfStock, desc, badge: badge || null }); showToast('Producto creado', 'success'); }
+    if (editId) { const idx = products.findIndex(p => p.id == editId); if (idx >= 0) products[idx] = { id: parseInt(editId), name, code, category, price, oldPrice, image, images, sizes, outOfStock, desc, badge: badge || null }; showToast('Producto actualizado', 'success'); }
+    else { products.push({ id: nextId++, name, code, category, price, oldPrice, image, images, sizes, outOfStock, desc, badge: badge || null }); showToast('Producto creado', 'success'); }
     saveProducts(); renderCategoryChips(); closeModal('productModalOverlay');
 }
 function deleteProduct(id) { showConfirm('Eliminar producto', '¿Eliminar este producto? No se puede deshacer.', () => { products = products.filter(p => p.id !== id); selectedIds.delete(id); saveProducts(); renderCategoryChips(); showToast('Producto eliminado', 'success'); }); }
@@ -1222,17 +1355,60 @@ function renderOrders() {
                     ${o.coupon ? `<div style="font-size:11px;color:var(--gold);"><i class="fas fa-ticket-alt"></i> ${o.coupon}</div>` : ''}
                 </div>
             </div>
-            <div style="display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--stone);">
+            ${o.status === 'cancelled' && o.cancelReason ? `<div style="font-size:12px;color:var(--danger);margin-top:8px;"><i class="fas fa-exclamation-circle"></i> Motivo: ${o.cancelReason}</div>` : ''}
+            <div style="display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--stone);flex-wrap:wrap;">
                 ${o.status === 'pending' ? `<button class="btn btn-success btn-sm" onclick="updateOrderStatus(${o.id},'processing')"><i class="fas fa-check"></i> Procesar</button>` : ''}
                 ${o.status === 'processing' ? `<button class="btn btn-primary btn-sm" onclick="updateOrderStatus(${o.id},'shipped')"><i class="fas fa-shipping-fast"></i> Enviar</button>` : ''}
                 ${o.status === 'shipped' ? `<button class="btn btn-success btn-sm" onclick="updateOrderStatus(${o.id},'delivered')"><i class="fas fa-check-double"></i> Entregar</button>` : ''}
+                ${['pending','processing','shipped'].includes(o.status) ? `<button class="btn btn-danger btn-sm" onclick="cancelOrderWithReason(${o.id})"><i class="fas fa-ban"></i> Cancelar</button>` : ''}
                 <button class="btn btn-ghost btn-sm" onclick="deleteOrder(${o.id})"><i class="fas fa-trash"></i></button>
             </div>
         </div>`;
     }).join('');
 }
-function updateOrderStatus(id, status) { const o = orders.find(x => x.id === id); if (o) { o.status = status; saveOrders(); showToast(`Pedido #${String(id).padStart(4,'0')} actualizado`, 'success'); addNotification('order', `Pedido #${String(id).padStart(4,'0')} marcado como ${status}`); } }
-function deleteOrder(id) { showConfirm('Eliminar pedido', '¿Eliminar este pedido?', () => { orders = orders.filter(o => o.id !== id); saveOrders(); showToast('Pedido eliminado', 'success'); }); }
+function updateOrderStatus(id, status, cancelReason) {
+    const o = orders.find(x => x.id === id);
+    if (!o) return;
+    if (!window.AdminSession || !AdminSession.isActive()) { showToast('Tu sesión expiró, vuelve a iniciar sesión', 'error'); return; }
+    fetch('/api/admin/pedido/estado', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + AdminSession.token },
+        body: JSON.stringify({ id: id, status: status, cancelReason: cancelReason || '' })
+    })
+        .then(function(res) { if (res.status === 401) { AdminSession.clear(); throw new Error('unauth'); } return res.json(); })
+        .then(function() {
+            o.status = status;
+            o.cancelReason = status === 'cancelled' ? (cancelReason || '') : null;
+            renderOrders();
+            updateOrderStats();
+            showToast(`Pedido #${String(id).padStart(4,'0')} actualizado`, 'success');
+            addNotification('order', `Pedido #${String(id).padStart(4,'0')} marcado como ${status}`);
+        })
+        .catch(function() { showToast('No se pudo actualizar el pedido', 'error'); });
+}
+function cancelOrderWithReason(id) {
+    const reason = prompt('¿Por qué se cancela este pedido? (ej: no correspondía a la foto, talla equivocada, cliente se arrepintió)');
+    if (reason === null) return; // usuario canceló el prompt, no hacer nada
+    updateOrderStatus(id, 'cancelled', reason.trim());
+}
+function deleteOrder(id) {
+    showConfirm('Eliminar pedido', '¿Eliminar este pedido?', () => {
+        if (!window.AdminSession || !AdminSession.isActive()) { showToast('Tu sesión expiró, vuelve a iniciar sesión', 'error'); return; }
+        fetch('/api/admin/pedido/eliminar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + AdminSession.token },
+            body: JSON.stringify({ id: id })
+        })
+            .then(function(res) { if (res.status === 401) { AdminSession.clear(); throw new Error('unauth'); } return res.json(); })
+            .then(function() {
+                orders = orders.filter(o => o.id !== id);
+                renderOrders();
+                updateOrderStats();
+                showToast('Pedido eliminado', 'success');
+            })
+            .catch(function() { showToast('No se pudo eliminar el pedido', 'error'); });
+    });
+}
 function filterOrders(status) { currentOrderFilter = status; renderOrders(); toggleDropdown('orderFilterDropdown'); }
 // ===== PEDIDO MANUAL =====
 let orderItems = [];

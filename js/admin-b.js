@@ -117,8 +117,7 @@ function saveOrder() {
     }
     const total = subtotal - discount;
 
-    const order = {
-        id: nextOrderId++,
+    const orderPayload = {
         customer: customer,
         phone: phone,
         address: address,
@@ -127,15 +126,37 @@ function saveOrder() {
         discount: discount,
         coupon: couponCode,
         total: total,
-        status: status,
-        date: new Date().toISOString()
+        status: status
     };
 
-    orders.unshift(order);
-    saveOrders();
-    closeModal('orderModalOverlay');
-    showToast(`Pedido #${String(order.id).padStart(4,'0')} creado exitosamente`, 'success');
-    addNotification('order', `Nuevo pedido de ${order.customer} — $${order.total.toLocaleString('es-CO')}${couponCode ? ' (Cupón: ' + couponCode + ')' : ''}`);
+    if (!window.AdminSession || !AdminSession.isActive()) {
+        showToast('Tu sesión expiró, vuelve a iniciar sesión para crear el pedido', 'error');
+        return;
+    }
+
+    showLoading('Guardando pedido...');
+    fetch('/api/admin/pedido', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + AdminSession.token },
+        body: JSON.stringify(orderPayload)
+    })
+        .then(function(res) {
+            if (res.status === 401) { AdminSession.clear(); throw new Error('unauth'); }
+            return res.json();
+        })
+        .then(function(data) {
+            const order = Object.assign({}, orderPayload, { id: data.id, date: data.date || new Date().toISOString() });
+            orders.unshift(order);
+            renderOrders();
+            updateOrderStats();
+            closeModal('orderModalOverlay');
+            showToast(`Pedido #${String(order.id).padStart(4,'0')} creado exitosamente`, 'success');
+            addNotification('order', `Nuevo pedido de ${order.customer} — $${order.total.toLocaleString('es-CO')}${couponCode ? ' (Cupón: ' + couponCode + ')' : ''}`);
+        })
+        .catch(function() {
+            showToast('No se pudo guardar el pedido en el servidor', 'error');
+        })
+        .then(function() { hideLoading(); });
 }
 
 // ===== PEDIDO SIMULADO (deshabilitado - solo manual) =====
@@ -758,9 +779,9 @@ function switchView(view, el) {
     document.getElementById('sidebar').classList.remove('open');
     document.getElementById('sidebarBackdrop').classList.remove('active');
     unlockScroll();
-    if (view === 'analytics') setTimeout(updateCharts, 100);
+    if (view === 'analytics') { setTimeout(updateCharts, 100); fetchAnalyticsFromServer(); }
     if (view === 'inventory') renderInventory();
-    if (view === 'orders') renderOrders();
+    if (view === 'orders') fetchOrdersFromServer();
     if (view === 'categories') renderCategoriesView();
     if (view === 'products') { renderTable(); renderCategoryChips(); renderSidebarCategories(); }
 }
@@ -1085,17 +1106,16 @@ async function saveGithubToken() {
 function updateGithubUI() {
     const btn = document.getElementById('githubSyncBtn');
     const status = document.getElementById('githubSyncStatus');
-    const hasToken = TokenVault.hasToken();
 
-    if (hasToken) {
-        btn.disabled = false;
-        status.innerHTML = '<span style="color:var(--success);"><i class="fas fa-check-circle"></i> Configurado</span>';
+    if (AdminSession.isActive()) {
+        if (btn) btn.disabled = false;
+        if (status) status.innerHTML = '<span style="color:var(--success);"><i class="fas fa-check-circle"></i> Conectado a la base de datos</span>';
     } else {
-        btn.disabled = true;
-        status.textContent = 'No configurado — ingresa tu token en Ajustes';
+        if (btn) btn.disabled = true;
+        if (status) status.textContent = 'Vuelve a iniciar sesión para poder publicar';
     }
 
-    // Cargar última sync
+    // Cargar última publicación
     try {
         const last = localStorage.getItem('khaos_last_sync');
         if (last) document.getElementById('githubLastSync').textContent = new Date(last).toLocaleString('es-CO');
@@ -1125,69 +1145,47 @@ async function testGithubConnection() {
     }
 }
 
+// Publica el catálogo actual (en memoria) directo en Cloudflare D1 a través
+// del Worker. Reemplaza el commit a GitHub que hacía esta función antes —
+// se mantiene el nombre para no tener que tocar cada botón/onclick que la
+// llama, aunque ya no tiene nada que ver con GitHub.
 async function syncToGithub() {
-    const token = await getGithubToken();
-    if (!token) { showToast('Token no configurado', 'error'); return; }
-    if (products.length === 0) { showToast('No hay productos para sincronizar', 'warning'); return; }
+    if (!AdminSession.isActive()) {
+        showToast('Sesión no válida, vuelve a iniciar sesión', 'error');
+        return;
+    }
+    if (products.length === 0) { showToast('No hay productos para publicar', 'warning'); return; }
 
-    showLoading('Sincronizando con GitHub...');
+    showLoading('Publicando catálogo...');
 
     try {
-        // 1. Obtener SHA del archivo actual (si existe)
-        let sha = null;
-        try {
-            const getRes = await fetch(
-                `${GITHUB_CONFIG.apiBase}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}?ref=${GITHUB_CONFIG.branch}`,
-                { headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' } }
-            );
-            if (getRes.ok) {
-                const data = await getRes.json();
-                sha = data.sha;
-            }
-        } catch(e) {}
+        const res = await fetch('/api/admin/sync', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + AdminSession.token
+            },
+            body: JSON.stringify({ productos: products, cupones: coupons })
+        });
 
-        // 2. Preparar contenido
-        const content = {
-            productos: products,
-            cupones: coupons,
-            fechaActualizacion: new Date().toISOString(),
-            version: 1
-        };
-        const base64Content = btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2))));
-
-        // 3. Subir archivo
-        const body = {
-            message: `Actualización catálogo — ${new Date().toLocaleString('es-CO')}`,
-            content: base64Content,
-            branch: GITHUB_CONFIG.branch
-        };
-        if (sha) body.sha = sha;
-
-        const putRes = await fetch(
-            `${GITHUB_CONFIG.apiBase}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`,
-            {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(body)
-            }
-        );
-
-        if (putRes.ok || putRes.status === 201) {
+        if (res.ok) {
             const now = new Date().toISOString();
             try { localStorage.setItem('khaos_last_sync', now); } catch(e) {}
-            document.getElementById('githubLastSync').textContent = new Date(now).toLocaleString('es-CO');
-            showToast('✅ Catálogo sincronizado con GitHub', 'success');
-            addNotification('system', 'Catálogo sincronizado exitosamente');
+            const lastSyncEl = document.getElementById('githubLastSync');
+            if (lastSyncEl) lastSyncEl.textContent = new Date(now).toLocaleString('es-CO');
+            try { if (window.PublishStatus) PublishStatus.markPublished(products); } catch(e) {}
+            showToast('✅ Catálogo publicado', 'success');
+            addNotification('system', 'Catálogo publicado exitosamente');
+        } else if (res.status === 401) {
+            showToast('Sesión vencida, vuelve a iniciar sesión y publica de nuevo', 'error');
+            AdminSession.clear();
+            updateGithubUI();
         } else {
-            const err = await putRes.json();
-            showToast(`❌ Error GitHub: ${err.message || 'Desconocido'}`, 'error');
+            const err = await res.json().catch(() => ({}));
+            showToast(`❌ Error al publicar: ${err.error || 'Desconocido'}`, 'error');
         }
     } catch(e) {
-        showToast('Error al sincronizar: ' + e.message, 'error');
+        showToast('Error de red al publicar el catálogo', 'error');
     } finally {
         hideLoading();
     }

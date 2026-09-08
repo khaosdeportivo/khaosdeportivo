@@ -1,0 +1,6 @@
+.git
+.wrangler
+wrangler.toml
+README.md
+deploy.bat
+src

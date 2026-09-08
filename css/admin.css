@@ -874,3 +874,73 @@ input, select, textarea { font-size: 16px; }
 
 /* Botón de orientación dentro del menú más opciones */
 /* orientationBtn removed - dead code */
+
+/* ============================================================
+   REDISEÑO PANEL — banners de estado, subida de imágenes,
+   vista previa en vivo y estado Publicado/Sin publicar
+   ============================================================ */
+
+/* ---- Banner de estado de publicación (Dashboard) ---- */
+.publish-banner { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:14px 20px; border-radius:var(--r-lg); margin-bottom:14px; font-size:13px; font-weight:700; flex-wrap:wrap; border:1px solid var(--stone); }
+.publish-banner.dirty { background:rgba(245,158,11,0.08); border-color:rgba(245,158,11,0.25); color:var(--warning); }
+.publish-banner.dirty i { margin-right:8px; }
+.publish-banner.clean { background:rgba(34,197,94,0.08); border-color:rgba(34,197,94,0.25); color:var(--success); }
+.publish-banner.warn { background:rgba(239,68,68,0.08); border-color:rgba(239,68,68,0.25); color:var(--danger); }
+.publish-banner strong { color:inherit; }
+
+/* ---- Badges Publicado / Sin publicar (lista de productos) ---- */
+.badge-published { background:rgba(34,197,94,0.1); color:var(--success); border:1px solid rgba(34,197,94,0.2); font-size:10px; padding:3px 10px; }
+.badge-unpublished { background:rgba(245,158,11,0.1); color:var(--warning); border:1px solid rgba(245,158,11,0.2); font-size:10px; padding:3px 10px; }
+
+/* ---- Aviso de imagen en Google Drive (lista de productos) ---- */
+.product-thumb-wrap { position:relative; flex-shrink:0; }
+.drive-warning-badge { position:absolute; bottom:-4px; right:-4px; width:18px; height:18px; border-radius:50%; background:var(--danger); color:#fff; display:flex; align-items:center; justify-content:center; font-size:9px; border:2px solid var(--charcoal); }
+
+/* ---- Modal de producto: layout de dos columnas ---- */
+.product-modal-grid { display:grid; grid-template-columns:1.35fr 0.95fr; gap:28px; align-items:start; }
+.product-modal-preview { position:sticky; top:0; }
+.preview-label { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--fog); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.preview-label i { color:var(--gold); }
+@media (max-width: 860px) {
+    .product-modal-grid { grid-template-columns:1fr; }
+    .product-modal-preview { position:static; }
+}
+
+/* ---- Zona de arrastrar-y-soltar imágenes ---- */
+.image-dropzone { border:2px dashed var(--ash); border-radius:var(--r-lg); padding:28px 20px; text-align:center; cursor:pointer; transition:all .3s var(--ease); background:var(--graphite); }
+.image-dropzone:hover, .image-dropzone.dragover { border-color:var(--gold); background:var(--gold-glow); }
+.image-dropzone i { font-size:26px; color:var(--gold); margin-bottom:10px; display:block; }
+.image-dropzone p { font-size:13px; font-weight:700; color:var(--silver); margin:0 0 4px; }
+.image-dropzone-hint { font-size:11px; color:var(--fog); }
+.image-url-add { margin-top:10px; }
+.image-hint-empty { font-size:12px; color:var(--fog); padding:10px 2px; }
+
+/* ---- Grid de miniaturas ---- */
+.image-thumb-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(96px, 1fr)); gap:10px; margin-top:14px; }
+.image-thumb { position:relative; aspect-ratio:1/1; border-radius:var(--r-md); overflow:hidden; border:2px solid var(--stone); cursor:grab; background:var(--graphite); transition:all .25s var(--ease); }
+.image-thumb.cover { border-color:var(--gold); box-shadow:0 0 0 1px var(--gold); }
+.image-thumb.dragging { opacity:0.4; }
+.image-thumb.drag-over { border-color:var(--gold-light); transform:scale(1.04); }
+.image-thumb img { width:100%; height:100%; object-fit:cover; display:block; pointer-events:none; }
+.image-thumb-cover-tag { position:absolute; top:4px; left:4px; background:var(--gold); color:var(--void); font-size:9px; font-weight:800; padding:2px 6px; border-radius:20px; display:flex; align-items:center; gap:3px; }
+.image-thumb-drive-warning { position:absolute; top:4px; right:4px; width:18px; height:18px; border-radius:50%; background:var(--danger); color:#fff; display:flex; align-items:center; justify-content:center; font-size:9px; }
+.image-thumb-actions { position:absolute; inset:auto 0 0 0; display:flex; justify-content:center; gap:6px; padding:6px; background:linear-gradient(to top, rgba(0,0,0,0.85), transparent); opacity:0; transition:opacity .25s; }
+.image-thumb:hover .image-thumb-actions { opacity:1; }
+.image-thumb-actions button { width:26px; height:26px; border-radius:50%; border:none; background:rgba(255,255,255,0.15); color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:11px; transition:all .2s; }
+.image-thumb-actions button:hover { background:var(--gold); color:var(--void); }
+
+/* ---- Vista previa en vivo: replica la tarjeta real de la tienda ---- */
+.storefront-preview { background:var(--void); border-radius:var(--r-lg); padding:18px; border:1px solid var(--stone); }
+.storefront-preview .product-card { background:var(--charcoal); border:1px solid var(--stone); border-radius:var(--r-lg); overflow:hidden; position:relative; }
+.storefront-preview .product-card-badge { position:absolute; top:14px; left:14px; z-index:2; padding:5px 12px; border-radius:50px; font-size:9px; font-weight:800; letter-spacing:1px; text-transform:uppercase; }
+.storefront-preview .product-card-img-wrap { position:relative; width:100%; aspect-ratio:4/3; overflow:hidden; background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460); display:flex; align-items:center; justify-content:center; }
+.storefront-preview .product-card-img { width:100%; height:100%; object-fit:cover; }
+.storefront-preview .preview-img-placeholder { color:var(--fog); font-size:32px; }
+.storefront-preview .product-card-info { padding:18px; }
+.storefront-preview .product-card-category { font-size:9px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:var(--gold); margin-bottom:6px; }
+.storefront-preview .product-card-name { font-size:15px; font-weight:700; color:var(--white); line-height:1.4; margin-bottom:5px; }
+.storefront-preview .product-card-code { font-size:11px; color:var(--fog); font-family:var(--font-mono); margin-bottom:12px; }
+.storefront-preview .product-card-price-row { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+.storefront-preview .product-card-price { font-size:19px; font-weight:900; color:var(--gold-light); }
+.storefront-preview .product-card-old-price { font-size:12px; color:var(--fog); text-decoration:line-through; }
+.storefront-preview .product-card-discount { font-size:10px; font-weight:800; color:var(--danger); background:rgba(239,68,68,0.1); padding:2px 7px; border-radius:20px; }

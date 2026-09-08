@@ -166,6 +166,11 @@ function loadStoreConfig() {
 }
 
 /* ===== PRODUCTOS ===== */
+// Nota: el catálogo ahora vive en Cloudflare D1 y se sirve desde el propio
+// Worker en /api/productos (antes se leía en vivo desde GitHub). Se dejan
+// las constantes de GitHub porque el panel admin todavía las usa para
+// escribir cambios; eso se migra en una siguiente fase.
+const API_PRODUCTOS_URL = '/api/productos';
 const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/khaosdeportivo/khaosdeportivo/main/productos.json';
 const GITHUB_API_URL = 'https://api.github.com/repos/khaosdeportivo/khaosdeportivo/contents/productos.json?ref=main';
 
@@ -182,14 +187,13 @@ function loadProducts() {
 
 async function fetchFromGithub() {
     try {
-        // Usar fetch con cache-buster para evitar caché del navegador
-        const response = await fetch(GITHUB_RAW_URL + '?t=' + Date.now(), {
+        const response = await fetch(API_PRODUCTOS_URL, {
             method: 'GET',
             headers: { 'Accept': 'application/json' }
         });
 
         if (!response.ok) {
-            throw new Error('GitHub respondió ' + response.status);
+            throw new Error('API de productos respondió ' + response.status);
         }
 
         const datos = await response.json();
@@ -210,11 +214,11 @@ async function fetchFromGithub() {
                 }
             } catch(e) {}
 
-            console.log('✅ Productos cargados desde GitHub:', products.length);
+            console.log('✅ Productos cargados desde la base de datos:', products.length);
             return true;
         }
     } catch(e) {
-        console.log('⚠️ No se pudo cargar desde GitHub:', e.message);
+        console.log('⚠️ No se pudo cargar el catálogo:', e.message);
     }
 
     // Fallback: intentar localStorage
@@ -717,7 +721,7 @@ function updateCartUI() {
 
   itemsContainer.innerHTML = state.cart.map((item, i) => 
     '<div class="cart-item">' +
-      '<img class="cart-item-img" src="' + getProductImage(item) + '" alt="" onerror="this.style.display=\'none\'">' +
+      '<img class="cart-item-img" loading="lazy" src="' + getProductImage(item) + '" alt="" onerror="this.style.display=\'none\'">' +
       '<div class="cart-item-info">' +
         '<div class="cart-item-name">' + escapeHtml(item.name) + '</div>' +
         '<div class="cart-item-meta">Talla ' + item.size + ' | ' + formatPrice(item.price) + ' c/u</div>' +
@@ -802,7 +806,7 @@ function updateWhatsAppButton() {
 
   btn.href = 'https://wa.me/' + storeConfig.whatsapp + '?text=' + msg;
 
-  // Guardar pedido en localStorage para el admin
+  // Guardar el pedido de verdad en el servidor para que llegue al panel admin
   saveOrderToLocalStorage();
 }
 
@@ -836,7 +840,13 @@ function copyCartToClipboard() {
   });
 }
 
-/* ===== GUARDAR PEDIDO EN LOCALSTORAGE ===== */
+/* ===== ENVIAR PEDIDO AL SERVIDOR =====
+ * Antes esto guardaba el pedido en localStorage, lo que solo lo hacía
+ * visible si el admin abría el panel en el MISMO navegador del cliente
+ * (nunca pasaba en la práctica). Ahora se envía a la base de datos real
+ * (misma que usa el panel), así que llega sin importar el dispositivo.
+ * Se mantiene el nombre de la función para no tener que tocar quien la llama.
+ */
 function saveOrderToLocalStorage() {
   if (state.cart.length === 0) return;
 
@@ -849,11 +859,11 @@ function saveOrderToLocalStorage() {
   const fingerprint = state.cart.map(i => i.id + ':' + i.size + 'x' + i.qty + '@' + i.price).join('|')
     + '|c:' + (currentCoupon ? currentCoupon.code : '') + '|t:' + total;
   try {
-    if (localStorage.getItem('khaos_last_order_fp') === fingerprint) return;
+    if (sessionStorage.getItem('khaos_last_order_fp') === fingerprint) return;
+    sessionStorage.setItem('khaos_last_order_fp', fingerprint);
   } catch (e) {}
 
   const order = {
-    id: Date.now(),
     customer: 'Cliente Web',
     phone: '',
     address: '',
@@ -867,31 +877,16 @@ function saveOrderToLocalStorage() {
     subtotal: subtotal,
     discount: discount,
     coupon: currentCoupon ? currentCoupon.code : null,
-    total: total,
-    status: 'pending',
-    date: new Date().toISOString(),
-    source: 'web',
-    fingerprint: fingerprint
+    total: total
   };
 
   try {
-    let orders = [];
-    const saved = localStorage.getItem('khaos_admin_orders');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed)) orders = parsed;
-    }
-    orders.unshift(order);
-    if (orders.length > 50) orders = orders.slice(0, 50);
-    localStorage.setItem('khaos_admin_orders', JSON.stringify(orders));
-    localStorage.setItem('khaos_last_order_fp', fingerprint);
-
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: 'khaos_admin_orders',
-      newValue: JSON.stringify(orders),
-      oldValue: saved,
-      storageArea: localStorage
-    }));
+    fetch('/api/pedido', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(order),
+      keepalive: true
+    }).catch(function() {});
   } catch(e) {}
 }
 
