@@ -131,6 +131,7 @@ const badgeConfig = {
     preorder:    { label: 'Preventa',      icon: 'fa-calendar',  color: '#3b82f6', bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.2)', emoji: '📅' },
     webonly:     { label: 'Exclusivo web',  icon: 'fa-globe',    color: '#06b6d4', bg: 'rgba(6,182,212,0.1)', border: 'rgba(6,182,212,0.2)', emoji: '🌐' }
 };
+const paymentMethodLabelsAdmin = { contraentrega: 'Pago contraentrega', transferencia: 'Transferencia bancaria', nequi: 'Nequi / Daviplata' };
 // defaultProducts removed - admin starts with empty product list
 
 // ===== STATE =====
@@ -815,7 +816,18 @@ function updateOrderStats() {
 
 // ===== PEDIDOS: cargar desde el servidor (base de datos real) =====
 function fetchOrdersFromServer() {
-    if (!window.AdminSession || !AdminSession.isActive()) { renderOrders(); updateOrderStats(); return; }
+    if (!window.AdminSession || !AdminSession.isActive()) {
+        // La sesión visual (localStorage) puede seguir activa aunque, tras
+        // recargar la página, el token de AdminSession (solo en memoria) se
+        // haya perdido. Antes esto fallaba en silencio y el panel mostraba
+        // "Sin pedidos" como si de verdad no hubiera ninguno. Avisamos y
+        // mandamos al login para renovar el token.
+        showToast('Tu sesión expiró, vuelve a iniciar sesión para ver los pedidos', 'error');
+        showLogin();
+        renderOrders();
+        updateOrderStats();
+        return;
+    }
     showLoading('Cargando pedidos...');
     fetch('/api/admin/pedidos', { headers: { 'Authorization': 'Bearer ' + AdminSession.token } })
         .then(function(res) { if (res.status === 401) { AdminSession.clear(); throw new Error('unauth'); } return res.json(); })
@@ -833,7 +845,13 @@ function fetchOrdersFromServer() {
 // ===== ANALÍTICAS: cargar agregados reales desde el servidor =====
 let lastAnalytics = null;
 function fetchAnalyticsFromServer() {
-    if (!window.AdminSession || !AdminSession.isActive()) return;
+    if (!window.AdminSession || !AdminSession.isActive()) {
+        // Mismo caso que fetchOrdersFromServer: sin esto, Analíticas se
+        // quedaba vacía sin ningún aviso cuando el token en memoria se perdía.
+        showToast('Tu sesión expiró, vuelve a iniciar sesión para ver las analíticas', 'error');
+        showLogin();
+        return;
+    }
     fetch('/api/admin/analytics', { headers: { 'Authorization': 'Bearer ' + AdminSession.token } })
         .then(function(res) { if (res.status === 401) { AdminSession.clear(); throw new Error('unauth'); } return res.json(); })
         .then(function(data) { lastAnalytics = data; renderAnalyticsPedidos(data); })
@@ -1348,7 +1366,11 @@ function renderOrders() {
             </div>
             <div class="order-items">${o.items.map(i => `<div class="order-item"><img src="${products.find(p=>p.id===i.productId)?.image || ''}" onerror="this.style.display='none'" alt=""><div style="flex:1;"><div style="font-weight:800;font-size:13px;">${i.name}</div><div style="font-size:11px;color:var(--fog);">Talla ${i.size} x${i.qty}</div></div><div style="font-weight:900;color:var(--gold-light);">$${i.price.toLocaleString('es-CO')}</div></div>`).join('')}</div>
             <div class="order-footer">
-                <div style="font-size:12px;color:var(--fog);"><i class="fas fa-user" style="margin-right:6px;"></i>${o.customer} · ${o.phone}</div>
+                <div>
+                    <div style="font-size:12px;color:var(--fog);"><i class="fas fa-user" style="margin-right:6px;"></i>${o.customer} · ${o.phone}</div>
+                    ${o.address ? `<div style="font-size:12px;color:var(--fog);margin-top:3px;"><i class="fas fa-map-marker-alt" style="margin-right:6px;"></i>${o.address}</div>` : ''}
+                    ${o.paymentMethod ? `<div style="font-size:12px;color:var(--fog);margin-top:3px;"><i class="fas fa-wallet" style="margin-right:6px;"></i>${paymentMethodLabelsAdmin[o.paymentMethod] || o.paymentMethod}</div>` : ''}
+                </div>
                 <div style="text-align:right;">
                     ${o.discount > 0 ? `<div style="font-size:11px;color:var(--success);text-decoration:line-through;">$${o.subtotal.toLocaleString('es-CO')}</div>` : ''}
                     <div class="order-total">$${o.total.toLocaleString('es-CO')}</div>

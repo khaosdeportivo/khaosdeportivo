@@ -783,6 +783,42 @@ function getCartSubtotal() {
 }
 
 /* ===== WHATSAPP & GUARDAR PEDIDO ===== */
+/* ===== DATOS DE ENTREGA (obligatorios antes de enviar el pedido) ===== */
+const paymentMethodLabels = { contraentrega: 'Pago contraentrega', transferencia: 'Transferencia bancaria', nequi: 'Nequi / Daviplata' };
+
+function getCheckoutInfo() {
+  const nameEl = document.getElementById('checkoutName');
+  const phoneEl = document.getElementById('checkoutPhone');
+  const addressEl = document.getElementById('checkoutAddress');
+  const paymentEl = document.getElementById('checkoutPayment');
+  return {
+    name: nameEl ? nameEl.value.trim() : '',
+    phone: phoneEl ? phoneEl.value.trim() : '',
+    address: addressEl ? addressEl.value.trim() : '',
+    payment: paymentEl ? paymentEl.value : ''
+  };
+}
+
+function isCheckoutValid(info) {
+  info = info || getCheckoutInfo();
+  return !!(info.name && info.phone && info.address && info.payment);
+}
+
+function onCheckoutInputChange(el) {
+  if (el && el.value && String(el.value).trim()) el.classList.remove('input-error');
+  updateWhatsAppButton();
+}
+
+function markCheckoutErrors() {
+  const info = getCheckoutInfo();
+  const map = { checkoutName: info.name, checkoutPhone: info.phone, checkoutAddress: info.address, checkoutPayment: info.payment };
+  Object.keys(map).forEach(function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (!map[id]) el.classList.add('input-error'); else el.classList.remove('input-error');
+  });
+}
+
 function updateWhatsAppButton() {
   const btn = document.getElementById('cartWaBtn');
   if (!btn || state.cart.length === 0) return;
@@ -791,6 +827,8 @@ function updateWhatsAppButton() {
   let discount = 0;
   if (currentCoupon) discount = currentCoupon.discount || 0;
   const total = subtotal - discount;
+  const info = getCheckoutInfo();
+  const valid = isCheckoutValid(info);
 
   let msg = '¡Hola! 👋 Quiero hacer un pedido de Khaos Deportivo:%0A%0A';
   state.cart.forEach(item => {
@@ -802,12 +840,32 @@ function updateWhatsAppButton() {
   msg += 'Subtotal: ' + formatPrice(subtotal) + '%0A';
   if (discount > 0) msg += 'Descuento (' + currentCoupon.code + '): -' + formatPrice(discount) + '%0A';
   msg += '*Total: ' + formatPrice(total) + '*%0A%0A';
-  msg += 'Por favor confirmame disponibilidad y método de pago. ¡Gracias! 🙏';
+  if (valid) {
+    msg += '*Datos de entrega*%0A';
+    msg += 'Nombre: ' + info.name + '%0A';
+    msg += 'Teléfono: ' + info.phone + '%0A';
+    msg += 'Dirección: ' + info.address + '%0A';
+    msg += 'Pago: ' + (paymentMethodLabels[info.payment] || info.payment) + '%0A%0A';
+  }
+  msg += 'Por favor confirmame disponibilidad. ¡Gracias! 🙏';
 
   btn.href = 'https://wa.me/' + storeConfig.whatsapp + '?text=' + msg;
+  btn.classList.toggle('needs-info', !valid);
+}
 
-  // Guardar el pedido de verdad en el servidor para que llegue al panel admin
-  saveOrderToLocalStorage();
+function handleWhatsAppClick(event) {
+  const info = getCheckoutInfo();
+  if (!isCheckoutValid(info)) {
+    if (event) event.preventDefault();
+    markCheckoutErrors();
+    showToast('Completa tus datos de entrega para enviar el pedido', 'warning');
+    const formEl = document.getElementById('checkoutForm');
+    if (formEl && formEl.scrollIntoView) formEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return false;
+  }
+  // Datos completos: se deja navegar a WhatsApp y se guarda el pedido de verdad en el servidor
+  saveOrderToLocalStorage(info);
+  return true;
 }
 
 function copyCartToClipboard() {
@@ -815,6 +873,7 @@ function copyCartToClipboard() {
   let discount = 0;
   if (currentCoupon) discount = currentCoupon.discount || 0;
   const total = subtotal - discount;
+  const info = getCheckoutInfo();
 
   let text = '🛒 Pedido Khaos Deportivo\n\n';
   state.cart.forEach(item => {
@@ -824,6 +883,9 @@ function copyCartToClipboard() {
   text += 'Subtotal: ' + formatPrice(subtotal) + '\n';
   if (discount > 0) text += 'Descuento: -' + formatPrice(discount) + '\n';
   text += 'TOTAL: ' + formatPrice(total) + '\n';
+  if (isCheckoutValid(info)) {
+    text += '\nNombre: ' + info.name + '\nTeléfono: ' + info.phone + '\nDirección: ' + info.address + '\nPago: ' + (paymentMethodLabels[info.payment] || info.payment) + '\n';
+  }
 
   navigator.clipboard.writeText(text).then(() => {
     const btn = document.getElementById('cartCopyBtn');
@@ -841,32 +903,34 @@ function copyCartToClipboard() {
 }
 
 /* ===== ENVIAR PEDIDO AL SERVIDOR =====
- * Antes esto guardaba el pedido en localStorage, lo que solo lo hacía
- * visible si el admin abría el panel en el MISMO navegador del cliente
- * (nunca pasaba en la práctica). Ahora se envía a la base de datos real
- * (misma que usa el panel), así que llega sin importar el dispositivo.
+ * Se llama una sola vez, en el momento real en que el cliente envía el
+ * pedido (botón de WhatsApp con los datos de entrega completos) — no en
+ * cada re-render del carrito. Se guarda en la base de datos real, así que
+ * llega al panel admin sin importar el dispositivo del cliente.
  * Se mantiene el nombre de la función para no tener que tocar quien la llama.
  */
-function saveOrderToLocalStorage() {
+function saveOrderToLocalStorage(info) {
   if (state.cart.length === 0) return;
+  info = info || getCheckoutInfo();
 
   const subtotal = getCartSubtotal();
   let discount = 0;
   if (currentCoupon) discount = currentCoupon.discount || 0;
   const total = subtotal - discount;
 
-  // Fingerprint para evitar pedidos duplicados cada vez que se actualiza el botón WA
+  // Evitar duplicar el mismo pedido si el cliente hace doble clic
   const fingerprint = state.cart.map(i => i.id + ':' + i.size + 'x' + i.qty + '@' + i.price).join('|')
-    + '|c:' + (currentCoupon ? currentCoupon.code : '') + '|t:' + total;
+    + '|c:' + (currentCoupon ? currentCoupon.code : '') + '|t:' + total + '|p:' + info.phone;
   try {
     if (sessionStorage.getItem('khaos_last_order_fp') === fingerprint) return;
     sessionStorage.setItem('khaos_last_order_fp', fingerprint);
   } catch (e) {}
 
   const order = {
-    customer: 'Cliente Web',
-    phone: '',
-    address: '',
+    customer: info.name || 'Cliente Web',
+    phone: info.phone || '',
+    address: info.address || '',
+    paymentMethod: info.payment || '',
     items: state.cart.map(item => ({
       productId: item.id,
       name: item.name,

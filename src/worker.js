@@ -241,8 +241,8 @@ async function insertPedido(env, body, source, status) {
   const now = new Date().toISOString();
   try {
     const result = await env.DB.prepare(
-      `INSERT INTO pedidos (customer, phone, address, items, subtotal, discount, coupon, total, status, source, created_at, updated_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`
+      `INSERT INTO pedidos (customer, phone, address, items, subtotal, discount, coupon, total, status, source, payment_method, created_at, updated_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`
     )
       .bind(
         (body.customer || 'Cliente Web').slice(0, 200),
@@ -255,6 +255,7 @@ async function insertPedido(env, body, source, status) {
         Math.round(Number(body.total) || 0),
         status,
         source,
+        (body.paymentMethod || '').slice(0, 40) || null,
         now,
         now
       )
@@ -272,7 +273,7 @@ async function listarPedidos(request, env) {
 
   try {
     const rows = await env.DB.prepare(
-      'SELECT id, customer, phone, address, items, subtotal, discount, coupon, total, status, cancel_reason, source, created_at FROM pedidos ORDER BY created_at DESC LIMIT 500'
+      'SELECT id, customer, phone, address, items, subtotal, discount, coupon, total, status, cancel_reason, source, payment_method, created_at FROM pedidos ORDER BY created_at DESC LIMIT 500'
     ).all();
     const pedidos = rows.results.map(mapPedidoRow);
     return json({ pedidos });
@@ -295,6 +296,7 @@ function mapPedidoRow(row) {
     status: row.status,
     cancelReason: row.cancel_reason,
     source: row.source,
+    paymentMethod: row.payment_method,
     date: row.created_at,
   };
 }

@@ -4,6 +4,7 @@ function openOrderModal() {
     document.getElementById('orderPhone').value = '';
     document.getElementById('orderAddress').value = '';
     document.getElementById('orderStatus').value = 'pending';
+    if (document.getElementById('orderPaymentMethod')) document.getElementById('orderPaymentMethod').value = '';
     orderItems = [];
     renderOrderItems();
     updateOrderTotal();
@@ -117,10 +118,12 @@ function saveOrder() {
     }
     const total = subtotal - discount;
 
+    const paymentMethodEl = document.getElementById('orderPaymentMethod');
     const orderPayload = {
         customer: customer,
         phone: phone,
         address: address,
+        paymentMethod: paymentMethodEl ? paymentMethodEl.value : '',
         items: orderItems.map(i => ({ productId: i.productId, name: i.name, size: i.size, price: i.price, qty: i.qty })),
         subtotal: subtotal,
         discount: discount,
